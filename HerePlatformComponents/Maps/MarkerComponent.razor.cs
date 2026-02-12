@@ -1,3 +1,4 @@
+using HerePlatformComponents.Maps.Events;
 using HerePlatformComponents.Maps.Extension;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -77,27 +78,156 @@ public partial class MarkerComponent : IAsyncDisposable
     [Parameter, JsonIgnore]
     public string? IconUrl { get; set; }
 
+    #region Pointer / Interaction EventCallbacks
+
     /// <summary>
     /// Fired when the marker is tapped/clicked.
+    /// Breaking change: now provides MapPointerEventArgs with position and viewport data.
     /// </summary>
     [Parameter, JsonIgnore]
-    public EventCallback OnClick { get; set; }
+    public EventCallback<MapPointerEventArgs> OnClick { get; set; }
 
     /// <summary>
-    /// Fired when the marker is dragged to a new position.
+    /// Fired on double-tap/double-click.
     /// </summary>
     [Parameter, JsonIgnore]
-    public EventCallback<LatLngLiteral> OnMove { get; set; }
+    public EventCallback<MapPointerEventArgs> OnDoubleClick { get; set; }
 
-    internal async Task MarkerClicked()
+    /// <summary>
+    /// Fired on long press.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<MapPointerEventArgs> OnLongPress { get; set; }
+
+    /// <summary>
+    /// Fired on right-click / long-press context menu.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<MapPointerEventArgs> OnContextMenu { get; set; }
+
+    /// <summary>
+    /// Fired when the context menu interaction ends.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback OnContextMenuClose { get; set; }
+
+    /// <summary>
+    /// Fired when a pointer touches the marker surface.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<MapPointerEventArgs> OnPointerDown { get; set; }
+
+    /// <summary>
+    /// Fired when a pointer leaves the marker surface.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<MapPointerEventArgs> OnPointerUp { get; set; }
+
+    /// <summary>
+    /// Fired when a pointer moves over the marker.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<MapPointerEventArgs> OnPointerMove { get; set; }
+
+    /// <summary>
+    /// Fired when a pointer enters the marker area.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<MapPointerEventArgs> OnPointerEnter { get; set; }
+
+    /// <summary>
+    /// Fired when a pointer leaves the marker area.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<MapPointerEventArgs> OnPointerLeave { get; set; }
+
+    /// <summary>
+    /// Fired when a pointer action is cancelled.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback OnPointerCancel { get; set; }
+
+    /// <summary>
+    /// Fired when a drag operation starts on the marker.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<MapDragEventArgs> OnDragStart { get; set; }
+
+    /// <summary>
+    /// Fired continuously during a drag operation.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<MapDragEventArgs> OnDrag { get; set; }
+
+    /// <summary>
+    /// Fired when a drag operation ends.
+    /// Breaking change: replaces OnMove. Now provides MapDragEventArgs.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<MapDragEventArgs> OnDragEnd { get; set; }
+
+    #endregion
+
+    #region Internal event handlers (called by AdvancedHereMap)
+
+    internal async Task HandlePointerEvent(string eventName, MapPointerEventArgs args)
     {
-        await OnClick.InvokeAsync();
+        var callback = eventName switch
+        {
+            "tap" => OnClick,
+            "dbltap" => OnDoubleClick,
+            "longpress" => OnLongPress,
+            "contextmenu" => OnContextMenu,
+            "pointerdown" => OnPointerDown,
+            "pointerup" => OnPointerUp,
+            "pointermove" => OnPointerMove,
+            "pointerenter" => OnPointerEnter,
+            "pointerleave" => OnPointerLeave,
+            _ => default
+        };
+
+        if (callback.HasDelegate)
+            await callback.InvokeAsync(args);
     }
 
-    internal async Task MarkerDragged(LatLngLiteral position)
+    internal async Task HandleContextMenuClose()
     {
-        await OnMove.InvokeAsync(position);
+        if (OnContextMenuClose.HasDelegate)
+            await OnContextMenuClose.InvokeAsync();
     }
+
+    internal async Task HandlePointerCancel()
+    {
+        if (OnPointerCancel.HasDelegate)
+            await OnPointerCancel.InvokeAsync();
+    }
+
+    internal async Task HandleDragEvent(string eventName, MapDragEventArgs args)
+    {
+        var callback = eventName switch
+        {
+            "dragstart" => OnDragStart,
+            "drag" => OnDrag,
+            "dragend" => OnDragEnd,
+            _ => default
+        };
+
+        if (callback.HasDelegate)
+            await callback.InvokeAsync(args);
+    }
+
+    #endregion
+
+    /// <summary>
+    /// Returns true if any pointer/interaction event callback is bound.
+    /// Used to determine whether JS should wire up event listeners.
+    /// </summary>
+    internal bool HasAnyEventCallback =>
+        OnClick.HasDelegate || OnDoubleClick.HasDelegate || OnLongPress.HasDelegate ||
+        OnContextMenu.HasDelegate || OnContextMenuClose.HasDelegate ||
+        OnPointerDown.HasDelegate || OnPointerUp.HasDelegate || OnPointerMove.HasDelegate ||
+        OnPointerEnter.HasDelegate || OnPointerLeave.HasDelegate || OnPointerCancel.HasDelegate ||
+        OnDragStart.HasDelegate || OnDrag.HasDelegate || OnDragEnd.HasDelegate;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -126,7 +256,7 @@ public partial class MarkerComponent : IAsyncDisposable
             {
                 Position = new LatLngLiteral(Lat, Lng),
                 Draggable = Draggable,
-                Clickable = Clickable || Draggable,
+                Clickable = Clickable || Draggable || HasAnyEventCallback,
                 ZIndex = ZIndex,
                 Visible = Visible,
                 IconUrl = IconUrl,

@@ -1,0 +1,200 @@
+@page "/map-autosuggest"
+@rendermode InteractiveServer
+@using HerePlatformComponents.Maps.Search
+
+<PageTitle>Autosuggest</PageTitle>
+
+<h3>Autosuggest Demo</h3>
+<p>Search for addresses using the HERE Autosuggest API. Select a result to show it on the map.</p>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <label class="form-label fw-bold">Design Variant</label>
+        <div class="btn-group d-flex" role="group">
+            @foreach (var design in Enum.GetValues<AutosuggestDesign>())
+            {
+                var d = design;
+                <button type="button"
+                        class="btn @(d == _design ? "btn-primary" : "btn-outline-primary")"
+                        @onclick="() => _design = d">
+                    @d
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row mb-2">
+    <div class="col-md-6">
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="templateMode" id="tmplNone"
+                   checked="@(_templateMode == TemplateMode.None)"
+                   @onchange="() => _templateMode = TemplateMode.None" />
+            <label class="form-check-label" for="tmplNone">Default</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="templateMode" id="tmplItem"
+                   checked="@(_templateMode == TemplateMode.ItemTemplate)"
+                   @onchange="() => _templateMode = TemplateMode.ItemTemplate" />
+            <label class="form-check-label" for="tmplItem">Custom Item</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="templateMode" id="tmplList"
+                   checked="@(_templateMode == TemplateMode.ListTemplate)"
+                   @onchange="() => _templateMode = TemplateMode.ListTemplate" />
+            <label class="form-check-label" for="tmplList">Custom List</label>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <label class="form-label fw-bold">Address Search</label>
+
+        @switch (_templateMode)
+        {
+            case TemplateMode.ItemTemplate:
+                <HereAutosuggest Placeholder="Enter an address..."
+                                 Options="@_searchOptions"
+                                 Design="@_design"
+                                 OnItemSelected="@OnSuggestionSelected"
+                                 OnCleared="@OnSearchCleared">
+                    <SuggestionItemTemplate>
+                        <div class="d-flex align-items-center gap-2 py-1">
+                            <span class="badge rounded-pill bg-primary bg-opacity-75">@(context.ResultType ?? "place")</span>
+                            <div>
+                                <div class="fw-semibold" style="font-size:0.88rem">@context.Title</div>
+                                @if (context.Address?.City is not null)
+                                {
+                                    <small class="text-muted">@context.Address.City</small>
+                                }
+                            </div>
+                        </div>
+                    </SuggestionItemTemplate>
+                </HereAutosuggest>
+                break;
+
+            case TemplateMode.ListTemplate:
+                <HereAutosuggest Placeholder="Enter an address..."
+                                 Options="@_searchOptions"
+                                 Design="@_design"
+                                 OnItemSelected="@OnSuggestionSelected"
+                                 OnCleared="@OnSearchCleared">
+                    <SuggestionListTemplate>
+                        <div class="card shadow-sm mt-1">
+                            <div class="card-header py-1 px-3 bg-light">
+                                <small class="text-muted fw-semibold">@context.Items.Count results</small>
+                            </div>
+                            <div class="list-group list-group-flush" style="max-height:260px;overflow-y:auto">
+                                @for (var i = 0; i < context.Items.Count; i++)
+                                {
+                                    var idx = i;
+                                    var item = context.Items[i];
+                                    <button type="button"
+                                            class="list-group-item list-group-item-action @(idx == context.ActiveIndex ? "active" : "")"
+                                            @onmousedown="() => context.SelectItem(item)"
+                                            @onmousedown:preventDefault>
+                                        <div class="fw-semibold" style="font-size:0.88rem">@item.Title</div>
+                                        @if (item.Address?.Label is not null)
+                                        {
+                                            <small class="@(idx == context.ActiveIndex ? "" : "text-muted")">@item.Address.Label</small>
+                                        }
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </SuggestionListTemplate>
+                </HereAutosuggest>
+                break;
+
+            default:
+                <HereAutosuggest Placeholder="Enter an address..."
+                                 Options="@_searchOptions"
+                                 Design="@_design"
+                                 OnItemSelected="@OnSuggestionSelected"
+                                 OnCleared="@OnSearchCleared" />
+                break;
+        }
+    </div>
+</div>
+
+@if (_selectedItem is not null)
+{
+    <div class="alert alert-success mt-2">
+        <strong>Selected:</strong> @_selectedItem.Title
+        @if (_selectedItem.Address?.Label is not null)
+        {
+            <br /><small>@_selectedItem.Address.Label</small>
+        }
+        @if (_selectedItem.Position.HasValue)
+        {
+            <br /><small>Coordinates: @_selectedItem.Position.Value.Lat.ToString("F5"), @_selectedItem.Position.Value.Lng.ToString("F5")</small>
+        }
+        @if (_selectedItem.ResultType is not null)
+        {
+            <br /><small>Type: @_selectedItem.ResultType</small>
+        }
+    </div>
+}
+
+@if (_selectedItem?.Position is not null)
+{
+    <div class="mt-3">
+        <AdvancedHereMap @ref="_advMap"
+                         Options="@_mapOptions"
+                         Height="400px">
+            <MarkerComponent Lat="@_selectedItem.Position.Value.Lat"
+                             Lng="@_selectedItem.Position.Value.Lng"
+                             Clickable="true" />
+        </AdvancedHereMap>
+    </div>
+}
+
+@code {
+    private AdvancedHereMap? _advMap;
+    private AutosuggestItem? _selectedItem;
+    private AutosuggestDesign _design = AutosuggestDesign.Default;
+    private TemplateMode _templateMode = TemplateMode.None;
+
+    private enum TemplateMode { None, ItemTemplate, ListTemplate }
+
+    private AutosuggestOptions _searchOptions = new()
+    {
+        Lang = "de",
+        In = "countryCode:DEU",
+        Limit = 5,
+        At = new LatLngLiteral(52.52, 13.405)
+    };
+
+    private MapOptions _mapOptions = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 15,
+        EnableUI = true,
+        EnableInteraction = true
+    };
+
+    private void OnSuggestionSelected(AutosuggestItem item)
+    {
+        _selectedItem = item;
+
+        if (item.Position.HasValue)
+        {
+            _mapOptions = new MapOptions
+            {
+                Center = item.Position.Value,
+                Zoom = 16,
+                EnableUI = true,
+                EnableInteraction = true
+            };
+        }
+
+        StateHasChanged();
+    }
+
+    private void OnSearchCleared()
+    {
+        _selectedItem = null;
+        StateHasChanged();
+    }
+}

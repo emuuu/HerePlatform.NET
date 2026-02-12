@@ -1,5 +1,6 @@
 @page "/map-markers"
 @rendermode InteractiveServer
+@using HerePlatformComponents.Maps.Events
 
 <PageTitle>Markers</PageTitle>
 
@@ -18,8 +19,8 @@
                          Draggable="@marker.Draggable"
                          Title="@marker.Title"
                          Visible="true"
-                         OnClick="@(() => OnMarkerClicked(marker))"
-                         OnMove="@(pos => OnMarkerDragged(marker, pos))" />
+                         OnClick="@(e => OnMarkerClicked(marker, e))"
+                         OnDragEnd="@(e => OnMarkerDragged(marker, e))" />
     }
 </AdvancedHereMap>
 
@@ -88,17 +89,21 @@
         StateHasChanged();
     }
 
-    private void OnMarkerClicked(MarkerInfo marker)
+    private void OnMarkerClicked(MarkerInfo marker, MapPointerEventArgs e)
     {
-        _lastEvent = $"Clicked: {marker.Title} at ({marker.Lat:F4}, {marker.Lng:F4})";
+        _lastEvent = $"Clicked: {marker.Title} at ({marker.Lat:F4}, {marker.Lng:F4})" +
+            (e.Position.HasValue ? $" — pointer at ({e.Position.Value.Lat:F4}, {e.Position.Value.Lng:F4})" : "");
         StateHasChanged();
     }
 
-    private void OnMarkerDragged(MarkerInfo marker, LatLngLiteral newPos)
+    private void OnMarkerDragged(MarkerInfo marker, MapDragEventArgs e)
     {
-        marker.Lat = newPos.Lat;
-        marker.Lng = newPos.Lng;
-        _lastEvent = $"Dragged: {marker.Title} to ({newPos.Lat:F4}, {newPos.Lng:F4})";
+        if (e.Position.HasValue)
+        {
+            marker.Lat = e.Position.Value.Lat;
+            marker.Lng = e.Position.Value.Lng;
+        }
+        _lastEvent = $"Dragged: {marker.Title} to ({marker.Lat:F4}, {marker.Lng:F4})";
         StateHasChanged();
     }
 

@@ -1,3 +1,4 @@
+using HerePlatformComponents.Maps.Events;
 using HerePlatformComponents.Maps.Extension;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -63,16 +64,154 @@ public partial class PolygonComponent : IAsyncDisposable
     [Parameter, JsonIgnore]
     public bool Visible { get; set; } = true;
 
+    #region Pointer / Interaction EventCallbacks
+
     /// <summary>
     /// Fired when the polygon is tapped/clicked.
+    /// Breaking change: now provides MapPointerEventArgs.
     /// </summary>
     [Parameter, JsonIgnore]
-    public EventCallback OnClick { get; set; }
+    public EventCallback<MapPointerEventArgs> OnClick { get; set; }
 
-    internal async Task Click()
+    /// <summary>
+    /// Fired on double-tap/double-click.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<MapPointerEventArgs> OnDoubleClick { get; set; }
+
+    /// <summary>
+    /// Fired on long press.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<MapPointerEventArgs> OnLongPress { get; set; }
+
+    /// <summary>
+    /// Fired on right-click / long-press context menu.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<MapPointerEventArgs> OnContextMenu { get; set; }
+
+    /// <summary>
+    /// Fired when the context menu interaction ends.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback OnContextMenuClose { get; set; }
+
+    /// <summary>
+    /// Fired when a pointer touches the polygon surface.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<MapPointerEventArgs> OnPointerDown { get; set; }
+
+    /// <summary>
+    /// Fired when a pointer leaves the polygon surface.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<MapPointerEventArgs> OnPointerUp { get; set; }
+
+    /// <summary>
+    /// Fired when a pointer moves over the polygon.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<MapPointerEventArgs> OnPointerMove { get; set; }
+
+    /// <summary>
+    /// Fired when a pointer enters the polygon area.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<MapPointerEventArgs> OnPointerEnter { get; set; }
+
+    /// <summary>
+    /// Fired when a pointer leaves the polygon area.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<MapPointerEventArgs> OnPointerLeave { get; set; }
+
+    /// <summary>
+    /// Fired when a pointer action is cancelled.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback OnPointerCancel { get; set; }
+
+    /// <summary>
+    /// Fired when a drag operation starts on the polygon.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<MapDragEventArgs> OnDragStart { get; set; }
+
+    /// <summary>
+    /// Fired continuously during a drag operation.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<MapDragEventArgs> OnDrag { get; set; }
+
+    /// <summary>
+    /// Fired when a drag operation ends.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<MapDragEventArgs> OnDragEnd { get; set; }
+
+    #endregion
+
+    #region Internal event handlers (called by AdvancedHereMap)
+
+    internal async Task HandlePointerEvent(string eventName, MapPointerEventArgs args)
     {
-        await OnClick.InvokeAsync();
+        var callback = eventName switch
+        {
+            "tap" => OnClick,
+            "dbltap" => OnDoubleClick,
+            "longpress" => OnLongPress,
+            "contextmenu" => OnContextMenu,
+            "pointerdown" => OnPointerDown,
+            "pointerup" => OnPointerUp,
+            "pointermove" => OnPointerMove,
+            "pointerenter" => OnPointerEnter,
+            "pointerleave" => OnPointerLeave,
+            _ => default
+        };
+
+        if (callback.HasDelegate)
+            await callback.InvokeAsync(args);
     }
+
+    internal async Task HandleContextMenuClose()
+    {
+        if (OnContextMenuClose.HasDelegate)
+            await OnContextMenuClose.InvokeAsync();
+    }
+
+    internal async Task HandlePointerCancel()
+    {
+        if (OnPointerCancel.HasDelegate)
+            await OnPointerCancel.InvokeAsync();
+    }
+
+    internal async Task HandleDragEvent(string eventName, MapDragEventArgs args)
+    {
+        var callback = eventName switch
+        {
+            "dragstart" => OnDragStart,
+            "drag" => OnDrag,
+            "dragend" => OnDragEnd,
+            _ => default
+        };
+
+        if (callback.HasDelegate)
+            await callback.InvokeAsync(args);
+    }
+
+    #endregion
+
+    /// <summary>
+    /// Returns true if any pointer/interaction event callback is bound.
+    /// </summary>
+    internal bool HasAnyEventCallback =>
+        OnClick.HasDelegate || OnDoubleClick.HasDelegate || OnLongPress.HasDelegate ||
+        OnContextMenu.HasDelegate || OnContextMenuClose.HasDelegate ||
+        OnPointerDown.HasDelegate || OnPointerUp.HasDelegate || OnPointerMove.HasDelegate ||
+        OnPointerEnter.HasDelegate || OnPointerLeave.HasDelegate || OnPointerCancel.HasDelegate ||
+        OnDragStart.HasDelegate || OnDrag.HasDelegate || OnDragEnd.HasDelegate;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -97,7 +236,7 @@ public partial class PolygonComponent : IAsyncDisposable
                 StrokeColor = StrokeColor,
                 FillColor = FillColor,
                 LineWidth = LineWidth,
-                Clickable = Clickable,
+                Clickable = Clickable || HasAnyEventCallback,
                 Visible = Visible,
                 MapId = MapRef.MapId,
             },

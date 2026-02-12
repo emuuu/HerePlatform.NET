@@ -126,6 +126,115 @@ window.blazorHerePlatform.objectManager = function () {
         });
     }
 
+    // Extract rich event data from HERE pointer events for C# MapPointerEventArgs
+    function extractPointerEventData(evt, map) {
+        const data = {
+            type: evt.type || null,
+            viewportX: 0,
+            viewportY: 0,
+            position: null,
+            button: 0,
+            buttons: 0,
+            pointerType: null
+        };
+        if (evt.currentPointer) {
+            data.viewportX = evt.currentPointer.viewportX;
+            data.viewportY = evt.currentPointer.viewportY;
+            data.button = evt.currentPointer.button || 0;
+            data.buttons = evt.currentPointer.buttons || 0;
+            data.pointerType = evt.currentPointer.type || null;
+            if (map && typeof map.screenToGeo === 'function') {
+                try {
+                    const geo = map.screenToGeo(evt.currentPointer.viewportX, evt.currentPointer.viewportY);
+                    if (geo) {
+                        data.position = { lat: geo.lat, lng: geo.lng };
+                    }
+                } catch (e) { }
+            }
+        }
+        return data;
+    }
+
+    // Extract event data from HERE drag events for C# MapDragEventArgs
+    function extractDragEventData(evt, map) {
+        const data = {
+            type: evt.type || null,
+            viewportX: 0,
+            viewportY: 0,
+            position: null
+        };
+        if (evt.currentPointer) {
+            data.viewportX = evt.currentPointer.viewportX;
+            data.viewportY = evt.currentPointer.viewportY;
+        }
+        // Use target geometry for position (most accurate for dragend)
+        if (evt.target && evt.target.getGeometry) {
+            try {
+                const geo = evt.target.getGeometry();
+                if (geo && typeof geo.lat === 'number') {
+                    data.position = { lat: geo.lat, lng: geo.lng };
+                }
+            } catch (e) { }
+        }
+        // Fallback to screen-to-geo conversion
+        if (!data.position && evt.currentPointer && map && typeof map.screenToGeo === 'function') {
+            try {
+                const geo = map.screenToGeo(evt.currentPointer.viewportX, evt.currentPointer.viewportY);
+                if (geo) {
+                    data.position = { lat: geo.lat, lng: geo.lng };
+                }
+            } catch (e) { }
+        }
+        return data;
+    }
+
+    // Extract rich event data for the imperative AddListener API
+    function extractEventDataForImperative(evt) {
+        const eventData = {};
+        if (evt) {
+            eventData.type = evt.type || null;
+            if (evt.target && evt.target.getGeometry) {
+                const geo = evt.target.getGeometry();
+                if (geo && typeof geo.lat === 'number') {
+                    eventData.lat = geo.lat;
+                    eventData.lng = geo.lng;
+                }
+            }
+            if (evt.currentPointer) {
+                eventData.viewportX = evt.currentPointer.viewportX;
+                eventData.viewportY = evt.currentPointer.viewportY;
+                eventData.button = evt.currentPointer.button || 0;
+                eventData.buttons = evt.currentPointer.buttons || 0;
+                eventData.pointerType = evt.currentPointer.type || null;
+            }
+        }
+        return eventData;
+    }
+
+    // Wire all pointer/interaction events on a map object (marker, polygon)
+    // and forward them to C# via the unified OnObject* JSInvokable methods.
+    function wireObjectEvents(obj, objectType, id, callbackRef, map) {
+        const pointerEvents = [
+            'tap', 'dbltap', 'longpress', 'contextmenu',
+            'pointerdown', 'pointerup', 'pointermove',
+            'pointerenter', 'pointerleave'
+        ];
+
+        for (const eventName of pointerEvents) {
+            obj.addEventListener(eventName, function (evt) {
+                const data = extractPointerEventData(evt, map);
+                callbackRef.invokeMethodAsync('OnObjectPointerEvent', objectType, id, eventName, data);
+            });
+        }
+
+        obj.addEventListener('contextmenuclose', function () {
+            callbackRef.invokeMethodAsync('OnObjectSimpleEvent', objectType, id, 'contextmenuclose');
+        });
+        obj.addEventListener('pointercancel', function () {
+            callbackRef.invokeMethodAsync('OnObjectSimpleEvent', objectType, id, 'pointercancel');
+        });
+    }
+
     return {
         resetPlatform: function () {
             // Dispose all existing map objects
@@ -429,25 +538,9 @@ window.blazorHerePlatform.objectManager = function () {
 
                 let handler;
                 if (callback && callback.invokeMethodAsync) {
-                    // DotNet callback
+                    // DotNet callback — extract rich event data
                     handler = function (evt) {
-                        const eventData = {};
-                        if (evt) {
-                            if (evt.target) {
-                                const target = evt.target;
-                                if (target.getGeometry) {
-                                    const geo = target.getGeometry();
-                                    if (geo && typeof geo.lat === 'number') {
-                                        eventData.lat = geo.lat;
-                                        eventData.lng = geo.lng;
-                                    }
-                                }
-                            }
-                            if (evt.currentPointer) {
-                                eventData.viewportX = evt.currentPointer.viewportX;
-                                eventData.viewportY = evt.currentPointer.viewportY;
-                            }
-                        }
+                        const eventData = extractEventDataForImperative(evt);
                         const json = extendableStringify([eventData]);
                         callback.invokeMethodAsync('Invoke', json, guid);
                     };
@@ -471,20 +564,7 @@ window.blazorHerePlatform.objectManager = function () {
                 let handler;
                 if (callback && callback.invokeMethodAsync) {
                     handler = function (evt) {
-                        const eventData = {};
-                        if (evt) {
-                            if (evt.target && evt.target.getGeometry) {
-                                const geo = evt.target.getGeometry();
-                                if (geo && typeof geo.lat === 'number') {
-                                    eventData.lat = geo.lat;
-                                    eventData.lng = geo.lng;
-                                }
-                            }
-                            if (evt.currentPointer) {
-                                eventData.viewportX = evt.currentPointer.viewportX;
-                                eventData.viewportY = evt.currentPointer.viewportY;
-                            }
-                        }
+                        const eventData = extractEventDataForImperative(evt);
                         const json = extendableStringify([eventData]);
                         callback.invokeMethodAsync('Invoke', json, guid);
                         // Auto-remove after first invocation
@@ -842,14 +922,14 @@ window.blazorHerePlatform.objectManager = function () {
                 map.addObject(marker);
             }
 
+            // Wire all pointer/interaction events via the unified event system
             if (clickable) {
-                marker.addEventListener('tap', function () {
-                    invokeCallback('OnMarkerClicked', id);
-                });
+                wireObjectEvents(marker, 'marker', id, callbackRef, map);
             }
 
             if (draggable && map) {
                 // Official HERE drag pattern (developer guide §6).
+                // Drag events fire on the MAP, not on individual objects.
                 // Use direct behavior reference from the map to avoid
                 // picking up orphaned behaviors from disposed maps.
                 map.addEventListener('dragstart', function (evt) {
@@ -865,6 +945,9 @@ window.blazorHerePlatform.objectManager = function () {
                             pointer.viewportX - targetPosition.x,
                             pointer.viewportY - targetPosition.y
                         );
+                        // Forward drag event to C#
+                        const data = extractDragEventData(evt, map);
+                        callbackRef.invokeMethodAsync('OnObjectDragEvent', 'marker', id, 'dragstart', data);
                     }
                 }, false);
 
@@ -876,6 +959,9 @@ window.blazorHerePlatform.objectManager = function () {
                             pointer.viewportX - target['offset'].x,
                             pointer.viewportY - target['offset'].y
                         ));
+                        // Forward drag event to C#
+                        const data = extractDragEventData(evt, map);
+                        callbackRef.invokeMethodAsync('OnObjectDragEvent', 'marker', id, 'drag', data);
                     }
                 }, false);
 
@@ -886,8 +972,9 @@ window.blazorHerePlatform.objectManager = function () {
                         if (behavior) {
                             behavior.enable(H.mapevents.Behavior.Feature.PANNING);
                         }
-                        const geo = target.getGeometry();
-                        invokeCallback('OnMarkerDrag', id, { lat: geo.lat, lng: geo.lng });
+                        // Forward drag event to C#
+                        const data = extractDragEventData(evt, map);
+                        callbackRef.invokeMethodAsync('OnObjectDragEvent', 'marker', id, 'dragend', data);
                     }
                 }, false);
             }
@@ -984,10 +1071,9 @@ window.blazorHerePlatform.objectManager = function () {
                 map.addObject(polygon);
             }
 
+            // Wire all pointer/interaction events via the unified event system
             if (clickable) {
-                polygon.addEventListener('tap', function () {
-                    invokeCallback('OnPolygonClicked', id);
-                });
+                wireObjectEvents(polygon, 'polygon', id, callbackRef, map);
             }
 
             addMapObject(id, polygon);
@@ -1005,6 +1091,84 @@ window.blazorHerePlatform.objectManager = function () {
             }
 
             blazorHerePlatform.objectManager.disposeObject(id);
+        },
+
+        // Setup map-level event forwarding to C# via AdvancedHereMap's JSInvokable methods.
+        // Called by AdvancedHereMap after the map is initialized.
+        setupMapEvents: function (mapGuid, callbackRef) {
+            const map = mapObjects[mapGuid];
+            if (!map || !callbackRef) return;
+
+            // Pointer events on the map
+            const pointerEvents = [
+                'tap', 'dbltap', 'longpress', 'contextmenu',
+                'pointerdown', 'pointerup', 'pointermove',
+                'pointerenter', 'pointerleave'
+            ];
+
+            for (const eventName of pointerEvents) {
+                map.addEventListener(eventName, function (evt) {
+                    const data = extractPointerEventData(evt, map);
+                    callbackRef.invokeMethodAsync('OnMapPointerEvent', eventName, data);
+                });
+            }
+
+            // Parameterless map events
+            map.addEventListener('contextmenuclose', function () {
+                callbackRef.invokeMethodAsync('OnMapSimpleEvent', 'contextmenuclose');
+            });
+            map.addEventListener('pointercancel', function () {
+                callbackRef.invokeMethodAsync('OnMapSimpleEvent', 'pointercancel');
+            });
+
+            // Drag events on the map
+            ['dragstart', 'drag', 'dragend'].forEach(function (eventName) {
+                map.addEventListener(eventName, function (evt) {
+                    const data = extractDragEventData(evt, map);
+                    callbackRef.invokeMethodAsync('OnMapDragEvent', eventName, data);
+                });
+            });
+
+            // Wheel event
+            map.addEventListener('wheel', function (evt) {
+                callbackRef.invokeMethodAsync('OnMapWheelEvent', {
+                    delta: evt.originalEvent ? evt.originalEvent.deltaY : 0,
+                    viewportX: evt.currentPointer ? evt.currentPointer.viewportX : 0,
+                    viewportY: evt.currentPointer ? evt.currentPointer.viewportY : 0
+                });
+            });
+
+            // Map view change events
+            ['mapviewchange', 'mapviewchangestart', 'mapviewchangeend'].forEach(function (eventName) {
+                map.addEventListener(eventName, function () {
+                    try {
+                        const lookAt = map.getViewModel().getLookAtData();
+                        const center = map.getCenter();
+                        callbackRef.invokeMethodAsync('OnMapViewChangeEvent', eventName, {
+                            center: center ? { lat: center.lat, lng: center.lng } : null,
+                            zoom: map.getZoom() || 0,
+                            tilt: lookAt.tilt || 0,
+                            heading: lookAt.heading || 0,
+                            type: eventName
+                        });
+                    } catch (e) { }
+                });
+            });
+
+            // Base layer change
+            map.addEventListener('baselayerchange', function () {
+                callbackRef.invokeMethodAsync('OnMapBaseLayerChangeEvent', {
+                    type: 'baselayerchange'
+                });
+            });
+
+            // Engine state change
+            map.addEventListener('enginestatechange', function (evt) {
+                callbackRef.invokeMethodAsync('OnMapEngineStateChangeEvent', {
+                    state: evt.state || 0,
+                    type: 'enginestatechange'
+                });
+            });
         },
 
         // Batch listener support
@@ -1051,6 +1215,97 @@ window.blazorHerePlatform.objectManager = function () {
 
             await Promise.all(promises);
             return results;
+        },
+
+        // Autosuggest support — calls H.service.SearchService.autosuggest()
+        // and returns results to C# via the callbackRef.
+        //
+        // NOTE: Do NOT call request.cancel() on the HERE ICancelable — it
+        // triggers an internal abort → reject chain inside mapsjs-core.js
+        // that surfaces as an uncaught promise rejection.  Instead we use a
+        // generation counter so stale callbacks are silently ignored.
+        autosuggest: function (guid, query, options, callbackRef) {
+            if (!herePlatform) {
+                callbackRef.invokeMethodAsync('OnAutosuggestResults', []);
+                return;
+            }
+
+            // Bump generation — any in-flight request with an older gen is stale
+            var state = mapObjects[guid];
+            if (!state || typeof state.gen !== 'number') {
+                state = { gen: 0 };
+                addMapObject(guid, state);
+            }
+            var gen = ++state.gen;
+
+            var service = herePlatform.getSearchService();
+
+            var params = {
+                q: query,
+                limit: options.limit || 5
+            };
+            if (options.lang) params.lang = options.lang;
+            if (options.in) params.in = options.in;
+            if (options.at) params.at = options.at.lat + ',' + options.at.lng;
+
+            service.autosuggest(params, function (result) {
+                // Ignore if a newer request has been issued
+                if (mapObjects[guid] !== state || state.gen !== gen) return;
+
+                var items = (result.items || []).map(function (item) {
+                    var mapped = {
+                        title: item.title || null,
+                        id: item.id || null,
+                        resultType: item.resultType || null,
+                        address: null,
+                        position: null,
+                        highlights: null
+                    };
+
+                    if (item.address) {
+                        mapped.address = {
+                            label: item.address.label || null,
+                            countryCode: item.address.countryCode || null,
+                            countryName: item.address.countryName || null,
+                            state: item.address.state || null,
+                            city: item.address.city || null,
+                            district: item.address.district || null,
+                            street: item.address.street || null,
+                            postalCode: item.address.postalCode || null,
+                            houseNumber: item.address.houseNumber || null
+                        };
+                    }
+
+                    if (item.position) {
+                        mapped.position = { lat: item.position.lat, lng: item.position.lng };
+                    }
+
+                    if (item.highlights && item.highlights.title) {
+                        mapped.highlights = {
+                            title: item.highlights.title.map(function (r) {
+                                return { start: r.start, end: r.end };
+                            }),
+                            address: item.highlights.address && item.highlights.address.label
+                                ? item.highlights.address.label.map(function (r) {
+                                    return { start: r.start, end: r.end };
+                                })
+                                : null
+                        };
+                    }
+
+                    return mapped;
+                });
+
+                callbackRef.invokeMethodAsync('OnAutosuggestResults', items);
+            }, function (error) {
+                if (mapObjects[guid] !== state || state.gen !== gen) return;
+                console.warn('[BlazorHerePlatform] Autosuggest error:', error);
+                callbackRef.invokeMethodAsync('OnAutosuggestResults', []);
+            });
+        },
+
+        disposeAutosuggest: function (guid) {
+            removeMapObject(guid);
         }
     };
 }();

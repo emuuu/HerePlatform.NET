@@ -1,0 +1,65 @@
+@namespace HerePlatformComponents.Maps.Search
+@implements IAsyncDisposable
+
+<div class="here-autosuggest @VariantCssClass @CssClass" @onfocusout="OnFocusOut">
+    @if (InputTemplate is not null)
+    {
+        @InputTemplate(BuildInputContext())
+    }
+    else
+    {
+        <input @ref="_inputRef"
+               type="text"
+               class="form-control"
+               placeholder="@Placeholder"
+               disabled="@Disabled"
+               value="@Value"
+               @oninput="OnInput"
+               @onkeydown="OnKeyDown"
+               @onkeydown:preventDefault="@(_isOpen && _activeIndex >= 0)"
+               autocomplete="off" />
+    }
+
+    @if (_isOpen && _items.Count > 0)
+    {
+        @if (SuggestionListTemplate is not null)
+        {
+            @SuggestionListTemplate(BuildListContext())
+        }
+        else
+        {
+            <ul class="here-autosuggest-dropdown">
+                @for (var i = 0; i < _items.Count; i++)
+                {
+                    var index = i;
+                    var item = _items[i];
+                    <li class="here-autosuggest-item @(index == _activeIndex ? "active" : "")"
+                        @onmousedown="() => SelectItem(item)"
+                        @onmousedown:preventDefault>
+                        @if (SuggestionItemTemplate is not null)
+                        {
+                            @SuggestionItemTemplate(item)
+                        }
+                        else if (Design == AutosuggestDesign.Compact)
+                        {
+                            <span class="here-autosuggest-title">@item.Title</span>
+                        }
+                        else
+                        {
+                            <div class="here-autosuggest-item-row">
+                                <span class="here-autosuggest-icon"></span>
+                                <div class="here-autosuggest-item-text">
+                                    <span class="here-autosuggest-title">@item.Title</span>
+                                    @if (item.Address?.Label is not null && item.Address.Label != item.Title)
+                                    {
+                                        <span class="here-autosuggest-address">@item.Address.Label</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    }
+</div>

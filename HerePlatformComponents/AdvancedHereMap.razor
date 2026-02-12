@@ -1,5 +1,7 @@
 @using HerePlatformComponents.Maps
+@using HerePlatformComponents.Maps.Events
 @using Microsoft.JSInterop
+@inject IJSRuntime Js
 @implements IAsyncDisposable
 
 <HereMap @ref="@MapRef" Id="@Id" Height="@Height" Options="@Options" OnAfterInit="@AfterInit" CssClass="@CssClass" />
@@ -52,6 +54,134 @@
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
 
+    #region Map-level Pointer / Interaction EventCallbacks
+
+    /// <summary>
+    /// Fired when the map background is tapped/clicked (no object hit).
+    /// </summary>
+    [Parameter]
+    public EventCallback<MapPointerEventArgs> OnClick { get; set; }
+
+    /// <summary>
+    /// Fired on double-tap/double-click on the map.
+    /// </summary>
+    [Parameter]
+    public EventCallback<MapPointerEventArgs> OnDoubleClick { get; set; }
+
+    /// <summary>
+    /// Fired on long press on the map.
+    /// </summary>
+    [Parameter]
+    public EventCallback<MapPointerEventArgs> OnLongPress { get; set; }
+
+    /// <summary>
+    /// Fired on right-click on the map.
+    /// </summary>
+    [Parameter]
+    public EventCallback<MapPointerEventArgs> OnContextMenu { get; set; }
+
+    /// <summary>
+    /// Fired when context menu interaction ends.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnContextMenuClose { get; set; }
+
+    /// <summary>
+    /// Fired when a pointer touches the map surface.
+    /// </summary>
+    [Parameter]
+    public EventCallback<MapPointerEventArgs> OnPointerDown { get; set; }
+
+    /// <summary>
+    /// Fired when a pointer leaves the map surface.
+    /// </summary>
+    [Parameter]
+    public EventCallback<MapPointerEventArgs> OnPointerUp { get; set; }
+
+    /// <summary>
+    /// Fired when a pointer moves over the map.
+    /// </summary>
+    [Parameter]
+    public EventCallback<MapPointerEventArgs> OnPointerMove { get; set; }
+
+    /// <summary>
+    /// Fired when a pointer enters the map area.
+    /// </summary>
+    [Parameter]
+    public EventCallback<MapPointerEventArgs> OnPointerEnter { get; set; }
+
+    /// <summary>
+    /// Fired when a pointer leaves the map area.
+    /// </summary>
+    [Parameter]
+    public EventCallback<MapPointerEventArgs> OnPointerLeave { get; set; }
+
+    /// <summary>
+    /// Fired when a pointer action is cancelled.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnPointerCancel { get; set; }
+
+    /// <summary>
+    /// Fired when a drag operation starts on the map.
+    /// </summary>
+    [Parameter]
+    public EventCallback<MapDragEventArgs> OnDragStart { get; set; }
+
+    /// <summary>
+    /// Fired continuously during a map drag.
+    /// </summary>
+    [Parameter]
+    public EventCallback<MapDragEventArgs> OnDrag { get; set; }
+
+    /// <summary>
+    /// Fired when a drag operation ends on the map.
+    /// </summary>
+    [Parameter]
+    public EventCallback<MapDragEventArgs> OnDragEnd { get; set; }
+
+    /// <summary>
+    /// Fired on mouse wheel scroll over the map.
+    /// </summary>
+    [Parameter]
+    public EventCallback<MapWheelEventArgs> OnWheel { get; set; }
+
+    #endregion
+
+    #region Map-specific EventCallbacks
+
+    /// <summary>
+    /// Fired when the base layer changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<BaseLayerChangeEventArgs> OnBaseLayerChange { get; set; }
+
+    /// <summary>
+    /// Fired when the render engine state changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<EngineStateChangeEventArgs> OnEngineStateChange { get; set; }
+
+    /// <summary>
+    /// Fired continuously while the map view changes (zoom, pan, tilt).
+    /// </summary>
+    [Parameter]
+    public EventCallback<MapViewChangeEventArgs> OnMapViewChange { get; set; }
+
+    /// <summary>
+    /// Fired when a map view change starts.
+    /// </summary>
+    [Parameter]
+    public EventCallback<MapViewChangeEventArgs> OnMapViewChangeStart { get; set; }
+
+    /// <summary>
+    /// Fired when a map view change ends.
+    /// </summary>
+    [Parameter]
+    public EventCallback<MapViewChangeEventArgs> OnMapViewChangeEnd { get; set; }
+
+    #endregion
+
     protected override void OnInitialized()
     {
         CallbackRef = DotNetObjectReference.Create(this);
@@ -60,35 +190,196 @@
 
     private async Task AfterInit()
     {
+        // Wire up map-level events now that the map is ready
+        if (MapId.HasValue)
+        {
+            await Js.InvokeVoidAsync("blazorHerePlatform.objectManager.setupMapEvents", MapId.Value, CallbackRef);
+        }
+
         await OnAfterInit.InvokeAsync();
     }
+
+    #region JSInvokable — Marker events
 
     [JSInvokable]
     public async Task OnMarkerClicked(Guid markerId)
     {
+        // Legacy compat: still called by old JS for simple tap without event data.
+        // New path uses OnObjectPointerEvent instead.
         if (_mapComponents.TryGetValue(markerId, out var markerComponent))
         {
-            await markerComponent.MarkerClicked();
+            await markerComponent.HandlePointerEvent("tap", new MapPointerEventArgs { Type = "tap" });
         }
     }
 
     [JSInvokable]
     public async Task OnMarkerDrag(Guid markerId, LatLngLiteral position)
     {
+        // Legacy compat: still called by old JS for dragend.
         if (_mapComponents.TryGetValue(markerId, out var markerComponent))
         {
-            await markerComponent.MarkerDragged(position);
+            await markerComponent.HandleDragEvent("dragend", new MapDragEventArgs
+            {
+                Position = position,
+                Type = "dragend"
+            });
         }
     }
+
+    #endregion
+
+    #region JSInvokable — Polygon events
 
     [JSInvokable]
     public async Task OnPolygonClicked(Guid polygonId)
     {
+        // Legacy compat
         if (_mapPolygonComponents.TryGetValue(polygonId, out var polygonComponent))
         {
-            await polygonComponent.Click();
+            await polygonComponent.HandlePointerEvent("tap", new MapPointerEventArgs { Type = "tap" });
         }
     }
+
+    #endregion
+
+    #region JSInvokable — Unified object events (new)
+
+    /// <summary>
+    /// Called from JS for pointer events on markers and polygons.
+    /// </summary>
+    [JSInvokable]
+    public async Task OnObjectPointerEvent(string objectType, Guid objectId, string eventName, MapPointerEventArgs args)
+    {
+        if (objectType == "marker" && _mapComponents.TryGetValue(objectId, out var marker))
+        {
+            await marker.HandlePointerEvent(eventName, args);
+        }
+        else if (objectType == "polygon" && _mapPolygonComponents.TryGetValue(objectId, out var polygon))
+        {
+            await polygon.HandlePointerEvent(eventName, args);
+        }
+    }
+
+    /// <summary>
+    /// Called from JS for parameterless events (contextmenuclose, pointercancel) on objects.
+    /// </summary>
+    [JSInvokable]
+    public async Task OnObjectSimpleEvent(string objectType, Guid objectId, string eventName)
+    {
+        if (objectType == "marker" && _mapComponents.TryGetValue(objectId, out var marker))
+        {
+            if (eventName == "contextmenuclose") await marker.HandleContextMenuClose();
+            else if (eventName == "pointercancel") await marker.HandlePointerCancel();
+        }
+        else if (objectType == "polygon" && _mapPolygonComponents.TryGetValue(objectId, out var polygon))
+        {
+            if (eventName == "contextmenuclose") await polygon.HandleContextMenuClose();
+            else if (eventName == "pointercancel") await polygon.HandlePointerCancel();
+        }
+    }
+
+    /// <summary>
+    /// Called from JS for drag events on markers and polygons.
+    /// </summary>
+    [JSInvokable]
+    public async Task OnObjectDragEvent(string objectType, Guid objectId, string eventName, MapDragEventArgs args)
+    {
+        if (objectType == "marker" && _mapComponents.TryGetValue(objectId, out var marker))
+        {
+            await marker.HandleDragEvent(eventName, args);
+        }
+        else if (objectType == "polygon" && _mapPolygonComponents.TryGetValue(objectId, out var polygon))
+        {
+            await polygon.HandleDragEvent(eventName, args);
+        }
+    }
+
+    #endregion
+
+    #region JSInvokable — Map-level events (new)
+
+    [JSInvokable]
+    public async Task OnMapPointerEvent(string eventName, MapPointerEventArgs args)
+    {
+        var callback = eventName switch
+        {
+            "tap" => OnClick,
+            "dbltap" => OnDoubleClick,
+            "longpress" => OnLongPress,
+            "contextmenu" => OnContextMenu,
+            "pointerdown" => OnPointerDown,
+            "pointerup" => OnPointerUp,
+            "pointermove" => OnPointerMove,
+            "pointerenter" => OnPointerEnter,
+            "pointerleave" => OnPointerLeave,
+            _ => default
+        };
+
+        if (callback.HasDelegate)
+            await callback.InvokeAsync(args);
+    }
+
+    [JSInvokable]
+    public async Task OnMapSimpleEvent(string eventName)
+    {
+        if (eventName == "contextmenuclose" && OnContextMenuClose.HasDelegate)
+            await OnContextMenuClose.InvokeAsync();
+        else if (eventName == "pointercancel" && OnPointerCancel.HasDelegate)
+            await OnPointerCancel.InvokeAsync();
+    }
+
+    [JSInvokable]
+    public async Task OnMapDragEvent(string eventName, MapDragEventArgs args)
+    {
+        var callback = eventName switch
+        {
+            "dragstart" => OnDragStart,
+            "drag" => OnDrag,
+            "dragend" => OnDragEnd,
+            _ => default
+        };
+
+        if (callback.HasDelegate)
+            await callback.InvokeAsync(args);
+    }
+
+    [JSInvokable]
+    public async Task OnMapWheelEvent(MapWheelEventArgs args)
+    {
+        if (OnWheel.HasDelegate)
+            await OnWheel.InvokeAsync(args);
+    }
+
+    [JSInvokable]
+    public async Task OnMapViewChangeEvent(string eventName, MapViewChangeEventArgs args)
+    {
+        var callback = eventName switch
+        {
+            "mapviewchange" => OnMapViewChange,
+            "mapviewchangestart" => OnMapViewChangeStart,
+            "mapviewchangeend" => OnMapViewChangeEnd,
+            _ => default
+        };
+
+        if (callback.HasDelegate)
+            await callback.InvokeAsync(args);
+    }
+
+    [JSInvokable]
+    public async Task OnMapBaseLayerChangeEvent(BaseLayerChangeEventArgs args)
+    {
+        if (OnBaseLayerChange.HasDelegate)
+            await OnBaseLayerChange.InvokeAsync(args);
+    }
+
+    [JSInvokable]
+    public async Task OnMapEngineStateChangeEvent(EngineStateChangeEventArgs args)
+    {
+        if (OnEngineStateChange.HasDelegate)
+            await OnEngineStateChange.InvokeAsync(args);
+    }
+
+    #endregion
 
     internal void AddMarker(MarkerComponent marker)
     {

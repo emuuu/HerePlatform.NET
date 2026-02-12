@@ -136,7 +136,7 @@ public class JsObjectRef : IJsObjectRef
             "blazorHerePlatform.objectManager.invoke",
             new object?[] { _guid.ToString(), functionName }
                 .Concat(args).ToArray()
-        );
+        )!;
     }
 
     public Task<OneOf<T, U>> InvokeAsync<T, U>(string functionName, params object[] args)
@@ -163,7 +163,7 @@ public class JsObjectRef : IJsObjectRef
             "blazorHerePlatform.objectManager.invokeMultiple",
             new object[] { dictArgs.Select(e => e.Key.ToString()).ToList(), functionName }
                 .Concat(dictArgs.Values).ToArray()
-        );
+        )!;
     }
 
     public async Task<JsObjectRef> InvokeWithReturnedObjectRefAsync(string functionName, params object[] args)
@@ -182,7 +182,7 @@ public class JsObjectRef : IJsObjectRef
         return _jsRuntime.MyInvokeAsync<T>(
             "blazorHerePlatform.objectManager.readObjectPropertyValue",
             _guid.ToString(),
-            propertyName);
+            propertyName)!;
     }
 
     public async Task<JsObjectRef> GetObjectReference(string propertyName)
