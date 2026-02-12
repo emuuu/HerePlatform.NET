@@ -1,0 +1,136 @@
+@using HerePlatformComponents.Maps
+@using Microsoft.JSInterop
+@implements IAsyncDisposable
+
+<HereMap @ref="@MapRef" Id="@Id" Height="@Height" Options="@Options" OnAfterInit="@AfterInit" CssClass="@CssClass" />
+
+@if (MapRef?.InteropObject is not null)
+{
+    <CascadingValue Name="HereMap" Value="@this" IsFixed="true">
+        @ChildContent
+    </CascadingValue>
+}
+
+@code {
+    public HereMap? MapRef;
+
+    public Map? InteropObject => MapRef?.InteropObject;
+
+    internal Guid? MapId => MapRef?.InteropObject.Guid;
+
+    public int MarkerCount => _mapComponents.Count;
+    public IEnumerable<MarkerComponent> Markers => _mapComponents.Select(x => x.Value);
+    private readonly Dictionary<Guid, MarkerComponent> _mapComponents = [];
+
+    public int PolygonCount => _mapPolygonComponents.Count;
+    public IEnumerable<PolygonComponent> Polygons => _mapPolygonComponents.Select(x => x.Value);
+    private readonly Dictionary<Guid, PolygonComponent> _mapPolygonComponents = [];
+
+    internal DotNetObjectReference<AdvancedHereMap>? CallbackRef;
+
+    [Parameter]
+    public string? Id { get; set; }
+
+    [Parameter]
+    public MapOptions? Options { get; set; }
+
+    [Parameter]
+    public EventCallback OnAfterInit { get; set; }
+
+    [Parameter]
+    public EventCallback OnMarkersChanged { get; set; }
+
+    [Parameter]
+    public EventCallback OnPolygonsChanged { get; set; }
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    [Parameter]
+    public string? Height { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnInitialized()
+    {
+        CallbackRef = DotNetObjectReference.Create(this);
+        base.OnInitialized();
+    }
+
+    private async Task AfterInit()
+    {
+        await OnAfterInit.InvokeAsync();
+    }
+
+    [JSInvokable]
+    public async Task OnMarkerClicked(Guid markerId)
+    {
+        if (_mapComponents.TryGetValue(markerId, out var markerComponent))
+        {
+            await markerComponent.MarkerClicked();
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnMarkerDrag(Guid markerId, LatLngLiteral position)
+    {
+        if (_mapComponents.TryGetValue(markerId, out var markerComponent))
+        {
+            await markerComponent.MarkerDragged(position);
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnPolygonClicked(Guid polygonId)
+    {
+        if (_mapPolygonComponents.TryGetValue(polygonId, out var polygonComponent))
+        {
+            await polygonComponent.Click();
+        }
+    }
+
+    internal void AddMarker(MarkerComponent marker)
+    {
+        _mapComponents.TryAdd(marker.Guid, marker);
+        OnMarkersChanged.InvokeAsync();
+    }
+
+    internal void RemoveMarker(MarkerComponent marker)
+    {
+        _mapComponents.Remove(marker.Guid);
+        OnMarkersChanged.InvokeAsync();
+    }
+
+    internal void AddPolygon(PolygonComponent poly)
+    {
+        _mapPolygonComponents.TryAdd(poly.Guid, poly);
+        OnPolygonsChanged.InvokeAsync();
+    }
+
+    internal void RemovePolygon(PolygonComponent poly)
+    {
+        _mapPolygonComponents.Remove(poly.Guid);
+        OnPolygonsChanged.InvokeAsync();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        foreach (var component in _mapComponents)
+        {
+            component.Value.IsDisposed = true;
+        }
+
+        foreach (var component in _mapPolygonComponents)
+        {
+            component.Value.IsDisposed = true;
+        }
+
+        if (MapRef != null)
+        {
+            await MapRef.DisposeAsync();
+        }
+
+        CallbackRef?.Dispose();
+    }
+}

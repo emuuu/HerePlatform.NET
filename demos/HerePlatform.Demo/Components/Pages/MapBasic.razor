@@ -1,0 +1,190 @@
+@page "/map-basic"
+@rendermode InteractiveServer
+
+<PageTitle>Basic Map</PageTitle>
+
+<h3>Basic Map</h3>
+<p>A simple HERE Map centered on Berlin with default settings. Switch between all supported layer types below.</p>
+
+<div class="mb-2">
+    <label class="form-label fw-bold">UI Locale:</label>
+    <select class="form-select form-select-sm d-inline-block" style="width:180px"
+            value="@_selectedLocale" @onchange="OnLocaleChanged">
+        @foreach (var (locCode, locName) in _locales)
+        {
+            <option value="@locCode">@locName</option>
+        }
+    </select>
+</div>
+
+<HereMap @ref="_map"
+         Options="@_mapOptions"
+         OnAfterInit="@OnMapInit"
+         Height="500px" />
+
+<div class="mt-3">
+    <h5>Vector Base Layers</h5>
+    <div class="btn-group flex-wrap mb-2" role="group">
+        @foreach (var (type, label) in _vectorBaseLayers)
+        {
+            <button class="btn btn-outline-primary btn-sm @(_layerType == type ? "active" : "")"
+                    @onclick="() => ChangeLayer(type)">
+                @label
+            </button>
+        }
+    </div>
+
+    <h5>Vector Traffic Layers</h5>
+    <div class="btn-group flex-wrap mb-2" role="group">
+        @foreach (var (type, label) in _vectorTrafficLayers)
+        {
+            <button class="btn btn-outline-warning btn-sm @(_layerType == type ? "active" : "")"
+                    @onclick="() => ChangeLayer(type)">
+                @label
+            </button>
+        }
+    </div>
+
+    <h5>Raster Layers</h5>
+    <div class="btn-group flex-wrap mb-2" role="group">
+        @foreach (var (type, label) in _rasterLayers)
+        {
+            <button class="btn btn-outline-success btn-sm @(_layerType == type ? "active" : "")"
+                    @onclick="() => ChangeLayer(type)">
+                @label
+            </button>
+        }
+    </div>
+
+    <h5>Hybrid Layers (Satellite + Vector)</h5>
+    <small class="text-muted d-block mb-1">Raster = satellite only, Vector = satellite + roads/labels, Traffic = satellite + roads + traffic</small>
+    <div class="btn-group flex-wrap mb-2" role="group">
+        @foreach (var (type, label) in _hybridLayers)
+        {
+            <button class="btn btn-outline-info btn-sm @(_layerType == type ? "active" : "")"
+                    @onclick="() => ChangeLayer(type)">
+                @label
+            </button>
+        }
+    </div>
+</div>
+
+@if (_mapReady)
+{
+    <div class="mt-3 alert alert-success">
+        Map initialized successfully. Current layer: <strong>@_layerType</strong>
+    </div>
+}
+
+@code {
+    private HereMap? _map;
+    private bool _mapReady;
+    private MapLayerType _layerType = MapLayerType.VectorNormalMap;
+    private string _selectedLocale = "de-DE";
+
+    private MapOptions _mapOptions = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 12,
+        LayerType = MapLayerType.VectorNormalMap,
+        EnableUI = true,
+        EnableInteraction = true,
+        UiLocale = "de-DE"
+    };
+
+    private static readonly (string LocCode, string LocName)[] _locales =
+    [
+        ("en-US", "English (US)"),
+        ("de-DE", "Deutsch"),
+        ("es-ES", "Espanol"),
+        ("fi-FI", "Suomi"),
+        ("fr-FR", "Francais"),
+        ("it-IT", "Italiano"),
+        ("nl-NL", "Nederlands"),
+        ("pl-PL", "Polski"),
+        ("pt-BR", "Portugues (BR)"),
+        ("pt-PT", "Portugues (PT)"),
+        ("ru-RU", "Russkij"),
+        ("tr-TR", "Turkce"),
+        ("zh-CN", "Zhongwen"),
+    ];
+
+    private static readonly (MapLayerType Type, string Label)[] _vectorBaseLayers =
+    [
+        (MapLayerType.VectorNormalMap, "Map"),
+        (MapLayerType.VectorNormalMapNight, "Map Night"),
+        (MapLayerType.VectorNormalLite, "Lite"),
+        (MapLayerType.VectorNormalLiteNight, "Lite Night"),
+        (MapLayerType.VectorNormalLogistics, "Logistics"),
+        (MapLayerType.VectorNormalLogisticsNight, "Logistics Night"),
+        (MapLayerType.VectorNormalRoadNetwork, "Road Network"),
+        (MapLayerType.VectorNormalRoadNetworkNight, "Road Network Night"),
+        (MapLayerType.VectorNormalTopo, "Topo"),
+        (MapLayerType.VectorNormalTopoNight, "Topo Night"),
+    ];
+
+    private static readonly (MapLayerType Type, string Label)[] _vectorTrafficLayers =
+    [
+        (MapLayerType.VectorTrafficMap, "Traffic Map"),
+        (MapLayerType.VectorTrafficMapNight, "Traffic Map Night"),
+        (MapLayerType.VectorTrafficLite, "Traffic Lite"),
+        (MapLayerType.VectorTrafficLiteNight, "Traffic Lite Night"),
+    ];
+
+    private static readonly (MapLayerType Type, string Label)[] _rasterLayers =
+    [
+        (MapLayerType.RasterNormalMap, "Normal"),
+        (MapLayerType.RasterNormalMapNight, "Normal Night"),
+        (MapLayerType.RasterSatelliteMap, "Satellite"),
+        (MapLayerType.RasterTerrainMap, "Terrain"),
+    ];
+
+    private static readonly (MapLayerType Type, string Label)[] _hybridLayers =
+    [
+        (MapLayerType.HybridDayRaster, "Day Raster"),
+        (MapLayerType.HybridDayVector, "Day Vector"),
+        (MapLayerType.HybridDayTraffic, "Day Traffic"),
+        (MapLayerType.HybridNightRaster, "Night Raster"),
+        (MapLayerType.HybridNightVector, "Night Vector"),
+        (MapLayerType.HybridNightTraffic, "Night Traffic"),
+        (MapLayerType.HybridLiteDayRaster, "Lite Day Raster"),
+        (MapLayerType.HybridLiteDayVector, "Lite Day Vector"),
+        (MapLayerType.HybridLiteDayTraffic, "Lite Day Traffic"),
+        (MapLayerType.HybridLiteNightRaster, "Lite Night Raster"),
+        (MapLayerType.HybridLiteNightVector, "Lite Night Vector"),
+        (MapLayerType.HybridLiteNightTraffic, "Lite Night Traffic"),
+    ];
+
+    private void OnMapInit()
+    {
+        _mapReady = true;
+        StateHasChanged();
+    }
+
+    private async Task ChangeLayer(MapLayerType layerType)
+    {
+        if (_map?.InteropObject == null) return;
+        _layerType = layerType;
+        await _map.InteropObject.SetBaseLayer(layerType);
+    }
+
+    private async Task OnLocaleChanged(ChangeEventArgs e)
+    {
+        _selectedLocale = e.Value?.ToString() ?? "en-US";
+        _mapOptions = new MapOptions
+        {
+            Center = _mapOptions.Center,
+            Zoom = _mapOptions.Zoom,
+            LayerType = _layerType,
+            EnableUI = _mapOptions.EnableUI,
+            EnableInteraction = _mapOptions.EnableInteraction,
+            UiLocale = _selectedLocale
+        };
+
+        if (_map != null)
+        {
+            _mapReady = false;
+            await _map.ReInitializeAsync(_mapOptions);
+        }
+    }
+}

@@ -1,0 +1,156 @@
+@page "/map-controls"
+@rendermode InteractiveServer
+
+<PageTitle>Map Controls</PageTitle>
+
+<h3>Map Controls Demo</h3>
+<p>Demonstrates programmatic map manipulation: zoom, center, tilt, heading.</p>
+
+<HereMap @ref="_map"
+         Options="@_mapOptions"
+         OnAfterInit="@OnMapInit"
+         Height="500px" />
+
+<div class="mt-3">
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Zoom</h5>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-primary" @onclick="ZoomIn">Zoom In (+)</button>
+                        <button class="btn btn-sm btn-outline-primary" @onclick="ZoomOut">Zoom Out (-)</button>
+                    </div>
+                    <span class="ms-2 badge bg-secondary">Level: @_currentZoom</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Navigate To</h5>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-success" @onclick="() => GoTo(52.52, 13.405, 14)">Berlin</button>
+                        <button class="btn btn-sm btn-outline-success" @onclick="() => GoTo(48.8566, 2.3522, 13)">Paris</button>
+                        <button class="btn btn-sm btn-outline-success" @onclick="() => GoTo(51.5074, -0.1278, 13)">London</button>
+                        <button class="btn btn-sm btn-outline-success" @onclick="() => GoTo(40.7128, -74.006, 12)">New York</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Tilt (3D)</h5>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-warning" @onclick="() => SetTilt(0)">0</button>
+                        <button class="btn btn-sm btn-outline-warning" @onclick="() => SetTilt(30)">30</button>
+                        <button class="btn btn-sm btn-outline-warning" @onclick="() => SetTilt(45)">45</button>
+                        <button class="btn btn-sm btn-outline-warning" @onclick="() => SetTilt(60)">60</button>
+                    </div>
+                    <span class="ms-2 badge bg-secondary">Tilt: @_currentTilt</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Heading (Rotation)</h5>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-outline-info" @onclick="() => SetHeading(0)">North</button>
+                        <button class="btn btn-sm btn-outline-info" @onclick="() => SetHeading(90)">East</button>
+                        <button class="btn btn-sm btn-outline-info" @onclick="() => SetHeading(180)">South</button>
+                        <button class="btn btn-sm btn-outline-info" @onclick="() => SetHeading(270)">West</button>
+                    </div>
+                    <span class="ms-2 badge bg-secondary">Heading: @_currentHeading</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Current Position</h5>
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="ReadMapState">Refresh State</button>
+                    @if (_currentCenter.HasValue)
+                    {
+                        <span class="ms-2">
+                            Center: @_currentCenter.Value.Lat.ToString("F4"), @_currentCenter.Value.Lng.ToString("F4")
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private HereMap? _map;
+    private double _currentZoom = 12;
+    private double _currentTilt;
+    private double _currentHeading;
+    private LatLngLiteral? _currentCenter;
+
+    private MapOptions _mapOptions = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 12,
+        EnableUI = true,
+        EnableInteraction = true
+    };
+
+    private async Task OnMapInit()
+    {
+        await ReadMapState();
+    }
+
+    private async Task ZoomIn()
+    {
+        if (_map?.InteropObject == null) return;
+        _currentZoom = Math.Min(_currentZoom + 1, 20);
+        await _map.InteropObject.SetZoom(_currentZoom);
+    }
+
+    private async Task ZoomOut()
+    {
+        if (_map?.InteropObject == null) return;
+        _currentZoom = Math.Max(_currentZoom - 1, 1);
+        await _map.InteropObject.SetZoom(_currentZoom);
+    }
+
+    private async Task GoTo(double lat, double lng, double zoom)
+    {
+        if (_map?.InteropObject == null) return;
+        await _map.InteropObject.SetCenter(new LatLngLiteral(lat, lng));
+        await _map.InteropObject.SetZoom(zoom);
+        _currentZoom = zoom;
+        await ReadMapState();
+    }
+
+    private async Task SetTilt(double tilt)
+    {
+        if (_map?.InteropObject == null) return;
+        await _map.InteropObject.SetTilt(tilt);
+        _currentTilt = tilt;
+    }
+
+    private async Task SetHeading(double heading)
+    {
+        if (_map?.InteropObject == null) return;
+        await _map.InteropObject.SetHeading(heading);
+        _currentHeading = heading;
+    }
+
+    private async Task ReadMapState()
+    {
+        if (_map?.InteropObject == null) return;
+        _currentCenter = await _map.InteropObject.GetCenter();
+        _currentZoom = await _map.InteropObject.GetZoom();
+        _currentTilt = await _map.InteropObject.GetTilt();
+        _currentHeading = await _map.InteropObject.GetHeading();
+        StateHasChanged();
+    }
+}

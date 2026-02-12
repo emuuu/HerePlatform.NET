@@ -1,0 +1,109 @@
+@page "/map-infobubble"
+@rendermode InteractiveServer
+@inject IJSRuntime Js
+
+<PageTitle>InfoBubble</PageTitle>
+
+<h3>InfoBubble Demo</h3>
+<p>Demonstrates opening and closing InfoBubbles (HERE's equivalent of Google's InfoWindow).</p>
+
+<HereMap @ref="_map"
+         Options="@_mapOptions"
+         OnAfterInit="@OnMapInit"
+         Height="500px" />
+
+<div class="mt-3">
+    <button class="btn btn-primary" @onclick="ShowBubbleAtBrandenburgGate">
+        Show at Brandenburg Gate
+    </button>
+    <button class="btn btn-success" @onclick="ShowBubbleAtAlexanderplatz">
+        Show at Alexanderplatz
+    </button>
+    <button class="btn btn-warning" @onclick="UpdateBubbleContent">
+        Update Content
+    </button>
+    <button class="btn btn-danger" @onclick="CloseAllBubbles">
+        Close All
+    </button>
+</div>
+
+@if (!string.IsNullOrEmpty(_status))
+{
+    <div class="mt-3 alert alert-info">
+        @_status
+    </div>
+}
+
+@code {
+    private HereMap? _map;
+    private InfoBubble? _bubble1;
+    private InfoBubble? _bubble2;
+    private string? _status;
+
+    private MapOptions _mapOptions = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 14,
+        EnableUI = true,
+        EnableInteraction = true
+    };
+
+    private async Task OnMapInit()
+    {
+        _status = "Map ready. Click buttons to open InfoBubbles.";
+        await Task.CompletedTask;
+    }
+
+    private async Task ShowBubbleAtBrandenburgGate()
+    {
+        if (_map?.InteropObject == null) return;
+
+        _bubble1 ??= await InfoBubble.CreateAsync(Js,
+            new LatLngLiteral(52.5163, 13.3777),
+            new InfoBubbleOptions
+            {
+                Content = "<div style='padding:8px'><strong>Brandenburg Gate</strong><br/>Built 1788-1791<br/>One of Berlin's most famous landmarks.</div>"
+            });
+
+        await _bubble1.Open(_map.InteropObject);
+        _status = "InfoBubble opened at Brandenburg Gate.";
+    }
+
+    private async Task ShowBubbleAtAlexanderplatz()
+    {
+        if (_map?.InteropObject == null) return;
+
+        _bubble2 ??= await InfoBubble.CreateAsync(Js,
+            new LatLngLiteral(52.5219, 13.4132),
+            new InfoBubbleOptions
+            {
+                Content = "<div style='padding:8px'><strong>Alexanderplatz</strong><br/>Major public square and transport hub.<br/>Home of the TV Tower.</div>"
+            });
+
+        await _bubble2.Open(_map.InteropObject);
+        _status = "InfoBubble opened at Alexanderplatz.";
+    }
+
+    private async Task UpdateBubbleContent()
+    {
+        if (_bubble1 != null)
+        {
+            await _bubble1.SetContent(
+                $"<div style='padding:8px'><strong>Brandenburg Gate</strong><br/>Updated at {DateTime.Now:HH:mm:ss}</div>");
+            _status = "InfoBubble content updated.";
+        }
+        else
+        {
+            _status = "Open the Brandenburg Gate bubble first.";
+        }
+    }
+
+    private async Task CloseAllBubbles()
+    {
+        if (_map?.InteropObject == null) return;
+
+        if (_bubble1 != null) await _bubble1.Close(_map.InteropObject);
+        if (_bubble2 != null) await _bubble2.Close(_map.InteropObject);
+        _status = "All InfoBubbles closed.";
+    }
+}

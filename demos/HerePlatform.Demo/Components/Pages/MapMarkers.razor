@@ -1,0 +1,120 @@
+@page "/map-markers"
+@rendermode InteractiveServer
+
+<PageTitle>Markers</PageTitle>
+
+<h3>Markers Demo</h3>
+<p>Demonstrates adding, clicking, and dragging markers on the map.</p>
+
+<AdvancedHereMap @ref="_advMap"
+                 Options="@_mapOptions"
+                 OnAfterInit="@OnMapInit"
+                 Height="500px">
+    @foreach (var marker in _markers)
+    {
+        <MarkerComponent Lat="@marker.Lat"
+                         Lng="@marker.Lng"
+                         Clickable="true"
+                         Draggable="@marker.Draggable"
+                         Title="@marker.Title"
+                         Visible="true"
+                         OnClick="@(() => OnMarkerClicked(marker))"
+                         OnMove="@(pos => OnMarkerDragged(marker, pos))" />
+    }
+</AdvancedHereMap>
+
+<div class="mt-3">
+    <button class="btn btn-primary" @onclick="AddMarkerAtCenter">Add Marker at Center</button>
+    <button class="btn btn-warning" @onclick="AddDraggableMarker">Add Draggable Marker</button>
+    <button class="btn btn-danger" @onclick="ClearMarkers">Clear All</button>
+    <span class="ms-3 badge bg-info">Marker count: @_markers.Count</span>
+</div>
+
+@if (!string.IsNullOrEmpty(_lastEvent))
+{
+    <div class="mt-3 alert alert-info">
+        @_lastEvent
+    </div>
+}
+
+@code {
+    private AdvancedHereMap? _advMap;
+    private List<MarkerInfo> _markers = new();
+    private string? _lastEvent;
+    private int _markerIndex;
+
+    private MapOptions _mapOptions = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 13,
+        EnableUI = true,
+        EnableInteraction = true
+    };
+
+    private void OnMapInit()
+    {
+        // Add initial markers (offset from center to avoid overlap with UI)
+        _markers.Add(new MarkerInfo(52.5163, 13.3777, "Victory Column", false));
+        _markers.Add(new MarkerInfo(52.5145, 13.3500, "Charlottenburg Palace", false));
+        _markers.Add(new MarkerInfo(52.5075, 13.3903, "Potsdamer Platz", false));
+        _markerIndex = 3;
+        StateHasChanged();
+    }
+
+    private void AddMarkerAtCenter()
+    {
+        _markerIndex++;
+        _markers.Add(new MarkerInfo(52.52 + Random.Shared.NextDouble() * 0.01 - 0.005,
+            13.405 + Random.Shared.NextDouble() * 0.01 - 0.005,
+            $"Marker #{_markerIndex}", false));
+        StateHasChanged();
+    }
+
+    private void AddDraggableMarker()
+    {
+        _markerIndex++;
+        _markers.Add(new MarkerInfo(
+            52.52 + Random.Shared.NextDouble() * 0.008 - 0.004,
+            13.405 + Random.Shared.NextDouble() * 0.008 - 0.004,
+            $"Draggable #{_markerIndex}", true));
+        _lastEvent = $"Added draggable marker #{_markerIndex}. Drag it to see position updates.";
+        StateHasChanged();
+    }
+
+    private void ClearMarkers()
+    {
+        _markers.Clear();
+        _lastEvent = "All markers cleared.";
+        StateHasChanged();
+    }
+
+    private void OnMarkerClicked(MarkerInfo marker)
+    {
+        _lastEvent = $"Clicked: {marker.Title} at ({marker.Lat:F4}, {marker.Lng:F4})";
+        StateHasChanged();
+    }
+
+    private void OnMarkerDragged(MarkerInfo marker, LatLngLiteral newPos)
+    {
+        marker.Lat = newPos.Lat;
+        marker.Lng = newPos.Lng;
+        _lastEvent = $"Dragged: {marker.Title} to ({newPos.Lat:F4}, {newPos.Lng:F4})";
+        StateHasChanged();
+    }
+
+    private class MarkerInfo
+    {
+        public double Lat { get; set; }
+        public double Lng { get; set; }
+        public string Title { get; set; }
+        public bool Draggable { get; set; }
+
+        public MarkerInfo(double lat, double lng, string title, bool draggable)
+        {
+            Lat = lat;
+            Lng = lng;
+            Title = title;
+            Draggable = draggable;
+        }
+    }
+}

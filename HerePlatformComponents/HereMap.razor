@@ -1,0 +1,65 @@
+@using System
+@using Maps
+@using System.Threading.Tasks
+@using Microsoft.AspNetCore.Components
+@using Microsoft.JSInterop
+
+@inherits MapComponent
+@inject IJSRuntime JSRuntime
+
+<div @ref="@Element" id="@Id" class="@CssClass" style="@StyleStr"></div>
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    [Parameter]
+    public MapOptions? Options { get; set; }
+
+    [Parameter]
+    public EventCallback OnAfterInit { get; set; }
+
+    [Parameter]
+    public string? CssClass { get; set; }
+
+    private string _height = "500px";
+
+    /// <summary>
+    /// Default height 500px.
+    /// Used as style attribute "height: {Height}"
+    /// </summary>
+    [Parameter]
+    public string Height
+    {
+        get => _height;
+        set => _height = value ?? "500px";
+    }
+
+    private string StyleStr => $"height: {Height};";
+
+    private ElementReference Element { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await InitAsync(Element, Options);
+            await OnAfterInit.InvokeAsync();
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    /// <summary>
+    /// Disposes the current map and re-creates it with the current Options.
+    /// Use this after changing Options that require a full map rebuild (e.g. UiLocale).
+    /// </summary>
+    public async Task ReInitializeAsync(MapOptions? options = null)
+    {
+        await DisposeMapAsync();
+        await InitAsync(Element, options ?? Options);
+        await OnAfterInit.InvokeAsync();
+    }
+
+    protected override bool ShouldRender() => false;
+}

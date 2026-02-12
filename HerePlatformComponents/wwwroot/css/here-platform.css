@@ -1,0 +1,80 @@
+/*
+ * BlazorHerePlatform — CSS overrides for HERE Maps UI elements.
+ *
+ * WHY THIS FILE EXISTS:
+ * CSS frameworks like Bootstrap apply a universal reset:
+ *
+ *     *, *::before, *::after { box-sizing: border-box; }
+ *
+ * HERE Maps' UI controls (zoom buttons, scale bar, InfoBubble) were
+ * designed for the browser default `box-sizing: content-box`.  The
+ * InfoBubble tail, for example, uses CSS borders to create a triangle;
+ * `border-box` breaks that calculation and produces visual artifacts.
+ *
+ * HOW IT WORKS:
+ * This file is loaded by the library's JS at runtime, AFTER the HERE
+ * Maps stylesheet (mapsjs-ui.css).  Because it comes last in the
+ * cascade and uses class-scoped selectors (higher specificity than
+ * Bootstrap's `*` selector), these rules take precedence — no
+ * `!important` needed.
+ *
+ * Specificity comparison:
+ *   Bootstrap  `*`           => (0, 0, 0)
+ *   This file  `.H_ui *`    => (0, 1, 0)   — wins
+ *   This file  `.H_ib *`    => (0, 1, 0)   — wins
+ *
+ * DO NOT load this file before mapsjs-ui.css; cascade order matters.
+ */
+
+/* -------------------------------------------------------------------
+ * 1. General UI controls (zoom, scale bar, map settings)
+ * ---------------------------------------------------------------- */
+.H_ui *,
+.H_ui *::before,
+.H_ui *::after {
+    box-sizing: content-box;
+}
+
+/* -------------------------------------------------------------------
+ * 2. InfoBubble container
+ * ---------------------------------------------------------------- */
+.H_ib,
+.H_ib *,
+.H_ib *::before,
+.H_ib *::after {
+    box-sizing: content-box;
+    line-height: normal;
+}
+
+/* -------------------------------------------------------------------
+ * 3. InfoBubble tail (CSS-border triangle)
+ *    The tail uses transparent + colored borders to form a triangle.
+ *    `border-box` breaks the geometry; `border-style: solid` ensures
+ *    the borders render even if a framework resets border-style.
+ * ---------------------------------------------------------------- */
+.H_ib .H_ib_tail,
+.H_ib .H_ib_tail::before,
+.H_ib .H_ib_tail::after {
+    box-sizing: content-box;
+    border-style: solid;
+}
+
+/* -------------------------------------------------------------------
+ * 4. InfoBubble body constraints
+ * ---------------------------------------------------------------- */
+.H_ib .H_ib_body {
+    max-width: 400px;
+    overflow: auto;
+}
+
+/* -------------------------------------------------------------------
+ * 5. InfoBubble close button
+ *    Prevent Bootstrap's button resets from affecting the close icon.
+ * ---------------------------------------------------------------- */
+.H_ib .H_ib_close {
+    box-sizing: content-box;
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: normal;
+}

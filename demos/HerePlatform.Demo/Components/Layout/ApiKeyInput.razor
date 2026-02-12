@@ -1,0 +1,74 @@
+@rendermode InteractiveServer
+@inject IBlazorHerePlatformKeyService KeyService
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<div class="api-key-input">
+    <label for="apiKeyInput">API Key:</label>
+    <input id="apiKeyInput"
+           type="password"
+           placeholder="Enter HERE API Key..."
+           @bind="_apiKey"
+           @bind:event="oninput"
+           @onkeydown="OnKeyDown"
+           class="form-control form-control-sm" />
+    <button class="btn btn-sm btn-primary" @onclick="ApplyKey" disabled="@string.IsNullOrWhiteSpace(_apiKey)">
+        Apply
+    </button>
+    @if (_applied)
+    {
+        <span class="applied-badge">Active</span>
+    }
+</div>
+
+@code {
+    private string? _apiKey;
+    private bool _applied;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Restore key from sessionStorage
+            try
+            {
+                var stored = await JS.InvokeAsync<string?>("sessionStorage.getItem", "herePlatformApiKey");
+                if (!string.IsNullOrWhiteSpace(stored))
+                {
+                    _apiKey = stored;
+                    _applied = true;
+                    KeyService.UpdateApiKey(stored);
+                    StateHasChanged();
+                }
+            }
+            catch { /* SSR or unavailable */ }
+        }
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(_apiKey))
+        {
+            await ApplyKey();
+        }
+    }
+
+    private async Task ApplyKey()
+    {
+        if (string.IsNullOrWhiteSpace(_apiKey)) return;
+
+        // Persist in sessionStorage
+        await JS.InvokeVoidAsync("sessionStorage.setItem", "herePlatformApiKey", _apiKey);
+
+        // Reset JS-side platform state
+        await JS.InvokeVoidAsync("blazorHerePlatform.objectManager.resetPlatform");
+
+        // Update the DI service
+        KeyService.UpdateApiKey(_apiKey);
+
+        _applied = true;
+
+        // Force reload to reinitialize maps with new key
+        Nav.NavigateTo(Nav.Uri, forceLoad: true);
+    }
+}

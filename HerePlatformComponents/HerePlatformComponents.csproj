@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+	<PropertyGroup>
+		<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+		<IsPackable>true</IsPackable>
+		<LangVersion>latest</LangVersion>
+		<RazorLangVersion>3.0</RazorLangVersion>
+		<AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+		<PackageId>BlazorHerePlatform</PackageId>
+		<Version>0.1.0</Version>
+		<Description>Blazor HERE Platform Maps components</Description>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Nullable>enable</Nullable>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<DebugType>full</DebugType>
+		<DebugSymbols>true</DebugSymbols>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<SupportedPlatform Include="browser" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="HerePlatformComponents.Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.*" Condition="'$(TargetFramework)' == 'net8.0'" />
+		<PackageReference Include="Microsoft.AspNetCore.Components" Version="9.0.*" Condition="'$(TargetFramework)' == 'net9.0'" />
+		<PackageReference Include="Microsoft.AspNetCore.Components" Version="10.0.*" Condition="'$(TargetFramework)' == 'net10.0'" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.*" Condition="'$(TargetFramework)' == 'net8.0'" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.*" Condition="'$(TargetFramework)' == 'net9.0'" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.*" Condition="'$(TargetFramework)' == 'net10.0'" />
+		<PackageReference Include="Microsoft.JSInterop" Version="8.0.*" Condition="'$(TargetFramework)' == 'net8.0'" />
+		<PackageReference Include="Microsoft.JSInterop" Version="9.0.*" Condition="'$(TargetFramework)' == 'net9.0'" />
+		<PackageReference Include="Microsoft.JSInterop" Version="10.0.*" Condition="'$(TargetFramework)' == 'net10.0'" />
+		<PackageReference Include="System.Text.Json" Version="9.0.*" Condition="'$(TargetFramework)' == 'net8.0'" />
+		<PackageReference Include="System.Text.Json" Version="9.0.*" Condition="'$(TargetFramework)' == 'net9.0'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.*" Condition="'$(TargetFramework)' == 'net10.0'" />
+		<PackageReference Include="OneOf" Version="3.0.271" />
+	</ItemGroup>
+
+</Project>

@@ -1,0 +1,190 @@
+@page "/map-shapes"
+@rendermode InteractiveServer
+@inject IJSRuntime Js
+
+<PageTitle>Shapes</PageTitle>
+
+<h3>Shapes Demo</h3>
+<p>Demonstrates Polyline, Polygon, Circle, and Rectangle on the map.</p>
+
+<HereMap @ref="_map"
+         Options="@_mapOptions"
+         OnAfterInit="@OnMapInit"
+         Height="500px" />
+
+<div class="mt-3">
+    <div class="btn-group" role="group">
+        <button class="btn btn-outline-primary @(_showPolyline ? "active" : "")" @onclick="TogglePolyline">
+            Polyline
+        </button>
+        <button class="btn btn-outline-success @(_showPolygon ? "active" : "")" @onclick="TogglePolygon">
+            Polygon
+        </button>
+        <button class="btn btn-outline-danger @(_showCircle ? "active" : "")" @onclick="ToggleCircle">
+            Circle
+        </button>
+        <button class="btn btn-outline-warning @(_showRect ? "active" : "")" @onclick="ToggleRect">
+            Rectangle
+        </button>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(_status))
+{
+    <div class="mt-3 alert alert-info">
+        @_status
+    </div>
+}
+
+@code {
+    private HereMap? _map;
+    private Polyline? _polyline;
+    private Polygon? _polygon;
+    private Circle? _circle;
+    private Rect? _rect;
+
+    private bool _showPolyline;
+    private bool _showPolygon;
+    private bool _showCircle;
+    private bool _showRect;
+    private string? _status;
+
+    private MapOptions _mapOptions = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 13,
+        EnableUI = true,
+        EnableInteraction = true
+    };
+
+    private async Task OnMapInit()
+    {
+        _status = "Map ready. Toggle shapes using the buttons above.";
+        await Task.CompletedTask;
+    }
+
+    private async Task TogglePolyline()
+    {
+        if (_map?.InteropObject == null) return;
+
+        if (_showPolyline && _polyline != null)
+        {
+            await _polyline.RemoveFromMap(_map.InteropObject);
+            _showPolyline = false;
+            _status = "Polyline removed.";
+        }
+        else
+        {
+            _polyline ??= await Polyline.CreateAsync(Js, new PolylineOptions
+            {
+                Path = new List<LatLngLiteral>
+                {
+                    new(52.5200, 13.3900),
+                    new(52.5230, 13.4000),
+                    new(52.5180, 13.4100),
+                    new(52.5210, 13.4200)
+                },
+                Style = new StyleOptions
+                {
+                    StrokeColor = "#0066FF",
+                    LineWidth = 4
+                }
+            });
+            await _polyline.AddToMap(_map.InteropObject);
+            _showPolyline = true;
+            _status = "Polyline added (blue line through Berlin center).";
+        }
+    }
+
+    private async Task TogglePolygon()
+    {
+        if (_map?.InteropObject == null) return;
+
+        if (_showPolygon && _polygon != null)
+        {
+            await _polygon.RemoveFromMap(_map.InteropObject);
+            _showPolygon = false;
+            _status = "Polygon removed.";
+        }
+        else
+        {
+            _polygon ??= await Polygon.CreateAsync(Js, new PolygonOptions
+            {
+                Path = new List<LatLngLiteral>
+                {
+                    new(52.5250, 13.3700),
+                    new(52.5250, 13.3850),
+                    new(52.5150, 13.3850),
+                    new(52.5150, 13.3700)
+                },
+                Style = new StyleOptions
+                {
+                    StrokeColor = "#00CC00",
+                    FillColor = "rgba(0, 204, 0, 0.3)",
+                    LineWidth = 3
+                }
+            });
+            await _polygon.AddToMap(_map.InteropObject);
+            _showPolygon = true;
+            _status = "Polygon added (green rectangle area in Tiergarten).";
+        }
+    }
+
+    private async Task ToggleCircle()
+    {
+        if (_map?.InteropObject == null) return;
+
+        if (_showCircle && _circle != null)
+        {
+            await _circle.RemoveFromMap(_map.InteropObject);
+            _showCircle = false;
+            _status = "Circle removed.";
+        }
+        else
+        {
+            _circle ??= await Circle.CreateAsync(Js, new CircleOptions
+            {
+                Center = new LatLngLiteral(52.5163, 13.3777),
+                Radius = 500,
+                Style = new StyleOptions
+                {
+                    StrokeColor = "#FF0000",
+                    FillColor = "rgba(255, 0, 0, 0.2)",
+                    LineWidth = 2
+                }
+            });
+            await _circle.AddToMap(_map.InteropObject);
+            _showCircle = true;
+            _status = "Circle added (500m radius around Victory Column).";
+        }
+    }
+
+    private async Task ToggleRect()
+    {
+        if (_map?.InteropObject == null) return;
+
+        if (_showRect && _rect != null)
+        {
+            await _rect.RemoveFromMap(_map.InteropObject);
+            _showRect = false;
+            _status = "Rectangle removed.";
+        }
+        else
+        {
+            _rect ??= await Rect.CreateAsync(Js, new RectOptions
+            {
+                Bounds = new GeoRect(52.525, 13.410, 52.515, 13.430),
+                Style = new StyleOptions
+                {
+                    StrokeColor = "#FF9900",
+                    FillColor = "rgba(255, 153, 0, 0.25)",
+                    LineWidth = 2,
+                    LineDash = [8, 4]
+                }
+            });
+            await _rect.AddToMap(_map.InteropObject);
+            _showRect = true;
+            _status = "Rectangle added (dashed orange box east of center).";
+        }
+    }
+}
