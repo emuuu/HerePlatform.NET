@@ -5,12 +5,29 @@
 <PageTitle>Markers</PageTitle>
 
 <h3>Markers Demo</h3>
-<p>Demonstrates adding, clicking, and dragging markers on the map.</p>
+<p>Demonstrates adding, clicking, and dragging markers on the map. The two landmark markers use <code>ChildContent</code> to show an InfoBubble on click (static HTML, no Blazor interactivity in the bubble).</p>
 
 <AdvancedHereMap @ref="_advMap"
                  Options="@_mapOptions"
                  OnAfterInit="@OnMapInit"
                  Height="500px">
+
+    @* Static markers with ChildContent — click to open an auto-InfoBubble *@
+    <MarkerComponent Lat="52.5163" Lng="13.3777">
+        <div style="padding:8px">
+            <strong>Brandenburg Gate</strong>
+            <p style="margin:4px 0">Built 1788–1791. One of Berlin's most famous landmarks.</p>
+        </div>
+    </MarkerComponent>
+
+    <MarkerComponent Lat="52.5219" Lng="13.4132">
+        <div style="padding:8px">
+            <strong>Alexanderplatz</strong>
+            <p style="margin:4px 0">Major public square and transport hub. Home of the TV Tower.</p>
+        </div>
+    </MarkerComponent>
+
+    @* Dynamic markers with event callbacks *@
     @foreach (var marker in _markers)
     {
         <MarkerComponent Lat="@marker.Lat"

@@ -1,1 +1,6 @@
-@ChildContent
+@if (ChildContent is not null)
+{
+    <template id="@TemplateElementId">
+        @ChildContent
+    </template>
+}

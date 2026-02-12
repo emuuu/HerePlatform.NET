@@ -21,6 +21,8 @@ public partial class MarkerComponent : IAsyncDisposable
 
     public Guid Guid => _guid;
 
+    internal string TemplateElementId => $"blz-mc-{_guid}";
+
     [Inject]
     private IJSRuntime Js { get; set; } = default!;
 
@@ -249,6 +251,7 @@ public partial class MarkerComponent : IAsyncDisposable
 
     private async Task UpdateOptions()
     {
+        var hasInfoBubbleContent = ChildContent is not null;
         await Js.InvokeAsync<string>(
             "blazorHerePlatform.objectManager.updateMarkerComponent",
             Guid,
@@ -256,11 +259,12 @@ public partial class MarkerComponent : IAsyncDisposable
             {
                 Position = new LatLngLiteral(Lat, Lng),
                 Draggable = Draggable,
-                Clickable = Clickable || Draggable || HasAnyEventCallback,
+                Clickable = Clickable || Draggable || HasAnyEventCallback || hasInfoBubbleContent,
                 ZIndex = ZIndex,
                 Visible = Visible,
                 IconUrl = IconUrl,
                 MapId = MapRef.MapId,
+                InfoBubbleTemplateId = hasInfoBubbleContent ? TemplateElementId : null,
             },
             MapRef.CallbackRef);
     }
@@ -308,5 +312,10 @@ public partial class MarkerComponent : IAsyncDisposable
         public int? ZIndex { get; init; }
         public bool Visible { get; init; }
         public string? IconUrl { get; init; }
+        /// <summary>
+        /// DOM element ID of the hidden &lt;template&gt; containing InfoBubble HTML.
+        /// When set, a tap on the marker automatically opens an InfoBubble with that content.
+        /// </summary>
+        public string? InfoBubbleTemplateId { get; init; }
     }
 }

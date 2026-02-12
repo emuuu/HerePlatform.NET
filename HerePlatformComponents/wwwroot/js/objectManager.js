@@ -838,6 +838,16 @@ window.blazorHerePlatform.objectManager = function () {
                     try { mapObjects[behGuid].dispose(); } catch (e) { }
                     removeMapObject(behGuid);
                 }
+                // Clean up auto-InfoBubble if present
+                const autoBubble = map['_blzAutoBubble'];
+                if (autoBubble) {
+                    const uiForBubble = map['_blzUiGuid'] ? mapObjects[map['_blzUiGuid']] : null;
+                    if (uiForBubble) {
+                        try { uiForBubble.removeBubble(autoBubble); } catch (e) { }
+                    }
+                    map['_blzAutoBubble'] = null;
+                }
+
                 // Do NOT call ui.dispose() — it corrupts shared HERE Maps
                 // internal state (similar to flush()), breaking InfoBubble
                 // rendering on subsequent maps.  The UI's DOM elements are
@@ -868,7 +878,8 @@ window.blazorHerePlatform.objectManager = function () {
                 zIndex,
                 visible,
                 iconUrl,
-                mapId
+                mapId,
+                infoBubbleTemplateId
             } = options;
 
             const map = mapObjects[mapId];
@@ -925,6 +936,33 @@ window.blazorHerePlatform.objectManager = function () {
             // Wire all pointer/interaction events via the unified event system
             if (clickable) {
                 wireObjectEvents(marker, 'marker', id, callbackRef, map);
+            }
+
+            // Auto-InfoBubble: on tap, read the hidden <template> innerHTML
+            // and open an InfoBubble at the marker position.
+            // Content is static HTML — no live Blazor interactivity inside the bubble.
+            if (infoBubbleTemplateId && map) {
+                marker.addEventListener('tap', function () {
+                    const tpl = document.getElementById(infoBubbleTemplateId);
+                    if (!tpl) return;
+                    const html = tpl.innerHTML;
+                    if (!html || !html.trim()) return;
+
+                    const uiGuid = map['_blzUiGuid'];
+                    if (!uiGuid) return;
+                    const ui = mapObjects[uiGuid];
+                    if (!ui) return;
+
+                    // Close previous auto-bubble on this map (if any)
+                    const prev = map['_blzAutoBubble'];
+                    if (prev) {
+                        try { ui.removeBubble(prev); } catch (e) { }
+                    }
+
+                    const bubble = new H.ui.InfoBubble(marker.getGeometry(), { content: html });
+                    ui.addBubble(bubble);
+                    map['_blzAutoBubble'] = bubble;
+                });
             }
 
             if (draggable && map) {
