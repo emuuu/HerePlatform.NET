@@ -33,16 +33,30 @@ public partial class MarkerComponent : IAsyncDisposable
     public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Latitude in degrees.
+    /// Latitude in degrees. Two-way bindable via <c>@bind-Lat</c>.
     /// </summary>
     [Parameter, JsonIgnore]
     public double Lat { get; set; }
 
     /// <summary>
-    /// Longitude in degrees.
+    /// Callback for two-way binding of <see cref="Lat"/>.
+    /// Fired when the marker is dragged to a new position.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<double> LatChanged { get; set; }
+
+    /// <summary>
+    /// Longitude in degrees. Two-way bindable via <c>@bind-Lng</c>.
     /// </summary>
     [Parameter, JsonIgnore]
     public double Lng { get; set; }
+
+    /// <summary>
+    /// Callback for two-way binding of <see cref="Lng"/>.
+    /// Fired when the marker is dragged to a new position.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public EventCallback<double> LngChanged { get; set; }
 
     /// <summary>
     /// If true, the marker can be clicked and triggers tap event.
@@ -206,6 +220,24 @@ public partial class MarkerComponent : IAsyncDisposable
 
     internal async Task HandleDragEvent(string eventName, MapDragEventArgs args)
     {
+        // On dragend, update Lat/Lng and fire two-way binding callbacks
+        // BEFORE the OnDragEnd event, so consumers see the updated position.
+        if (eventName == "dragend" && args.Position.HasValue)
+        {
+            var newLat = args.Position.Value.Lat;
+            var newLng = args.Position.Value.Lng;
+
+            Lat = newLat;
+            Lng = newLng;
+
+            // Use local copies so no re-render between the two callbacks
+            // can overwrite the values via SetParametersAsync.
+            if (LatChanged.HasDelegate)
+                await LatChanged.InvokeAsync(newLat);
+            if (LngChanged.HasDelegate)
+                await LngChanged.InvokeAsync(newLng);
+        }
+
         var callback = eventName switch
         {
             "dragstart" => OnDragStart,
@@ -229,7 +261,8 @@ public partial class MarkerComponent : IAsyncDisposable
         OnContextMenu.HasDelegate || OnContextMenuClose.HasDelegate ||
         OnPointerDown.HasDelegate || OnPointerUp.HasDelegate || OnPointerMove.HasDelegate ||
         OnPointerEnter.HasDelegate || OnPointerLeave.HasDelegate || OnPointerCancel.HasDelegate ||
-        OnDragStart.HasDelegate || OnDrag.HasDelegate || OnDragEnd.HasDelegate;
+        OnDragStart.HasDelegate || OnDrag.HasDelegate || OnDragEnd.HasDelegate ||
+        LatChanged.HasDelegate || LngChanged.HasDelegate;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -298,7 +331,14 @@ public partial class MarkerComponent : IAsyncDisposable
     {
         if (IsDisposed) return;
         IsDisposed = true;
-        await Js.InvokeVoidAsync("blazorHerePlatform.objectManager.disposeMarkerComponent", Guid);
+
+        try
+        {
+            await Js.InvokeVoidAsync("blazorHerePlatform.objectManager.disposeMarkerComponent", Guid);
+        }
+        catch (JSDisconnectedException) { }
+        catch (InvalidOperationException) { }
+
         MapRef.RemoveMarker(this);
         GC.SuppressFinalize(this);
     }

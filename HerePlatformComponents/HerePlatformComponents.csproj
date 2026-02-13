@@ -4,8 +4,6 @@
 		<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
 		<IsPackable>true</IsPackable>
 		<LangVersion>latest</LangVersion>
-		<RazorLangVersion>3.0</RazorLangVersion>
-		<AddRazorSupportForMvc>true</AddRazorSupportForMvc>
 		<PackageId>BlazorHerePlatform</PackageId>
 		<Version>0.1.0</Version>
 		<Description>Blazor HERE Platform Maps components</Description>
