@@ -6,42 +6,42 @@ namespace HerePlatformComponents.Maps.Services.Routing;
 public class EvOptions
 {
     /// <summary>
-    /// Initial battery charge in watt-hours.
+    /// Initial battery charge in kWh.
     /// </summary>
-    public int? InitialCharge { get; set; }
+    public double? InitialCharge { get; set; }
 
     /// <summary>
-    /// Maximum battery capacity in watt-hours.
+    /// Maximum battery capacity in kWh (max 1200).
     /// </summary>
-    public int? MaxCharge { get; set; }
+    public double? MaxCharge { get; set; }
 
     /// <summary>
-    /// Maximum charge after a charging station stop in watt-hours.
+    /// Maximum charge after a charging station stop in kWh.
     /// </summary>
-    public int? MaxChargeAfterChargingStation { get; set; }
+    public double? MaxChargeAfterChargingStation { get; set; }
 
     /// <summary>
-    /// Minimum charge required at a charging station in watt-hours.
+    /// Minimum charge required at a charging station in kWh.
     /// </summary>
-    public int? MinChargeAtChargingStation { get; set; }
+    public double? MinChargeAtChargingStation { get; set; }
 
     /// <summary>
-    /// Minimum charge required at destination in watt-hours.
+    /// Minimum charge required at destination in kWh.
     /// </summary>
-    public int? MinChargeAtDestination { get; set; }
+    public double? MinChargeAtDestination { get; set; }
 
     /// <summary>
-    /// Charging curve as comma-separated pairs (charge_level,charging_speed,...).
+    /// Charging curve as comma-separated pairs (charge_level_kWh,charging_speed_kW,...).
     /// </summary>
     public string? ChargingCurve { get; set; }
 
     /// <summary>
-    /// Free-flow speed consumption table (speed,consumption,...).
+    /// Free-flow speed consumption table: speed(km/h),consumption(kWh/km) pairs.
     /// </summary>
     public string? FreeFlowSpeedTable { get; set; }
 
     /// <summary>
-    /// Auxiliary power consumption in watts.
+    /// Auxiliary power consumption in kW.
     /// </summary>
-    public int? AuxiliaryConsumption { get; set; }
+    public double? AuxiliaryConsumption { get; set; }
 }

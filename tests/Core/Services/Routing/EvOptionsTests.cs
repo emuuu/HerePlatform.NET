@@ -25,24 +25,24 @@ public class EvOptionsTests
     {
         var options = new EvOptions
         {
-            InitialCharge = 48000,
-            MaxCharge = 64000,
-            MaxChargeAfterChargingStation = 57600,
-            MinChargeAtChargingStation = 6400,
-            MinChargeAtDestination = 6400,
-            ChargingCurve = "0,100000,32000,80000,48000,40000,64000,10000",
+            InitialCharge = 48,
+            MaxCharge = 64,
+            MaxChargeAfterChargingStation = 57.6,
+            MinChargeAtChargingStation = 6.4,
+            MinChargeAtDestination = 6.4,
+            ChargingCurve = "0,100,32,80,48,40,64,10",
             FreeFlowSpeedTable = "0,0.239,27,0.239,45,0.259,60,0.196,75,0.207,90,0.238,100,0.26,110,0.296,120,0.337,130,0.351",
-            AuxiliaryConsumption = 1500
+            AuxiliaryConsumption = 1.5
         };
 
-        Assert.That(options.InitialCharge, Is.EqualTo(48000));
-        Assert.That(options.MaxCharge, Is.EqualTo(64000));
-        Assert.That(options.MaxChargeAfterChargingStation, Is.EqualTo(57600));
-        Assert.That(options.MinChargeAtChargingStation, Is.EqualTo(6400));
-        Assert.That(options.MinChargeAtDestination, Is.EqualTo(6400));
+        Assert.That(options.InitialCharge, Is.EqualTo(48));
+        Assert.That(options.MaxCharge, Is.EqualTo(64));
+        Assert.That(options.MaxChargeAfterChargingStation, Is.EqualTo(57.6));
+        Assert.That(options.MinChargeAtChargingStation, Is.EqualTo(6.4));
+        Assert.That(options.MinChargeAtDestination, Is.EqualTo(6.4));
         Assert.That(options.ChargingCurve, Is.Not.Null);
         Assert.That(options.FreeFlowSpeedTable, Is.Not.Null);
-        Assert.That(options.AuxiliaryConsumption, Is.EqualTo(1500));
+        Assert.That(options.AuxiliaryConsumption, Is.EqualTo(1.5));
     }
 
     [Test]
@@ -59,13 +59,13 @@ public class EvOptionsTests
         {
             Ev = new EvOptions
             {
-                InitialCharge = 48000,
-                MaxCharge = 64000,
+                InitialCharge = 48,
+                MaxCharge = 64,
                 FreeFlowSpeedTable = "0,0.239,27,0.239"
             }
         };
 
         Assert.That(request.Ev, Is.Not.Null);
-        Assert.That(request.Ev.InitialCharge, Is.EqualTo(48000));
+        Assert.That(request.Ev.InitialCharge, Is.EqualTo(48));
     }
 }

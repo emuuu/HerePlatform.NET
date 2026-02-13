@@ -137,27 +137,27 @@ var result = await RoutingService.CalculateRouteAsync(request);
             <h5>EV Parameters</h5>
             <div class="d-flex gap-2 flex-wrap" style="font-size:0.85em;">
                 <div>
-                    <label>Initial Charge (Wh)</label>
-                    <input type="number" class="form-control form-control-sm" @bind="_evInitialCharge" step="1000" style="width:110px;" />
+                    <label>Initial Charge (kWh)</label>
+                    <input type="number" class="form-control form-control-sm" @bind="_evInitialCharge" step="1" @bind:culture="@CultureInfo.InvariantCulture" style="width:110px;" />
                 </div>
                 <div>
-                    <label>Max Charge (Wh)</label>
-                    <input type="number" class="form-control form-control-sm" @bind="_evMaxCharge" step="1000" style="width:110px;" />
+                    <label>Max Charge (kWh)</label>
+                    <input type="number" class="form-control form-control-sm" @bind="_evMaxCharge" step="1" @bind:culture="@CultureInfo.InvariantCulture" style="width:110px;" />
                 </div>
                 <div>
-                    <label>Min at Dest (Wh)</label>
-                    <input type="number" class="form-control form-control-sm" @bind="_evMinChargeAtDest" step="1000" style="width:110px;" />
+                    <label>Min at Dest (kWh)</label>
+                    <input type="number" class="form-control form-control-sm" @bind="_evMinChargeAtDest" step="1" @bind:culture="@CultureInfo.InvariantCulture" style="width:110px;" />
                 </div>
                 <div>
-                    <label>Aux Power (W)</label>
-                    <input type="number" class="form-control form-control-sm" @bind="_evAuxConsumption" step="100" style="width:100px;" />
+                    <label>Aux Power (kW)</label>
+                    <input type="number" class="form-control form-control-sm" @bind="_evAuxConsumption" step="0.1" @bind:culture="@CultureInfo.InvariantCulture" style="width:100px;" />
                 </div>
             </div>
             <div class="mt-1" style="font-size:0.85em;">
                 <label>Speed Table</label>
                 <input type="text" class="form-control form-control-sm" @bind="_evFreeFlowSpeedTable"
                     placeholder="0,0.239,27,0.239,45,0.259,..." style="max-width:400px;" />
-                <p class="text-muted mb-0" style="font-size:0.8em;">speed(km/h),consumption(Wh/m) pairs</p>
+                <p class="text-muted mb-0" style="font-size:0.8em;">speed(km/h),consumption(kWh/km) pairs</p>
             </div>
         </div>
     }
@@ -229,10 +229,10 @@ var result = await RoutingService.CalculateRouteAsync(request);
 
     // EV parameters
     private bool _isEvMode;
-    private int _evInitialCharge = 48000;
-    private int _evMaxCharge = 64000;
-    private int _evMinChargeAtDest = 6400;
-    private int _evAuxConsumption = 1600;
+    private double _evInitialCharge = 48;
+    private double _evMaxCharge = 64;
+    private double _evMinChargeAtDest = 6;
+    private double _evAuxConsumption = 1.6;
     private string _evFreeFlowSpeedTable = "0,0.239,27,0.239,45,0.259,60,0.196,85,0.238,100,0.26,120,0.318,140,0.388";
 
     [Inject]

@@ -22,6 +22,18 @@ window.blazorHerePlatform.objectManager = function () {
         return '';
     })();
 
+    // Blazor IJSRuntime serializes C# enums as integers. Map them to API strings.
+    var transportModes = { 0: 'car', 1: 'truck', 2: 'pedestrian', 3: 'bicycle', 4: 'scooter' };
+    var routingModes = { 0: 'fast', 1: 'short' };
+    function resolveTransportMode(val) {
+        if (typeof val === 'string') return val;
+        return transportModes[val] || 'car';
+    }
+    function resolveRoutingMode(val) {
+        if (typeof val === 'string') return val;
+        return routingModes[val] || 'fast';
+    }
+
     function uuidv4() {
         return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
             (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
@@ -2164,8 +2176,8 @@ window.blazorHerePlatform.objectManager = function () {
                 }
 
                 var params = {
-                    routingMode: request.routingMode || 'fast',
-                    transportMode: request.transportMode || 'car',
+                    routingMode: resolveRoutingMode(request.routingMode),
+                    transportMode: resolveTransportMode(request.transportMode),
                     origin: request.origin.lat + ',' + request.origin.lng,
                     destination: request.destination.lat + ',' + request.destination.lng,
                     return: returnParts.join(',')
@@ -3223,7 +3235,7 @@ window.blazorHerePlatform.objectManager = function () {
                     origin: request.start.lat + ',' + request.start.lng,
                     destination: request.end.lat + ',' + request.end.lng,
                     via: destinations.join('!'),
-                    transportMode: request.transportMode || 'car',
+                    transportMode: resolveTransportMode(request.transportMode),
                     return: 'summary'
                 };
 
@@ -3407,8 +3419,8 @@ window.blazorHerePlatform.objectManager = function () {
                     'origin': request.center.lat + ',' + request.center.lng,
                     'range[type]': request.rangeType || 'time',
                     'range[values]': (request.ranges || []).join(','),
-                    'transportMode': request.transportMode || 'car',
-                    'routingMode': request.routingMode || 'fast'
+                    'transportMode': resolveTransportMode(request.transportMode),
+                    'routingMode': resolveRoutingMode(request.routingMode)
                 };
 
                 if (request.departureTime) params.departureTime = request.departureTime;
@@ -3467,8 +3479,8 @@ window.blazorHerePlatform.objectManager = function () {
 
             // Map transportMode + routingMode to HERE Matrix API v8 profile IDs:
             // carFast, carShort, truckFast, pedestrian, bicycle
-            var transport = (request.transportMode || 'car').toLowerCase();
-            var routing = (request.routingMode || 'fast').toLowerCase();
+            var transport = resolveTransportMode(request.transportMode).toLowerCase();
+            var routing = resolveRoutingMode(request.routingMode).toLowerCase();
             var profile;
             if (transport === 'pedestrian' || transport === 'bicycle') {
                 profile = transport;
