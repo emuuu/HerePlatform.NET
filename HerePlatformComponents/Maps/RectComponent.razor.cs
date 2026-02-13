@@ -3,15 +3,14 @@ using HerePlatformComponents.Maps.Extension;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace HerePlatformComponents.Maps;
 
-public partial class PolygonComponent : IAsyncDisposable
+public partial class RectComponent : IAsyncDisposable
 {
-    public PolygonComponent()
+    public RectComponent()
     {
         _guid = Guid.NewGuid();
     }
@@ -29,10 +28,28 @@ public partial class PolygonComponent : IAsyncDisposable
     private AdvancedHereMap MapRef { get; set; } = default!;
 
     /// <summary>
-    /// Path defining the polygon boundary.
+    /// Top latitude of the bounding rectangle.
     /// </summary>
     [Parameter, JsonIgnore]
-    public List<LatLngLiteral>? Path { get; set; }
+    public double Top { get; set; }
+
+    /// <summary>
+    /// Left longitude of the bounding rectangle.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public double Left { get; set; }
+
+    /// <summary>
+    /// Bottom latitude of the bounding rectangle.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public double Bottom { get; set; }
+
+    /// <summary>
+    /// Right longitude of the bounding rectangle.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public double Right { get; set; }
 
     /// <summary>
     /// Stroke color in CSS format.
@@ -53,28 +70,22 @@ public partial class PolygonComponent : IAsyncDisposable
     public double? LineWidth { get; set; }
 
     /// <summary>
-    /// If true, the polygon is clickable.
+    /// If true, the rectangle is clickable.
     /// </summary>
     [Parameter, JsonIgnore]
     public bool Clickable { get; set; }
 
     /// <summary>
-    /// If true, the polygon is visible.
+    /// If true, the rectangle is visible.
     /// </summary>
     [Parameter, JsonIgnore]
     public bool Visible { get; set; } = true;
 
     /// <summary>
-    /// Arbitrary data associated with this polygon.
+    /// Arbitrary data associated with this rectangle.
     /// </summary>
     [Parameter, JsonIgnore]
     public object? Data { get; set; }
-
-    /// <summary>
-    /// Interior rings (holes) for the polygon. Each hole is a list of LatLngLiteral.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public List<List<LatLngLiteral>>? Holes { get; set; }
 
     /// <summary>
     /// 3D extrusion height in meters (HARP engine).
@@ -90,88 +101,45 @@ public partial class PolygonComponent : IAsyncDisposable
 
     #region Pointer / Interaction EventCallbacks
 
-    /// <summary>
-    /// Fired when the polygon is tapped/clicked.
-    /// Breaking change: now provides MapPointerEventArgs.
-    /// </summary>
     [Parameter, JsonIgnore]
     public EventCallback<MapPointerEventArgs> OnClick { get; set; }
 
-    /// <summary>
-    /// Fired on double-tap/double-click.
-    /// </summary>
     [Parameter, JsonIgnore]
     public EventCallback<MapPointerEventArgs> OnDoubleClick { get; set; }
 
-    /// <summary>
-    /// Fired on long press.
-    /// </summary>
     [Parameter, JsonIgnore]
     public EventCallback<MapPointerEventArgs> OnLongPress { get; set; }
 
-    /// <summary>
-    /// Fired on right-click / long-press context menu.
-    /// </summary>
     [Parameter, JsonIgnore]
     public EventCallback<MapPointerEventArgs> OnContextMenu { get; set; }
 
-    /// <summary>
-    /// Fired when the context menu interaction ends.
-    /// </summary>
     [Parameter, JsonIgnore]
     public EventCallback OnContextMenuClose { get; set; }
 
-    /// <summary>
-    /// Fired when a pointer touches the polygon surface.
-    /// </summary>
     [Parameter, JsonIgnore]
     public EventCallback<MapPointerEventArgs> OnPointerDown { get; set; }
 
-    /// <summary>
-    /// Fired when a pointer leaves the polygon surface.
-    /// </summary>
     [Parameter, JsonIgnore]
     public EventCallback<MapPointerEventArgs> OnPointerUp { get; set; }
 
-    /// <summary>
-    /// Fired when a pointer moves over the polygon.
-    /// </summary>
     [Parameter, JsonIgnore]
     public EventCallback<MapPointerEventArgs> OnPointerMove { get; set; }
 
-    /// <summary>
-    /// Fired when a pointer enters the polygon area.
-    /// </summary>
     [Parameter, JsonIgnore]
     public EventCallback<MapPointerEventArgs> OnPointerEnter { get; set; }
 
-    /// <summary>
-    /// Fired when a pointer leaves the polygon area.
-    /// </summary>
     [Parameter, JsonIgnore]
     public EventCallback<MapPointerEventArgs> OnPointerLeave { get; set; }
 
-    /// <summary>
-    /// Fired when a pointer action is cancelled.
-    /// </summary>
     [Parameter, JsonIgnore]
     public EventCallback OnPointerCancel { get; set; }
 
-    /// <summary>
-    /// Fired when a drag operation starts on the polygon.
-    /// </summary>
     [Parameter, JsonIgnore]
     public EventCallback<MapDragEventArgs> OnDragStart { get; set; }
 
-    /// <summary>
-    /// Fired continuously during a drag operation.
-    /// </summary>
     [Parameter, JsonIgnore]
     public EventCallback<MapDragEventArgs> OnDrag { get; set; }
 
-    /// <summary>
-    /// Fired when a drag operation ends.
-    /// </summary>
     [Parameter, JsonIgnore]
     public EventCallback<MapDragEventArgs> OnDragEnd { get; set; }
 
@@ -227,9 +195,6 @@ public partial class PolygonComponent : IAsyncDisposable
 
     #endregion
 
-    /// <summary>
-    /// Returns true if any pointer/interaction event callback is bound.
-    /// </summary>
     internal bool HasAnyEventCallback =>
         OnClick.HasDelegate || OnDoubleClick.HasDelegate || OnLongPress.HasDelegate ||
         OnContextMenu.HasDelegate || OnContextMenuClose.HasDelegate ||
@@ -241,7 +206,7 @@ public partial class PolygonComponent : IAsyncDisposable
     {
         if (firstRender)
         {
-            MapRef.AddPolygon(this);
+            MapRef.AddRect(this);
             _hasRendered = true;
             await UpdateOptions();
         }
@@ -252,17 +217,19 @@ public partial class PolygonComponent : IAsyncDisposable
     private async Task UpdateOptions()
     {
         await Js.InvokeAsync<string>(
-            "blazorHerePlatform.objectManager.updatePolygonComponent",
+            "blazorHerePlatform.objectManager.updateRectComponent",
             Guid,
-            new PolygonComponentOptions
+            new RectComponentOptions
             {
-                Path = Path,
+                Top = Top,
+                Left = Left,
+                Bottom = Bottom,
+                Right = Right,
                 StrokeColor = StrokeColor,
                 FillColor = FillColor,
                 LineWidth = LineWidth,
                 Clickable = Clickable || HasAnyEventCallback,
                 Visible = Visible,
-                Holes = Holes,
                 Extrusion = Extrusion,
                 Elevation = Elevation,
                 MapId = MapRef.MapId,
@@ -279,15 +246,15 @@ public partial class PolygonComponent : IAsyncDisposable
         }
 
         var optionsChanged =
-            parameters.DidParameterChange(Path) ||
+            parameters.DidParameterChange(Top) ||
+            parameters.DidParameterChange(Left) ||
+            parameters.DidParameterChange(Bottom) ||
+            parameters.DidParameterChange(Right) ||
             parameters.DidParameterChange(StrokeColor) ||
             parameters.DidParameterChange(FillColor) ||
             parameters.DidParameterChange(LineWidth) ||
             parameters.DidParameterChange(Clickable) ||
-            parameters.DidParameterChange(Visible) ||
-            parameters.DidParameterChange(Holes) ||
-            parameters.DidParameterChange(Extrusion) ||
-            parameters.DidParameterChange(Elevation);
+            parameters.DidParameterChange(Visible);
 
         await base.SetParametersAsync(parameters);
 
@@ -301,20 +268,29 @@ public partial class PolygonComponent : IAsyncDisposable
     {
         if (IsDisposed) return;
         IsDisposed = true;
-        await Js.InvokeVoidAsync("blazorHerePlatform.objectManager.disposePolygonComponent", Guid);
-        MapRef.RemovePolygon(this);
+
+        try
+        {
+            await Js.InvokeVoidAsync("blazorHerePlatform.objectManager.disposeRectComponent", Guid);
+        }
+        catch (JSDisconnectedException) { }
+        catch (InvalidOperationException) { }
+
+        MapRef.RemoveRect(this);
         GC.SuppressFinalize(this);
     }
 
-    internal readonly struct PolygonComponentOptions
+    internal readonly struct RectComponentOptions
     {
-        public List<LatLngLiteral>? Path { get; init; }
+        public double Top { get; init; }
+        public double Left { get; init; }
+        public double Bottom { get; init; }
+        public double Right { get; init; }
         public string? StrokeColor { get; init; }
         public string? FillColor { get; init; }
         public double? LineWidth { get; init; }
         public bool? Clickable { get; init; }
         public bool? Visible { get; init; }
-        public List<List<LatLngLiteral>>? Holes { get; init; }
         public double? Extrusion { get; init; }
         public double? Elevation { get; init; }
         public Guid? MapId { get; init; }
