@@ -120,7 +120,7 @@ public partial class GeoJsonReaderComponent : IAsyncDisposable
         if (_isDisposed) return;
         _isDisposed = true;
 
-        MapRef.RemoveGeoJsonReader(this);
+        MapRef?.RemoveGeoJsonReader(this);
 
         try
         {

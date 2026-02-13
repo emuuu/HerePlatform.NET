@@ -34,26 +34,33 @@
     Animate="@_animate"
     DisabledBehaviors="@_disabledBehaviors"
     @bind-Center="_center"
-    @bind-Zoom="_zoom">
+    @bind-Zoom="_zoom"
+    @bind-Tilt="_tilt">
 
     <!-- Polygon with hole -->
-    <PolygonComponent
-        Path="@_polygonPath"
-        Holes="@_polygonHoles"
-        StrokeColor="#00CC00"
-        FillColor="rgba(0, 204, 0, 0.4)"
-        LineWidth="2"
-        Clickable="true"
-        OnClick="@(e => _status = "Polygon with hole clicked")" />
+    @if (_showHolePolygon)
+    {
+        <PolygonComponent
+            Path="@_polygonPath"
+            Holes="@(_showHole ? _polygonHoles : null)"
+            StrokeColor="#00CC00"
+            FillColor="rgba(0, 204, 0, 0.4)"
+            LineWidth="2"
+            Clickable="true"
+            OnClick="@(e => _status = "Polygon with hole clicked")" />
+    }
 
     <!-- 3D Extrusion polygon -->
-    <PolygonComponent
-        Path="@_extrusionPath"
-        StrokeColor="#3498DB"
-        FillColor="rgba(52, 152, 219, 0.6)"
-        LineWidth="2"
-        Extrusion="100"
-        Elevation="0" />
+    @if (_showExtrusionPolygon)
+    {
+        <PolygonComponent
+            Path="@_extrusionPath"
+            StrokeColor="#3498DB"
+            FillColor="rgba(52, 152, 219, 0.6)"
+            LineWidth="2"
+            Extrusion="@_extrusionHeight"
+            Elevation="@_extrusionElevation" />
+    }
 
     <!-- Markers for Zoom to Bounds demo -->
     @foreach (var pos in _zoomMarkers)
@@ -81,6 +88,38 @@
 </AdvancedHereMap>
 
 <div class="mt-3 d-flex gap-3 flex-wrap">
+    <div>
+        <h5>Polygon with Holes</h5>
+        <div class="form-check form-switch mb-1">
+            <input class="form-check-input" type="checkbox" @bind="_showHolePolygon" />
+            <label class="form-check-label">Show Polygon</label>
+        </div>
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" @bind="_showHole" />
+            <label class="form-check-label">Cut Hole</label>
+        </div>
+    </div>
+
+    <div>
+        <h5>3D Extrusion &amp; Tilt</h5>
+        <div class="form-check form-switch mb-1">
+            <input class="form-check-input" type="checkbox" @bind="_showExtrusionPolygon" />
+            <label class="form-check-label">Show Polygon</label>
+        </div>
+        <div class="d-flex flex-column gap-1" style="font-size:0.85em;">
+            <label>Tilt: @_tilt.ToString("F0", CultureInfo.InvariantCulture)°
+                <input type="range" min="0" max="70" step="5" @bind="_tilt" @bind:event="oninput" @bind:culture="@CultureInfo.InvariantCulture" style="width:120px;" />
+            </label>
+            <label>Height: @_extrusionHeight.ToString("F0", CultureInfo.InvariantCulture) m
+                <input type="range" min="0" max="500" step="10" @bind="_extrusionHeight" @bind:event="oninput" @bind:culture="@CultureInfo.InvariantCulture" style="width:120px;" />
+            </label>
+            <label>Elevation: @_extrusionElevation.ToString("F0", CultureInfo.InvariantCulture) m
+                <input type="range" min="0" max="200" step="10" @bind="_extrusionElevation" @bind:event="oninput" @bind:culture="@CultureInfo.InvariantCulture" style="width:120px;" />
+            </label>
+        </div>
+        <small class="text-muted">Tilt the map to see 3D extrusions and buildings (HARP engine).</small>
+    </div>
+
     <div>
         <h5>Animated Transitions</h5>
         <div class="form-check form-switch mb-2">
@@ -128,8 +167,8 @@
         </div>
         <div class="d-flex gap-2 align-items-center" style="font-size:0.85em;">
             <label>Opacity:</label>
-            <input type="range" min="0" max="1" step="0.1" @bind="_overlayOpacity" style="width:100px;" />
-            <span>@_overlayOpacity.ToString("F1")</span>
+            <input type="range" min="0" max="1" step="0.1" @bind="_overlayOpacity" @bind:event="oninput" @bind:culture="@System.Globalization.CultureInfo.InvariantCulture" style="width:100px;" />
+            <span>@_overlayOpacity.ToString("F1", CultureInfo.InvariantCulture)</span>
         </div>
     </div>
 
@@ -156,12 +195,22 @@
     private bool _animate = true;
     private LatLngLiteral _center = new(52.52, 13.405);
     private double _zoom = 13;
+    private double _tilt = 0;
     private string? _status;
     private string? _capturedImage;
 
     private bool _disablePanning;
     private bool _disableWheelZoom;
     private BehaviorFeature _disabledBehaviors;
+
+    // Polygon with Holes
+    private bool _showHolePolygon = true;
+    private bool _showHole = true;
+
+    // 3D Extrusion
+    private bool _showExtrusionPolygon = true;
+    private double _extrusionHeight = 100;
+    private double _extrusionElevation = 0;
 
     // Zoom to Bounds
     private List<LatLngLiteral> _zoomMarkers = new();

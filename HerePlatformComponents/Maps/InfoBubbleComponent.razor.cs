@@ -57,6 +57,12 @@ public partial class InfoBubbleComponent : IAsyncDisposable
     public bool IsOpen { get; set; }
 
     /// <summary>
+    /// Whether the map automatically pans to show the InfoBubble (default true).
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public bool AutoPan { get; set; } = true;
+
+    /// <summary>
     /// Callback for two-way binding of <see cref="IsOpen"/>.
     /// Fired when the InfoBubble is closed by clicking the X button.
     /// </summary>
@@ -88,6 +94,7 @@ public partial class InfoBubbleComponent : IAsyncDisposable
                 Lat = Lat,
                 Lng = Lng,
                 IsOpen = IsOpen,
+                AutoPan = AutoPan,
                 MapId = MapRef.MapId,
                 TemplateId = ChildContent is not null ? TemplateElementId : null,
             },
@@ -105,7 +112,8 @@ public partial class InfoBubbleComponent : IAsyncDisposable
         var optionsChanged =
             parameters.DidParameterChange(Lat) ||
             parameters.DidParameterChange(Lng) ||
-            parameters.DidParameterChange(IsOpen);
+            parameters.DidParameterChange(IsOpen) ||
+            parameters.DidParameterChange(AutoPan);
 
         await base.SetParametersAsync(parameters);
 
@@ -140,7 +148,7 @@ public partial class InfoBubbleComponent : IAsyncDisposable
         catch (JSDisconnectedException) { }
         catch (InvalidOperationException) { }
 
-        MapRef.RemoveInfoBubble(this);
+        MapRef?.RemoveInfoBubble(this);
         GC.SuppressFinalize(this);
     }
 
@@ -149,6 +157,7 @@ public partial class InfoBubbleComponent : IAsyncDisposable
         public double Lat { get; init; }
         public double Lng { get; init; }
         public bool IsOpen { get; init; }
+        public bool AutoPan { get; init; }
         public Guid? MapId { get; init; }
         public string? TemplateId { get; init; }
     }

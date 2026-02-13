@@ -62,6 +62,18 @@ public partial class MarkerClusterComponent : IAsyncDisposable
     public string? NoiseSvgTemplate { get; set; }
 
     /// <summary>
+    /// Minimum zoom level at which clustering is active.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public double? MinZoom { get; set; }
+
+    /// <summary>
+    /// Maximum zoom level at which clustering is active.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public double? MaxZoom { get; set; }
+
+    /// <summary>
     /// Fired when a cluster is tapped.
     /// </summary>
     [Parameter, JsonIgnore]
@@ -109,6 +121,8 @@ public partial class MarkerClusterComponent : IAsyncDisposable
                 MinWeight = MinWeight,
                 ClusterSvgTemplate = ClusterSvgTemplate,
                 NoiseSvgTemplate = NoiseSvgTemplate,
+                MinZoom = MinZoom,
+                MaxZoom = MaxZoom,
                 MapId = MapRef.MapId,
             },
             MapRef.CallbackRef);
@@ -127,7 +141,9 @@ public partial class MarkerClusterComponent : IAsyncDisposable
             parameters.DidParameterChange(Eps) ||
             parameters.DidParameterChange(MinWeight) ||
             parameters.DidParameterChange(ClusterSvgTemplate) ||
-            parameters.DidParameterChange(NoiseSvgTemplate);
+            parameters.DidParameterChange(NoiseSvgTemplate) ||
+            parameters.DidParameterChange(MinZoom) ||
+            parameters.DidParameterChange(MaxZoom);
 
         await base.SetParametersAsync(parameters);
 
@@ -142,7 +158,7 @@ public partial class MarkerClusterComponent : IAsyncDisposable
         if (_isDisposed) return;
         _isDisposed = true;
 
-        MapRef.RemoveCluster(this);
+        MapRef?.RemoveCluster(this);
 
         try
         {
@@ -161,6 +177,8 @@ public partial class MarkerClusterComponent : IAsyncDisposable
         public int MinWeight { get; init; }
         public string? ClusterSvgTemplate { get; init; }
         public string? NoiseSvgTemplate { get; init; }
+        public double? MinZoom { get; init; }
+        public double? MaxZoom { get; init; }
         public Guid? MapId { get; init; }
     }
 }

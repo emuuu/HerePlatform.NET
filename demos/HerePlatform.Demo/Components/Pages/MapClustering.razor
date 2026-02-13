@@ -38,6 +38,7 @@
     @if (_showClusters && _dataPoints.Count > 0)
     {
         <MarkerClusterComponent DataPoints="@_dataPoints" Eps="@_eps" MinWeight="@_minWeight"
+            MinZoom="@_clusterMinZoom" MaxZoom="@_clusterMaxZoom"
             ClusterSvgTemplate="@_clusterSvg" NoiseSvgTemplate="@_noiseSvg"
             OnClusterTap="OnClusterTap" OnNoiseTap="OnNoiseTap" />
     }
@@ -62,13 +63,25 @@
     <div>
         <label>Eps (radius): @_eps</label>
         <input type="range" class="form-range" min="16" max="128" step="8"
-            @bind="_eps" @bind:event="oninput" style="width:150px;" />
+            @bind="_eps" @bind:event="oninput" @bind:culture="@CultureInfo.InvariantCulture" style="width:150px;" />
     </div>
 
     <div>
         <label>Min Weight: @_minWeight</label>
         <input type="range" class="form-range" min="1" max="10" step="1"
             @bind="_minWeight" @bind:event="oninput" style="width:120px;" />
+    </div>
+
+    <div>
+        <label>MinZoom: @(_clusterMinZoom?.ToString("F0", CultureInfo.InvariantCulture) ?? "none")</label>
+        <input type="number" class="form-control form-control-sm" style="width:80px;"
+            value="@_clusterMinZoom" @onchange="@(e => _clusterMinZoom = double.TryParse(e.Value?.ToString(), out var v) ? v : null)" />
+    </div>
+
+    <div>
+        <label>MaxZoom: @(_clusterMaxZoom?.ToString("F0", CultureInfo.InvariantCulture) ?? "none")</label>
+        <input type="number" class="form-control form-control-sm" style="width:80px;"
+            value="@_clusterMaxZoom" @onchange="@(e => _clusterMaxZoom = double.TryParse(e.Value?.ToString(), out var v) ? v : null)" />
     </div>
 </div>
 
@@ -82,6 +95,8 @@
     private bool _showClusters = true;
     private double _eps = 32;
     private int _minWeight = 2;
+    private double? _clusterMinZoom;
+    private double? _clusterMaxZoom;
     private List<ClusterDataPoint> _dataPoints = new();
     private string? _status;
 

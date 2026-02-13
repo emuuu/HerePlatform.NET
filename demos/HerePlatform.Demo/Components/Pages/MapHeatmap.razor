@@ -40,6 +40,7 @@
     @if (_showHeatmap)
     {
         <HeatmapComponent DataPoints="@_dataPoints" Opacity="@_opacity"
+            SampleDepth="@_sampleDepth"
             Colors="@_colors" Visible="true" />
     }
 
@@ -54,9 +55,16 @@
     </div>
 
     <div>
-        <label>Opacity: @_opacity.ToString("F2")</label>
+        <label>Opacity: @_opacity.ToString("F2", CultureInfo.InvariantCulture)</label>
         <input type="range" class="form-range" min="0.1" max="1.0" step="0.1"
-            @bind="_opacity" @bind:event="oninput" style="width:200px;" />
+            @bind="_opacity" @bind:event="oninput" @bind:culture="@CultureInfo.InvariantCulture" style="width:200px;" />
+    </div>
+
+    <div>
+        <label>SampleDepth: @(_sampleDepth?.ToString() ?? "auto")</label>
+        <input type="range" class="form-range" min="1" max="16" step="1"
+            value="@(_sampleDepth ?? 8)" @oninput="@(e => _sampleDepth = int.TryParse(e.Value?.ToString(), out var v) ? v : null)" style="width:150px;" />
+        <button class="btn btn-sm btn-outline-secondary" @onclick="@(() => _sampleDepth = null)">Auto</button>
     </div>
 
     <div>
@@ -73,6 +81,7 @@
     private AdvancedHereMap? _advMap;
     private bool _showHeatmap = true;
     private double _opacity = 0.6;
+    private int? _sampleDepth;
     private List<HeatmapDataPoint> _dataPoints = new();
     private Dictionary<double, string> _colors = new()
     {

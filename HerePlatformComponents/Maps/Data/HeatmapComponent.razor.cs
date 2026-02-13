@@ -49,6 +49,12 @@ public partial class HeatmapComponent : IAsyncDisposable
     public Dictionary<double, string>? Colors { get; set; }
 
     /// <summary>
+    /// Sampling depth for heatmap calculation.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public int? SampleDepth { get; set; }
+
+    /// <summary>
     /// If true, the heatmap layer is visible.
     /// </summary>
     [Parameter, JsonIgnore]
@@ -75,6 +81,7 @@ public partial class HeatmapComponent : IAsyncDisposable
                 dataPoints = DataPoints,
                 opacity = Opacity,
                 colors = Colors,
+                sampleDepth = SampleDepth,
                 visible = Visible,
                 mapId = MapRef.MapId
             },
@@ -93,6 +100,7 @@ public partial class HeatmapComponent : IAsyncDisposable
             parameters.DidParameterChange(DataPoints) ||
             parameters.DidParameterChange(Opacity) ||
             parameters.DidParameterChange(Colors) ||
+            parameters.DidParameterChange(SampleDepth) ||
             parameters.DidParameterChange(Visible);
 
         await base.SetParametersAsync(parameters);

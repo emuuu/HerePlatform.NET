@@ -22,6 +22,8 @@ public class MapOptionsTests
         Assert.That(opts.Heading, Is.Null);
         Assert.That(opts.Padding, Is.Null);
         Assert.That(opts.AutoColor, Is.Null);
+        Assert.That(opts.PixelRatio, Is.Null);
+        Assert.That(opts.FixedCenter, Is.Null);
         Assert.That(opts.ApiLoadOptions, Is.Null);
     }
 
@@ -45,6 +47,8 @@ public class MapOptionsTests
             Heading = 90,
             Padding = padding,
             AutoColor = false,
+            PixelRatio = 2.0,
+            FixedCenter = true,
             ApiLoadOptions = apiOpts
         };
 
@@ -59,6 +63,8 @@ public class MapOptionsTests
         Assert.That(opts.Heading, Is.EqualTo(90));
         Assert.That(opts.Padding, Is.SameAs(padding));
         Assert.That(opts.AutoColor, Is.False);
+        Assert.That(opts.PixelRatio, Is.EqualTo(2.0));
+        Assert.That(opts.FixedCenter, Is.True);
         Assert.That(opts.ApiLoadOptions, Is.SameAs(apiOpts));
     }
 }

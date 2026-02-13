@@ -31,6 +31,16 @@ public class MapOptions
     /// </summary>
     public string? UiLocale { get; set; }
 
+    /// <summary>
+    /// Pixel ratio for high-DPI displays (e.g. 2.0 for Retina).
+    /// </summary>
+    public double? PixelRatio { get; set; }
+
+    /// <summary>
+    /// Whether the map center stays fixed during resize.
+    /// </summary>
+    public bool? FixedCenter { get; set; }
+
     [JsonIgnore]
     public HereApiLoadOptions? ApiLoadOptions { get; set; }
 }

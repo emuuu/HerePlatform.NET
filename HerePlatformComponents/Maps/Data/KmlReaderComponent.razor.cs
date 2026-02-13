@@ -112,7 +112,7 @@ public partial class KmlReaderComponent : IAsyncDisposable
         if (_isDisposed) return;
         _isDisposed = true;
 
-        MapRef.RemoveKmlReader(this);
+        MapRef?.RemoveKmlReader(this);
 
         try
         {

@@ -61,6 +61,14 @@ public class InfoBubbleComponentOptionsTests
     }
 
     [Test]
+    public void AutoPan_DefaultIsTrue()
+    {
+        var component = new InfoBubbleComponent();
+
+        Assert.That(component.AutoPan, Is.True);
+    }
+
+    [Test]
     public void HandleClosed_SetsIsOpenToFalse()
     {
         var component = new InfoBubbleComponent();
