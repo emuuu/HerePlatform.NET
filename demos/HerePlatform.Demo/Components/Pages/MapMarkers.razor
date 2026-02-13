@@ -5,7 +5,7 @@
 <PageTitle>Markers</PageTitle>
 
 <h3>Markers Demo</h3>
-<p>Demonstrates adding, clicking, and dragging markers on the map. The two landmark markers use <code>ChildContent</code> to show an InfoBubble on click (static HTML, no Blazor interactivity in the bubble).</p>
+<p>Demonstrates adding, clicking, and dragging markers on the map. The orange marker supports two-way binding (<code>@@bind-Lat</code> / <code>@@bind-Lng</code>).</p>
 
 <details class="mb-3">
     <summary class="fw-bold" role="button">Usage</summary>
@@ -42,32 +42,23 @@
                  Options="@_mapOptions"
                  @bind-Center="_viewCenter"
                  @bind-Zoom="_viewZoom"
-                 OnAfterInit="@OnMapInit"
                  Height="500px">
 
-    @* Static markers with ChildContent — click to open an auto-InfoBubble *@
-    <MarkerComponent Lat="52.5163" Lng="13.3777">
-        <div style="padding:8px">
-            <strong>Brandenburg Gate</strong>
-            <p style="margin:4px 0">Built 1788–1791. One of Berlin's most famous landmarks.</p>
-        </div>
-    </MarkerComponent>
-
-    <MarkerComponent Lat="52.5219" Lng="13.4132">
-        <div style="padding:8px">
-            <strong>Alexanderplatz</strong>
-            <p style="margin:4px 0">Major public square and transport hub. Home of the TV Tower.</p>
-        </div>
-    </MarkerComponent>
-
     @* Two-way bound marker: drag updates _boundLat/_boundLng, changing values moves the pin *@
-    <MarkerComponent @bind-Lat="_boundLat" @bind-Lng="_boundLng"
-                     Draggable="true" />
+    @if (_showBoundMarker)
+    {
+        <MarkerComponent @bind-Lat="_boundLat" @bind-Lng="_boundLng"
+                         Draggable="true"
+                         Opacity="@_markerOpacity"
+                         MinZoom="@(_enableMinZoom ? _markerMinZoom : null)"
+                         MaxZoom="@(_enableMaxZoom ? _markerMaxZoom : null)" />
+    }
 
     @* Dynamic markers with event callbacks *@
     @foreach (var marker in _markers)
     {
-        <MarkerComponent Lat="@marker.Lat"
+        <MarkerComponent @key="marker"
+                         Lat="@marker.Lat"
                          Lng="@marker.Lng"
                          Clickable="true"
                          Draggable="@marker.Draggable"
@@ -88,18 +79,18 @@
                     <div class="col">
                         <label class="form-label">Lat</label>
                         <input type="number" step="0.0001" class="form-control form-control-sm"
-                               @bind="_boundLat" @bind:event="oninput" />
+                               @bind="_boundLat" @bind:event="oninput" @bind:culture="@System.Globalization.CultureInfo.InvariantCulture" />
                     </div>
                     <div class="col">
                         <label class="form-label">Lng</label>
                         <input type="number" step="0.0001" class="form-control form-control-sm"
-                               @bind="_boundLng" @bind:event="oninput" />
+                               @bind="_boundLng" @bind:event="oninput" @bind:culture="@System.Globalization.CultureInfo.InvariantCulture" />
                     </div>
                     <div class="col-auto d-flex align-items-end">
                         <button class="btn btn-sm btn-outline-secondary" @onclick="ResetBoundMarker">Reset</button>
                     </div>
                 </div>
-                <small class="text-muted mt-1 d-block">Position: @_boundLat.ToString("F5"), @_boundLng.ToString("F5")</small>
+                <small class="text-muted mt-1 d-block">Position: @_boundLat.ToString("F5", System.Globalization.CultureInfo.InvariantCulture), @_boundLng.ToString("F5", System.Globalization.CultureInfo.InvariantCulture)</small>
             </div>
         </div>
     </div>
@@ -117,7 +108,7 @@
                     <div class="col">
                         <label class="form-label">Zoom</label>
                         <input type="number" step="1" min="1" max="20" class="form-control form-control-sm"
-                               value="@_viewZoom.ToString("F1")"
+                               value="@_viewZoom.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)"
                                @onchange="OnZoomInputChanged" />
                     </div>
                 </div>
@@ -130,7 +121,32 @@
     <button class="btn btn-primary" @onclick="AddMarkerAtCenter">Add Marker at Center</button>
     <button class="btn btn-warning" @onclick="AddDraggableMarker">Add Draggable Marker</button>
     <button class="btn btn-danger" @onclick="ClearMarkers">Clear All</button>
-    <span class="ms-3 badge bg-info">Marker count: @_markers.Count</span>
+    <span class="ms-3 badge bg-info">Marker count: @(_markers.Count + (_showBoundMarker ? 1 : 0))</span>
+</div>
+
+<div class="mt-2 d-flex gap-3 flex-wrap align-items-center">
+    <div>
+        <label>Opacity: @_markerOpacity.ToString("F1", CultureInfo.InvariantCulture)</label>
+        <input type="range" min="0.1" max="1.0" step="0.1" @bind="_markerOpacity" @bind:event="oninput" @bind:culture="@System.Globalization.CultureInfo.InvariantCulture" style="width:120px;" />
+    </div>
+    <div>
+        <label>
+            <input type="checkbox" @bind="_enableMinZoom" />
+            Visible from zoom @_markerMinZoom.ToString("F0", CultureInfo.InvariantCulture)
+        </label>
+        <input type="range" min="1" max="20" step="1"
+               @bind="_markerMinZoom" @bind:event="oninput" @bind:after="ClampMinZoom"
+               @bind:culture="@CultureInfo.InvariantCulture" style="width:100px;" />
+    </div>
+    <div>
+        <label>
+            <input type="checkbox" @bind="_enableMaxZoom" />
+            Visible until zoom @_markerMaxZoom.ToString("F0", CultureInfo.InvariantCulture)
+        </label>
+        <input type="range" min="1" max="20" step="1"
+               @bind="_markerMaxZoom" @bind:event="oninput" @bind:after="ClampMaxZoom"
+               @bind:culture="@CultureInfo.InvariantCulture" style="width:100px;" />
+    </div>
 </div>
 
 @if (!string.IsNullOrEmpty(_lastEvent))
@@ -145,8 +161,14 @@
     private List<MarkerInfo> _markers = new();
     private string? _lastEvent;
     private int _markerIndex;
+    private bool _showBoundMarker = true;
     private double _boundLat = 52.5200;
     private double _boundLng = 13.4050;
+    private double _markerOpacity = 1.0;
+    private bool _enableMinZoom;
+    private bool _enableMaxZoom;
+    private double _markerMinZoom = 1;
+    private double _markerMaxZoom = 20;
     private LatLngLiteral _viewCenter = new(52.52, 13.405);
     private double _viewZoom = 13;
 
@@ -157,16 +179,6 @@
         EnableUI = true,
         EnableInteraction = true
     };
-
-    private void OnMapInit()
-    {
-        // Add initial markers (offset from center to avoid overlap with UI)
-        _markers.Add(new MarkerInfo(52.5163, 13.3777, "Victory Column", false));
-        _markers.Add(new MarkerInfo(52.5145, 13.3500, "Charlottenburg Palace", false));
-        _markers.Add(new MarkerInfo(52.5075, 13.3903, "Potsdamer Platz", false));
-        _markerIndex = 3;
-        StateHasChanged();
-    }
 
     private void AddMarkerAtCenter()
     {
@@ -192,19 +204,33 @@
     {
         _boundLat = 52.5200;
         _boundLng = 13.4050;
+        _showBoundMarker = true;
     }
 
     private void OnZoomInputChanged(ChangeEventArgs e)
     {
-        if (double.TryParse(e.Value?.ToString(), out var zoom))
+        if (double.TryParse(e.Value?.ToString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var zoom))
         {
             _viewZoom = Math.Clamp(zoom, 1, 20);
         }
     }
 
+    private void ClampMinZoom()
+    {
+        if (_markerMinZoom > _markerMaxZoom)
+            _markerMaxZoom = _markerMinZoom;
+    }
+
+    private void ClampMaxZoom()
+    {
+        if (_markerMaxZoom < _markerMinZoom)
+            _markerMinZoom = _markerMaxZoom;
+    }
+
     private void ClearMarkers()
     {
         _markers.Clear();
+        _showBoundMarker = false;
         _lastEvent = "All markers cleared.";
         StateHasChanged();
     }

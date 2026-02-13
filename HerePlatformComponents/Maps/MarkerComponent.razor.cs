@@ -83,6 +83,24 @@ public partial class MarkerComponent : IAsyncDisposable
     public int? ZIndex { get; set; }
 
     /// <summary>
+    /// Opacity of the marker (0-1).
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public double? Opacity { get; set; }
+
+    /// <summary>
+    /// Minimum zoom level at which the marker is visible.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public double? MinZoom { get; set; }
+
+    /// <summary>
+    /// Maximum zoom level at which the marker is visible.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public double? MaxZoom { get; set; }
+
+    /// <summary>
     /// Whether the marker is visible.
     /// </summary>
     [Parameter, JsonIgnore]
@@ -93,8 +111,6 @@ public partial class MarkerComponent : IAsyncDisposable
     /// </summary>
     [Parameter, JsonIgnore]
     public string? IconUrl { get; set; }
-
-    #region Pointer / Interaction EventCallbacks
 
     /// <summary>
     /// Fired when the marker is tapped/clicked.
@@ -182,10 +198,6 @@ public partial class MarkerComponent : IAsyncDisposable
     [Parameter, JsonIgnore]
     public EventCallback<MapDragEventArgs> OnDragEnd { get; set; }
 
-    #endregion
-
-    #region Internal event handlers (called by AdvancedHereMap)
-
     internal async Task HandlePointerEvent(string eventName, MapPointerEventArgs args)
     {
         var callback = eventName switch
@@ -250,8 +262,6 @@ public partial class MarkerComponent : IAsyncDisposable
             await callback.InvokeAsync(args);
     }
 
-    #endregion
-
     /// <summary>
     /// Returns true if any pointer/interaction event callback is bound.
     /// Used to determine whether JS should wire up event listeners.
@@ -294,6 +304,9 @@ public partial class MarkerComponent : IAsyncDisposable
                 Draggable = Draggable,
                 Clickable = Clickable || Draggable || HasAnyEventCallback || hasInfoBubbleContent,
                 ZIndex = ZIndex,
+                Opacity = Opacity,
+                MinZoom = MinZoom,
+                MaxZoom = MaxZoom,
                 Visible = Visible,
                 IconUrl = IconUrl,
                 MapId = MapRef.MapId,
@@ -314,6 +327,9 @@ public partial class MarkerComponent : IAsyncDisposable
             parameters.DidParameterChange(Lat) ||
             parameters.DidParameterChange(Lng) ||
             parameters.DidParameterChange(ZIndex) ||
+            parameters.DidParameterChange(Opacity) ||
+            parameters.DidParameterChange(MinZoom) ||
+            parameters.DidParameterChange(MaxZoom) ||
             parameters.DidParameterChange(Clickable) ||
             parameters.DidParameterChange(Draggable) ||
             parameters.DidParameterChange(Visible) ||
@@ -339,7 +355,7 @@ public partial class MarkerComponent : IAsyncDisposable
         catch (JSDisconnectedException) { }
         catch (InvalidOperationException) { }
 
-        MapRef.RemoveMarker(this);
+        MapRef?.RemoveMarker(this);
         GC.SuppressFinalize(this);
     }
 
@@ -350,6 +366,9 @@ public partial class MarkerComponent : IAsyncDisposable
         public bool Draggable { get; init; }
         public bool Clickable { get; init; }
         public int? ZIndex { get; init; }
+        public double? Opacity { get; init; }
+        public double? MinZoom { get; init; }
+        public double? MaxZoom { get; init; }
         public bool Visible { get; init; }
         public string? IconUrl { get; init; }
         /// <summary>

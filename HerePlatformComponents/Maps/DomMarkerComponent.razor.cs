@@ -74,6 +74,24 @@ public partial class DomMarkerComponent : IAsyncDisposable
     public bool Draggable { get; set; }
 
     /// <summary>
+    /// Opacity of the marker (0-1).
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public double? Opacity { get; set; }
+
+    /// <summary>
+    /// Minimum zoom level at which the marker is visible.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public double? MinZoom { get; set; }
+
+    /// <summary>
+    /// Maximum zoom level at which the marker is visible.
+    /// </summary>
+    [Parameter, JsonIgnore]
+    public double? MaxZoom { get; set; }
+
+    /// <summary>
     /// Whether the marker is visible.
     /// </summary>
     [Parameter, JsonIgnore]
@@ -90,8 +108,6 @@ public partial class DomMarkerComponent : IAsyncDisposable
     /// </summary>
     [Parameter, JsonIgnore]
     public object? Data { get; set; }
-
-    #region Pointer / Interaction EventCallbacks
 
     [Parameter, JsonIgnore]
     public EventCallback<MapPointerEventArgs> OnClick { get; set; }
@@ -134,10 +150,6 @@ public partial class DomMarkerComponent : IAsyncDisposable
 
     [Parameter, JsonIgnore]
     public EventCallback<MapDragEventArgs> OnDragEnd { get; set; }
-
-    #endregion
-
-    #region Internal event handlers (called by AdvancedHereMap)
 
     internal async Task HandlePointerEvent(string eventName, MapPointerEventArgs args)
     {
@@ -199,8 +211,6 @@ public partial class DomMarkerComponent : IAsyncDisposable
             await callback.InvokeAsync(args);
     }
 
-    #endregion
-
     internal bool HasAnyEventCallback =>
         OnClick.HasDelegate || OnDoubleClick.HasDelegate || OnLongPress.HasDelegate ||
         OnContextMenu.HasDelegate || OnContextMenuClose.HasDelegate ||
@@ -232,6 +242,9 @@ public partial class DomMarkerComponent : IAsyncDisposable
                 Clickable = Clickable || Draggable || HasAnyEventCallback,
                 Draggable = Draggable,
                 ZIndex = ZIndex,
+                Opacity = Opacity,
+                MinZoom = MinZoom,
+                MaxZoom = MaxZoom,
                 Visible = Visible,
                 MapId = MapRef.MapId,
                 GroupId = GroupRef?.Guid,
@@ -254,6 +267,9 @@ public partial class DomMarkerComponent : IAsyncDisposable
             parameters.DidParameterChange(Clickable) ||
             parameters.DidParameterChange(Draggable) ||
             parameters.DidParameterChange(ZIndex) ||
+            parameters.DidParameterChange(Opacity) ||
+            parameters.DidParameterChange(MinZoom) ||
+            parameters.DidParameterChange(MaxZoom) ||
             parameters.DidParameterChange(Visible);
 
         await base.SetParametersAsync(parameters);
@@ -276,7 +292,7 @@ public partial class DomMarkerComponent : IAsyncDisposable
         catch (JSDisconnectedException) { }
         catch (InvalidOperationException) { }
 
-        MapRef.RemoveDomMarker(this);
+        MapRef?.RemoveDomMarker(this);
         GC.SuppressFinalize(this);
     }
 
@@ -286,6 +302,9 @@ public partial class DomMarkerComponent : IAsyncDisposable
         public bool Clickable { get; init; }
         public bool Draggable { get; init; }
         public int? ZIndex { get; init; }
+        public double? Opacity { get; init; }
+        public double? MinZoom { get; init; }
+        public double? MaxZoom { get; init; }
         public bool Visible { get; init; }
         public Guid? MapId { get; init; }
         public Guid? GroupId { get; init; }
