@@ -6,10 +6,18 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// Increase SignalR message size for large routing/data responses
+builder.Services.Configure<Microsoft.AspNetCore.SignalR.HubOptions>(options =>
+{
+    options.MaximumReceiveMessageSize = 512 * 1024; // 512 KB
+});
+
 var hereApiKey = builder.Configuration["HerePlatform:ApiKey"] ?? "YOUR_API_KEY";
 builder.Services.AddBlazorHerePlatform(new HerePlatformComponents.Maps.HereApiLoadOptions(hereApiKey)
 {
-    Language = "de"
+    Language = "de",
+    LoadClustering = true,
+    LoadData = true
 });
 
 var app = builder.Build();

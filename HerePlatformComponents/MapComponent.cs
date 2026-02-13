@@ -30,7 +30,6 @@ public class MapComponent : ComponentBase, IDisposable, IAsyncDisposable
 
     public async Task InitAsync(ElementReference element, MapOptions? options = null)
     {
-        HereApiLoadOptions? loadedApiOptions = options?.ApiLoadOptions;
         if (options?.ApiLoadOptions == null && _keyService != null)
         {
             bool isHereReady = false;
@@ -46,10 +45,11 @@ public class MapComponent : ComponentBase, IDisposable, IAsyncDisposable
             if (!_keyService.IsApiInitialized || !isHereReady)
             {
                 _keyService.IsApiInitialized = true;
-                options ??= new MapOptions();
-                loadedApiOptions = await _keyService.GetApiOptions();
-                options.ApiLoadOptions = loadedApiOptions;
             }
+
+            // Always pass ApiLoadOptions so initMap can lazy-load additional modules
+            options ??= new MapOptions();
+            options.ApiLoadOptions = await _keyService.GetApiOptions();
         }
 
         InteropObject = await Map.CreateAsync(JsRuntime, element, options);

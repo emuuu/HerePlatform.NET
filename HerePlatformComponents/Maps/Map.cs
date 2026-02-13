@@ -238,6 +238,56 @@ public class Map : EventEntityBase, IJsObjectRef, IAsyncDisposable
             new object[] { Guid.ToString(), "getViewPort().resize" }).AsTask();
     }
 
+    /// <summary>
+    /// Enables specified behavior features on the map.
+    /// </summary>
+    public Task EnableBehavior(BehaviorFeature features)
+    {
+        return _jsObjectRef.JSRuntime.InvokeVoidAsync(
+            "blazorHerePlatform.objectManager.setBehaviorFeatures",
+            Guid.ToString(), (int)features, true).AsTask();
+    }
+
+    /// <summary>
+    /// Disables specified behavior features on the map.
+    /// </summary>
+    public Task DisableBehavior(BehaviorFeature features)
+    {
+        return _jsObjectRef.JSRuntime.InvokeVoidAsync(
+            "blazorHerePlatform.objectManager.setBehaviorFeatures",
+            Guid.ToString(), (int)features, false).AsTask();
+    }
+
+    /// <summary>
+    /// Captures the current map view as a Base64 data URI (PNG).
+    /// </summary>
+    public Task<string> CaptureAsync()
+    {
+        return _jsObjectRef.JSRuntime.InvokeAsync<string>(
+            "blazorHerePlatform.objectManager.captureMap",
+            Guid.ToString()).AsTask();
+    }
+
+    /// <summary>
+    /// Sets the viewport padding (H.map.ViewPort.setPadding).
+    /// </summary>
+    public Task SetViewportPadding(int top, int right, int bottom, int left)
+    {
+        return _jsObjectRef.JSRuntime.InvokeVoidAsync(
+            "blazorHerePlatform.objectManager.setViewportPadding",
+            Guid.ToString(), top, right, bottom, left).AsTask();
+    }
+
+    /// <summary>
+    /// Exports all map objects as a GeoJSON FeatureCollection string.
+    /// </summary>
+    public Task<string> ToGeoJsonAsync()
+    {
+        return _jsObjectRef.JSRuntime.InvokeAsync<string>(
+            "blazorHerePlatform.objectManager.exportMapGeoJson",
+            Guid.ToString()).AsTask();
+    }
+
     private record LookAtData(double Tilt = 0, double Heading = 0);
 
     public override async ValueTask DisposeAsync()

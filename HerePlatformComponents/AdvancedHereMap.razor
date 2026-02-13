@@ -1,4 +1,6 @@
 @using HerePlatformComponents.Maps
+@using HerePlatformComponents.Maps.Clustering
+@using HerePlatformComponents.Maps.Data
 @using HerePlatformComponents.Maps.Events
 @using HerePlatformComponents.Maps.Extension
 @using Microsoft.JSInterop
@@ -30,6 +32,34 @@
     public IEnumerable<PolygonComponent> Polygons => _mapPolygonComponents.Select(x => x.Value);
     private readonly Dictionary<Guid, PolygonComponent> _mapPolygonComponents = [];
 
+    public int PolylineCount => _mapPolylineComponents.Count;
+    public IEnumerable<PolylineComponent> Polylines => _mapPolylineComponents.Select(x => x.Value);
+    private readonly Dictionary<Guid, PolylineComponent> _mapPolylineComponents = [];
+
+    public int CircleCount => _mapCircleComponents.Count;
+    public IEnumerable<CircleComponent> Circles => _mapCircleComponents.Select(x => x.Value);
+    private readonly Dictionary<Guid, CircleComponent> _mapCircleComponents = [];
+
+    public int RectCount => _mapRectComponents.Count;
+    public IEnumerable<RectComponent> Rects => _mapRectComponents.Select(x => x.Value);
+    private readonly Dictionary<Guid, RectComponent> _mapRectComponents = [];
+
+    public int GroupCount => _mapGroupComponents.Count;
+    public IEnumerable<GroupComponent> Groups => _mapGroupComponents.Select(x => x.Value);
+    private readonly Dictionary<Guid, GroupComponent> _mapGroupComponents = [];
+
+    public int DomMarkerCount => _mapDomMarkerComponents.Count;
+    public IEnumerable<DomMarkerComponent> DomMarkers => _mapDomMarkerComponents.Select(x => x.Value);
+    private readonly Dictionary<Guid, DomMarkerComponent> _mapDomMarkerComponents = [];
+
+    public int InfoBubbleCount => _mapInfoBubbleComponents.Count;
+    public IEnumerable<InfoBubbleComponent> InfoBubbles => _mapInfoBubbleComponents.Select(x => x.Value);
+    private readonly Dictionary<Guid, InfoBubbleComponent> _mapInfoBubbleComponents = [];
+
+    private readonly Dictionary<Guid, MarkerClusterComponent> _mapClusterComponents = [];
+    private readonly Dictionary<Guid, GeoJsonReaderComponent> _mapGeoJsonComponents = [];
+    private readonly Dictionary<Guid, KmlReaderComponent> _mapKmlComponents = [];
+
     internal DotNetObjectReference<AdvancedHereMap>? CallbackRef;
 
     [Parameter]
@@ -41,11 +71,38 @@
     [Parameter]
     public EventCallback OnAfterInit { get; set; }
 
+    /// <summary>
+    /// When true, programmatic SetCenter/SetZoom/SetTilt/SetHeading changes are animated.
+    /// </summary>
+    [Parameter]
+    public bool Animate { get; set; }
+
+    /// <summary>
+    /// Bitmask of behavior features to disable on this map.
+    /// </summary>
+    [Parameter]
+    public BehaviorFeature DisabledBehaviors { get; set; }
+
+    /// <summary>
+    /// Viewport padding. Applied when changed after map init.
+    /// </summary>
+    [Parameter]
+    public Padding? ViewportPadding { get; set; }
+
     [Parameter]
     public EventCallback OnMarkersChanged { get; set; }
 
     [Parameter]
     public EventCallback OnPolygonsChanged { get; set; }
+
+    [Parameter]
+    public EventCallback OnPolylinesChanged { get; set; }
+
+    [Parameter]
+    public EventCallback OnCirclesChanged { get; set; }
+
+    [Parameter]
+    public EventCallback OnRectsChanged { get; set; }
 
     [Parameter]
     public string? CssClass { get; set; }
@@ -278,9 +335,9 @@
 
         // Push programmatic changes to the JS map
         if (centerChanged && Center.HasValue)
-            await MapRef.InteropObject.SetCenter(Center.Value);
+            await MapRef.InteropObject.SetCenter(Center.Value, Animate);
         if (zoomChanged && Zoom.HasValue)
-            await MapRef.InteropObject.SetZoom(Zoom.Value);
+            await MapRef.InteropObject.SetZoom(Zoom.Value, Animate);
         if (tiltChanged && Tilt.HasValue)
             await MapRef.InteropObject.SetTilt(Tilt.Value);
         if (headingChanged && Heading.HasValue)
@@ -293,6 +350,20 @@
         if (MapId.HasValue)
         {
             await Js.InvokeVoidAsync("blazorHerePlatform.objectManager.setupMapEvents", MapId.Value, CallbackRef);
+        }
+
+        // Apply initial DisabledBehaviors
+        if (DisabledBehaviors != BehaviorFeature.None && MapRef?.InteropObject != null)
+        {
+            await MapRef.InteropObject.DisableBehavior(DisabledBehaviors);
+        }
+
+        // Apply initial ViewportPadding
+        if (ViewportPadding != null && MapRef?.InteropObject != null)
+        {
+            await MapRef.InteropObject.SetViewportPadding(
+                ViewportPadding.Top, ViewportPadding.Right,
+                ViewportPadding.Bottom, ViewportPadding.Left);
         }
 
         await OnAfterInit.InvokeAsync();
@@ -357,6 +428,22 @@
         {
             await polygon.HandlePointerEvent(eventName, args);
         }
+        else if (objectType == "polyline" && _mapPolylineComponents.TryGetValue(objectId, out var polyline))
+        {
+            await polyline.HandlePointerEvent(eventName, args);
+        }
+        else if (objectType == "circle" && _mapCircleComponents.TryGetValue(objectId, out var circle))
+        {
+            await circle.HandlePointerEvent(eventName, args);
+        }
+        else if (objectType == "rect" && _mapRectComponents.TryGetValue(objectId, out var rect))
+        {
+            await rect.HandlePointerEvent(eventName, args);
+        }
+        else if (objectType == "dommarker" && _mapDomMarkerComponents.TryGetValue(objectId, out var domMarker))
+        {
+            await domMarker.HandlePointerEvent(eventName, args);
+        }
     }
 
     /// <summary>
@@ -375,6 +462,26 @@
             if (eventName == "contextmenuclose") await polygon.HandleContextMenuClose();
             else if (eventName == "pointercancel") await polygon.HandlePointerCancel();
         }
+        else if (objectType == "polyline" && _mapPolylineComponents.TryGetValue(objectId, out var polyline))
+        {
+            if (eventName == "contextmenuclose") await polyline.HandleContextMenuClose();
+            else if (eventName == "pointercancel") await polyline.HandlePointerCancel();
+        }
+        else if (objectType == "circle" && _mapCircleComponents.TryGetValue(objectId, out var circle))
+        {
+            if (eventName == "contextmenuclose") await circle.HandleContextMenuClose();
+            else if (eventName == "pointercancel") await circle.HandlePointerCancel();
+        }
+        else if (objectType == "rect" && _mapRectComponents.TryGetValue(objectId, out var rect))
+        {
+            if (eventName == "contextmenuclose") await rect.HandleContextMenuClose();
+            else if (eventName == "pointercancel") await rect.HandlePointerCancel();
+        }
+        else if (objectType == "dommarker" && _mapDomMarkerComponents.TryGetValue(objectId, out var domMarker))
+        {
+            if (eventName == "contextmenuclose") await domMarker.HandleContextMenuClose();
+            else if (eventName == "pointercancel") await domMarker.HandlePointerCancel();
+        }
     }
 
     /// <summary>
@@ -390,6 +497,79 @@
         else if (objectType == "polygon" && _mapPolygonComponents.TryGetValue(objectId, out var polygon))
         {
             await polygon.HandleDragEvent(eventName, args);
+        }
+        else if (objectType == "polyline" && _mapPolylineComponents.TryGetValue(objectId, out var polyline))
+        {
+            await polyline.HandleDragEvent(eventName, args);
+        }
+        else if (objectType == "circle" && _mapCircleComponents.TryGetValue(objectId, out var circle))
+        {
+            await circle.HandleDragEvent(eventName, args);
+        }
+        else if (objectType == "rect" && _mapRectComponents.TryGetValue(objectId, out var rect))
+        {
+            await rect.HandleDragEvent(eventName, args);
+        }
+        else if (objectType == "dommarker" && _mapDomMarkerComponents.TryGetValue(objectId, out var domMarker))
+        {
+            await domMarker.HandleDragEvent(eventName, args);
+        }
+    }
+
+    #endregion
+
+    #region JSInvokable — InfoBubble events
+
+    [JSInvokable]
+    public async Task OnInfoBubbleClosed(Guid bubbleId)
+    {
+        if (_mapInfoBubbleComponents.TryGetValue(bubbleId, out var bubble))
+        {
+            await bubble.HandleClosed();
+        }
+    }
+
+    #endregion
+
+    #region JSInvokable — Cluster events
+
+    [JSInvokable]
+    public async Task OnClusterTapped(Guid clusterId, ClusterTapEventArgs args)
+    {
+        if (_mapClusterComponents.TryGetValue(clusterId, out var cluster))
+        {
+            await cluster.HandleClusterTap(args);
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnNoiseTapped(Guid clusterId, ClusterTapEventArgs args)
+    {
+        if (_mapClusterComponents.TryGetValue(clusterId, out var cluster))
+        {
+            await cluster.HandleNoiseTap(args);
+        }
+    }
+
+    #endregion
+
+    #region JSInvokable — Data events
+
+    [JSInvokable]
+    public async Task OnGeoJsonLoaded(Guid componentId, GeoJsonLoadedEventArgs args)
+    {
+        if (_mapGeoJsonComponents.TryGetValue(componentId, out var reader))
+        {
+            await reader.HandleLoaded(args);
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnKmlLoaded(Guid componentId, GeoJsonLoadedEventArgs args)
+    {
+        if (_mapKmlComponents.TryGetValue(componentId, out var reader))
+        {
+            await reader.HandleLoaded(args);
         }
     }
 
@@ -529,6 +709,102 @@
         OnPolygonsChanged.InvokeAsync();
     }
 
+    internal void AddPolyline(PolylineComponent polyline)
+    {
+        _mapPolylineComponents.TryAdd(polyline.Guid, polyline);
+        OnPolylinesChanged.InvokeAsync();
+    }
+
+    internal void RemovePolyline(PolylineComponent polyline)
+    {
+        _mapPolylineComponents.Remove(polyline.Guid);
+        OnPolylinesChanged.InvokeAsync();
+    }
+
+    internal void AddCircle(CircleComponent circle)
+    {
+        _mapCircleComponents.TryAdd(circle.Guid, circle);
+        OnCirclesChanged.InvokeAsync();
+    }
+
+    internal void RemoveCircle(CircleComponent circle)
+    {
+        _mapCircleComponents.Remove(circle.Guid);
+        OnCirclesChanged.InvokeAsync();
+    }
+
+    internal void AddRect(RectComponent rect)
+    {
+        _mapRectComponents.TryAdd(rect.Guid, rect);
+        OnRectsChanged.InvokeAsync();
+    }
+
+    internal void RemoveRect(RectComponent rect)
+    {
+        _mapRectComponents.Remove(rect.Guid);
+        OnRectsChanged.InvokeAsync();
+    }
+
+    internal void AddGroup(GroupComponent group)
+    {
+        _mapGroupComponents.TryAdd(group.Guid, group);
+    }
+
+    internal void RemoveGroup(GroupComponent group)
+    {
+        _mapGroupComponents.Remove(group.Guid);
+    }
+
+    internal void AddDomMarker(DomMarkerComponent domMarker)
+    {
+        _mapDomMarkerComponents.TryAdd(domMarker.Guid, domMarker);
+    }
+
+    internal void RemoveDomMarker(DomMarkerComponent domMarker)
+    {
+        _mapDomMarkerComponents.Remove(domMarker.Guid);
+    }
+
+    internal void AddInfoBubble(InfoBubbleComponent bubble)
+    {
+        _mapInfoBubbleComponents.TryAdd(bubble.Guid, bubble);
+    }
+
+    internal void RemoveInfoBubble(InfoBubbleComponent bubble)
+    {
+        _mapInfoBubbleComponents.Remove(bubble.Guid);
+    }
+
+    internal void AddCluster(MarkerClusterComponent cluster)
+    {
+        _mapClusterComponents.TryAdd(cluster.Guid, cluster);
+    }
+
+    internal void RemoveCluster(MarkerClusterComponent cluster)
+    {
+        _mapClusterComponents.Remove(cluster.Guid);
+    }
+
+    internal void AddGeoJsonReader(GeoJsonReaderComponent reader)
+    {
+        _mapGeoJsonComponents.TryAdd(reader.Guid, reader);
+    }
+
+    internal void RemoveGeoJsonReader(GeoJsonReaderComponent reader)
+    {
+        _mapGeoJsonComponents.Remove(reader.Guid);
+    }
+
+    internal void AddKmlReader(KmlReaderComponent reader)
+    {
+        _mapKmlComponents.TryAdd(reader.Guid, reader);
+    }
+
+    internal void RemoveKmlReader(KmlReaderComponent reader)
+    {
+        _mapKmlComponents.Remove(reader.Guid);
+    }
+
     public async ValueTask DisposeAsync()
     {
         foreach (var component in _mapComponents)
@@ -537,6 +813,36 @@
         }
 
         foreach (var component in _mapPolygonComponents)
+        {
+            component.Value.IsDisposed = true;
+        }
+
+        foreach (var component in _mapPolylineComponents)
+        {
+            component.Value.IsDisposed = true;
+        }
+
+        foreach (var component in _mapCircleComponents)
+        {
+            component.Value.IsDisposed = true;
+        }
+
+        foreach (var component in _mapRectComponents)
+        {
+            component.Value.IsDisposed = true;
+        }
+
+        foreach (var component in _mapGroupComponents)
+        {
+            component.Value.IsDisposed = true;
+        }
+
+        foreach (var component in _mapDomMarkerComponents)
+        {
+            component.Value.IsDisposed = true;
+        }
+
+        foreach (var component in _mapInfoBubbleComponents)
         {
             component.Value.IsDisposed = true;
         }
