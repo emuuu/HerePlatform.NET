@@ -8,7 +8,7 @@
 <PageTitle>Routing</PageTitle>
 
 <h3>Routing Demo</h3>
-<p>Click two points on the map to calculate a route, use presets, try isoline, or enable turn-by-turn instructions.</p>
+<p>Click two points on the map to calculate a route, use presets, try isoline, enable turn-by-turn instructions, or configure truck/EV parameters.</p>
 
 <details class="mb-3">
     <summary class="fw-bold" role="button">Usage</summary>
@@ -73,6 +73,8 @@ var result = await RoutingService.CalculateRouteAsync(request);
                 @onclick="@(() => SetTransportMode(TransportMode.Bicycle))">Bicycle</button>
             <button class="btn btn-sm @(_transportMode == TransportMode.Truck ? "btn-primary" : "btn-outline-primary")"
                 @onclick="@(() => SetTransportMode(TransportMode.Truck))">Truck</button>
+            <button class="btn btn-sm @(_isEvMode ? "btn-success" : "btn-outline-success")"
+                @onclick="ToggleEvMode">EV</button>
         </div>
     </div>
 
@@ -125,6 +127,37 @@ var result = await RoutingService.CalculateRouteAsync(request);
                     <label>Weight (kg)</label>
                     <input type="number" class="form-control form-control-sm" @bind="_truckWeight" step="1000" style="width:100px;" />
                 </div>
+            </div>
+        </div>
+    }
+
+    @if (_isEvMode)
+    {
+        <div>
+            <h5>EV Parameters</h5>
+            <div class="d-flex gap-2 flex-wrap" style="font-size:0.85em;">
+                <div>
+                    <label>Initial Charge (Wh)</label>
+                    <input type="number" class="form-control form-control-sm" @bind="_evInitialCharge" step="1000" style="width:110px;" />
+                </div>
+                <div>
+                    <label>Max Charge (Wh)</label>
+                    <input type="number" class="form-control form-control-sm" @bind="_evMaxCharge" step="1000" style="width:110px;" />
+                </div>
+                <div>
+                    <label>Min at Dest (Wh)</label>
+                    <input type="number" class="form-control form-control-sm" @bind="_evMinChargeAtDest" step="1000" style="width:110px;" />
+                </div>
+                <div>
+                    <label>Aux Power (W)</label>
+                    <input type="number" class="form-control form-control-sm" @bind="_evAuxConsumption" step="100" style="width:100px;" />
+                </div>
+            </div>
+            <div class="mt-1" style="font-size:0.85em;">
+                <label>Speed Table</label>
+                <input type="text" class="form-control form-control-sm" @bind="_evFreeFlowSpeedTable"
+                    placeholder="0,0.239,27,0.239,45,0.259,..." style="max-width:400px;" />
+                <p class="text-muted mb-0" style="font-size:0.8em;">speed(km/h),consumption(Wh/m) pairs</p>
             </div>
         </div>
     }
@@ -194,6 +227,14 @@ var result = await RoutingService.CalculateRouteAsync(request);
     private double _truckWidth = 2.5;
     private int _truckWeight = 36000;
 
+    // EV parameters
+    private bool _isEvMode;
+    private int _evInitialCharge = 48000;
+    private int _evMaxCharge = 64000;
+    private int _evMinChargeAtDest = 6400;
+    private int _evAuxConsumption = 1600;
+    private string _evFreeFlowSpeedTable = "0,0.239,27,0.239,45,0.259,60,0.196,85,0.238,100,0.26,120,0.318,140,0.388";
+
     [Inject]
     private IRoutingService RoutingService { get; set; } = default!;
 
@@ -227,9 +268,31 @@ var result = await RoutingService.CalculateRouteAsync(request);
         }
     }
 
+    private async Task ToggleEvMode()
+    {
+        _isEvMode = !_isEvMode;
+        if (_isEvMode && _transportMode != TransportMode.Car)
+        {
+            _transportMode = TransportMode.Car;
+            _strokeColor = "#00AA44";
+        }
+        _strokeColor = _isEvMode ? "#00AA44" : (_transportMode switch
+        {
+            TransportMode.Car => "#0066FF",
+            TransportMode.Pedestrian => "#FF6600",
+            TransportMode.Bicycle => "#00CC00",
+            TransportMode.Truck => "#CC0000",
+            _ => "#0066FF"
+        });
+
+        if (_origin.HasValue && _destination.HasValue)
+            await CalculateRoute();
+    }
+
     private async Task SetTransportMode(TransportMode mode)
     {
         _transportMode = mode;
+        _isEvMode = false;
         _strokeColor = mode switch
         {
             TransportMode.Car => "#0066FF",
@@ -288,6 +351,19 @@ var result = await RoutingService.CalculateRouteAsync(request);
                     Height = _truckHeight,
                     Width = _truckWidth,
                     GrossWeight = _truckWeight
+                };
+            }
+
+            // EV parameters
+            if (_isEvMode)
+            {
+                request.Ev = new EvOptions
+                {
+                    InitialCharge = _evInitialCharge,
+                    MaxCharge = _evMaxCharge,
+                    MinChargeAtDestination = _evMinChargeAtDest,
+                    AuxiliaryConsumption = _evAuxConsumption,
+                    FreeFlowSpeedTable = _evFreeFlowSpeedTable
                 };
             }
 
