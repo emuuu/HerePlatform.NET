@@ -48,6 +48,11 @@ public class RouteSection
     /// Transport mode used for this section.
     /// </summary>
     public string? Transport { get; set; }
+
+    /// <summary>
+    /// Turn-by-turn instructions (populated when ReturnInstructions is true).
+    /// </summary>
+    public List<TurnInstruction>? TurnByTurnActions { get; set; }
 }
 
 /// <summary>

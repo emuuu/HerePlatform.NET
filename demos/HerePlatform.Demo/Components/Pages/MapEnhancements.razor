@@ -1,10 +1,11 @@
 @page "/map-enhancements"
 @rendermode InteractiveServer
+@using HerePlatformComponents.Maps.Events
 
 <PageTitle>Map Enhancements</PageTitle>
 
 <h3>Map Enhancements Demo</h3>
-<p>Animated transitions, behavior control, polygon with holes, 3D extrusion, and map capture.</p>
+<p>Animated transitions, behavior control, polygon with holes, 3D extrusion, map capture, image overlay, zoom to bounds, and context menu.</p>
 
 <details class="mb-3">
     <summary class="fw-bold" role="button">Usage</summary>
@@ -54,6 +55,29 @@
         Extrusion="100"
         Elevation="0" />
 
+    <!-- Markers for Zoom to Bounds demo -->
+    @foreach (var pos in _zoomMarkers)
+    {
+        <MarkerComponent Lat="@pos.Lat" Lng="@pos.Lng" />
+    }
+
+    <!-- Image Overlay -->
+    @if (_showImageOverlay && !string.IsNullOrEmpty(_imageOverlayUrl))
+    {
+        <ImageOverlayComponent
+            ImageUrl="@_imageOverlayUrl"
+            Top="@_overlayTop" Left="@_overlayLeft"
+            Bottom="@_overlayBottom" Right="@_overlayRight"
+            Opacity="@_overlayOpacity" />
+    }
+
+    <!-- Context Menu -->
+    <ContextMenuComponent OnItemClick="@OnContextMenuItem">
+        <ContextMenuItem Label="Add Marker Here" />
+        <ContextMenuItem Label="Zoom In" />
+        <ContextMenuItem Label="Reset View" />
+    </ContextMenuComponent>
+
 </AdvancedHereMap>
 
 <div class="mt-3 d-flex gap-3 flex-wrap">
@@ -87,6 +111,32 @@
         <h5>Capture</h5>
         <button class="btn btn-sm btn-outline-success" @onclick="CaptureMap">Capture Map</button>
     </div>
+
+    <div>
+        <h5>Zoom to Bounds</h5>
+        <button class="btn btn-sm btn-outline-info" @onclick="AddRandomMarkers">Add Random Markers</button>
+        <button class="btn btn-sm btn-outline-info" @onclick="ZoomToMarkers">Zoom to Markers</button>
+    </div>
+</div>
+
+<div class="mt-3 d-flex gap-3 flex-wrap align-items-end">
+    <div>
+        <h5>Image Overlay</h5>
+        <div class="form-check form-switch mb-1">
+            <input class="form-check-input" type="checkbox" @bind="_showImageOverlay" />
+            <label class="form-check-label">Show Overlay</label>
+        </div>
+        <div class="d-flex gap-2 align-items-center" style="font-size:0.85em;">
+            <label>Opacity:</label>
+            <input type="range" min="0" max="1" step="0.1" @bind="_overlayOpacity" style="width:100px;" />
+            <span>@_overlayOpacity.ToString("F1")</span>
+        </div>
+    </div>
+
+    <div>
+        <h5>Context Menu</h5>
+        <p class="text-muted mb-0" style="font-size:0.8em;">Right-click the map to see the context menu.</p>
+    </div>
 </div>
 
 @if (!string.IsNullOrEmpty(_capturedImage))
@@ -112,6 +162,18 @@
     private bool _disablePanning;
     private bool _disableWheelZoom;
     private BehaviorFeature _disabledBehaviors;
+
+    // Zoom to Bounds
+    private List<LatLngLiteral> _zoomMarkers = new();
+
+    // Image Overlay
+    private bool _showImageOverlay;
+    private string _imageOverlayUrl = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Crect width='200' height='200' fill='rgba(255,0,0,0.3)' stroke='red' stroke-width='4'/%3E%3Ctext x='100' y='110' text-anchor='middle' font-size='24' fill='red'%3EOverlay%3C/text%3E%3C/svg%3E";
+    private double _overlayTop = 52.53;
+    private double _overlayLeft = 13.37;
+    private double _overlayBottom = 52.51;
+    private double _overlayRight = 13.43;
+    private double _overlayOpacity = 0.7;
 
     private MapOptions _mapOptions = new()
     {
@@ -162,5 +224,52 @@
         if (_advMap?.InteropObject == null) return;
         _capturedImage = await _advMap.InteropObject.CaptureAsync();
         _status = "Map captured!";
+    }
+
+    private void AddRandomMarkers()
+    {
+        var rnd = new Random();
+        _zoomMarkers.Clear();
+        for (int i = 0; i < 5; i++)
+        {
+            _zoomMarkers.Add(new LatLngLiteral(
+                52.4 + rnd.NextDouble() * 0.3,
+                13.2 + rnd.NextDouble() * 0.4));
+        }
+        _status = $"Added {_zoomMarkers.Count} markers.";
+    }
+
+    private async Task ZoomToMarkers()
+    {
+        if (_advMap == null || _zoomMarkers.Count == 0)
+        {
+            _status = "Add markers first.";
+            return;
+        }
+        await _advMap.ZoomToMarkersAsync(_animate);
+        _status = "Zoomed to markers.";
+    }
+
+    private async Task OnContextMenuItem(ContextMenuEventArgs args)
+    {
+        switch (args.ItemLabel)
+        {
+            case "Add Marker Here":
+                if (args.Position.HasValue)
+                {
+                    _zoomMarkers.Add(args.Position.Value);
+                    _status = $"Marker added at {args.Position.Value.Lat:F4}, {args.Position.Value.Lng:F4}";
+                }
+                break;
+            case "Zoom In":
+                _zoom = Math.Min(_zoom + 2, 20);
+                _status = $"Zoomed to {_zoom}";
+                break;
+            case "Reset View":
+                _center = new LatLngLiteral(52.52, 13.405);
+                _zoom = 13;
+                _status = "View reset.";
+                break;
+        }
     }
 }

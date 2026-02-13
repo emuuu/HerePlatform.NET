@@ -3,11 +3,12 @@
 @using HerePlatformComponents.Maps.Events
 @using HerePlatformComponents.Maps.Services
 @using HerePlatformComponents.Maps.Services.Geocoding
+@using HerePlatformComponents.Maps.Services.Places
 
-<PageTitle>Geocoding</PageTitle>
+<PageTitle>Geocoding & Places</PageTitle>
 
-<h3>Geocoding Demo</h3>
-<p>Search for places (forward geocoding) or click the map (reverse geocoding).</p>
+<h3>Geocoding & Places Demo</h3>
+<p>Search for places (forward geocoding), click the map (reverse geocoding), or use the Places API.</p>
 
 <details class="mb-3">
     <summary class="fw-bold" role="button">Usage</summary>
@@ -74,6 +75,27 @@ var reverse = await GeocodingService.ReverseGeocodeAsync(
     </div>
 </div>
 
+<div class="mt-3 d-flex gap-3 flex-wrap align-items-end">
+    <div>
+        <h5>Places API — Discover</h5>
+        <div class="input-group">
+            <input type="text" class="form-control" placeholder="Search places..."
+                @bind="_placesQuery" @bind:event="oninput"
+                @onkeydown="@(async e => { if (e.Key == "Enter") await DiscoverPlaces(); })" />
+            <button class="btn btn-success" @onclick="DiscoverPlaces" disabled="@_isSearching">Discover</button>
+        </div>
+    </div>
+
+    <div>
+        <h5>Browse by Category</h5>
+        <div class="btn-group">
+            <button class="btn btn-sm btn-outline-success" @onclick="@(() => BrowsePlaces("100-1000-0000"))">Restaurants</button>
+            <button class="btn btn-sm btn-outline-success" @onclick="@(() => BrowsePlaces("550-5510-0000"))">Gas Stations</button>
+            <button class="btn btn-sm btn-outline-success" @onclick="@(() => BrowsePlaces("300-3000-0000"))">Sights</button>
+        </div>
+    </div>
+</div>
+
 @if (_isSearching)
 {
     <div class="mt-3 alert alert-info">Searching...</div>
@@ -112,6 +134,36 @@ var reverse = await GeocodingService.ReverseGeocodeAsync(
     </div>
 }
 
+@if (_placesResults.Count > 0)
+{
+    <div class="mt-3">
+        <h5>Places Results (@_placesResults.Count)</h5>
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Address</th>
+                    <th>Categories</th>
+                    <th>Distance</th>
+                    <th>Place ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in _placesResults)
+                {
+                    <tr @onclick="@(() => FocusPlace(item))" style="cursor:pointer;">
+                        <td>@item.Title</td>
+                        <td>@item.Address</td>
+                        <td>@(item.Categories != null ? string.Join(", ", item.Categories) : "")</td>
+                        <td>@(item.Distance.HasValue ? $"{item.Distance}m" : "")</td>
+                        <td style="font-size:0.75em;">@item.PlaceId</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
 @if (!string.IsNullOrEmpty(_status))
 {
     <div class="mt-3 alert alert-warning">@_status</div>
@@ -120,13 +172,18 @@ var reverse = await GeocodingService.ReverseGeocodeAsync(
 @code {
     private AdvancedHereMap? _advMap;
     private string _searchQuery = "";
+    private string _placesQuery = "";
     private bool _isSearching;
     private string? _status;
     private List<GeocodeItem> _results = new();
     private List<GeocodeItem> _markers = new();
+    private List<PlaceItem> _placesResults = new();
 
     [Inject]
     private IGeocodingService GeocodingService { get; set; } = default!;
+
+    [Inject]
+    private IPlacesService PlacesService { get; set; } = default!;
 
     private MapOptions _mapOptions = new()
     {
@@ -212,11 +269,82 @@ var reverse = await GeocodingService.ReverseGeocodeAsync(
         await _advMap.InteropObject.SetZoom(16, true);
     }
 
+    private async Task DiscoverPlaces()
+    {
+        if (string.IsNullOrWhiteSpace(_placesQuery)) return;
+
+        _isSearching = true;
+        _status = null;
+        StateHasChanged();
+
+        try
+        {
+            var request = new PlacesRequest
+            {
+                Query = _placesQuery,
+                At = _mapOptions.Center,
+                Limit = 10
+            };
+            var result = await PlacesService.DiscoverAsync(request);
+            _placesResults = result.Items ?? new List<PlaceItem>();
+            _markers = _placesResults.Where(i => i.Position.HasValue)
+                .Select(i => new GeocodeItem
+                {
+                    Title = i.Title,
+                    Position = i.Position,
+                    Address = i.Address
+                }).ToList();
+
+            if (_placesResults.Count == 0) _status = "No places found.";
+        }
+        catch (Exception ex) { _status = $"Error: {ex.Message}"; }
+        finally { _isSearching = false; }
+    }
+
+    private async Task BrowsePlaces(string categoryId)
+    {
+        _isSearching = true;
+        _status = null;
+        StateHasChanged();
+
+        try
+        {
+            var request = new PlacesRequest
+            {
+                At = _mapOptions.Center,
+                Categories = new List<string> { categoryId },
+                Limit = 10
+            };
+            var result = await PlacesService.BrowseAsync(request);
+            _placesResults = result.Items ?? new List<PlaceItem>();
+            _markers = _placesResults.Where(i => i.Position.HasValue)
+                .Select(i => new GeocodeItem
+                {
+                    Title = i.Title,
+                    Position = i.Position,
+                    Address = i.Address
+                }).ToList();
+
+            if (_placesResults.Count == 0) _status = "No places found.";
+        }
+        catch (Exception ex) { _status = $"Error: {ex.Message}"; }
+        finally { _isSearching = false; }
+    }
+
+    private async Task FocusPlace(PlaceItem item)
+    {
+        if (!item.Position.HasValue || _advMap?.InteropObject == null) return;
+        await _advMap.InteropObject.SetCenter(item.Position.Value, true);
+        await _advMap.InteropObject.SetZoom(16, true);
+    }
+
     private void ClearResults()
     {
         _results.Clear();
         _markers.Clear();
+        _placesResults.Clear();
         _status = null;
         _searchQuery = "";
+        _placesQuery = "";
     }
 }

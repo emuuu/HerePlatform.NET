@@ -34,5 +34,7 @@ public static class DependencyInjectionExtensions
         services.AddScoped<IPublicTransitService, PublicTransitService>();
         services.AddScoped<IWaypointSequenceService, WaypointSequenceService>();
         services.AddScoped<IGeofencingService, GeofencingService>();
+        services.AddScoped<IPlacesService, PlacesService>();
+        services.AddScoped<IIsolineService, IsolineService>();
     }
 }

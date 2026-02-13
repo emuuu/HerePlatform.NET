@@ -3,11 +3,12 @@
 @using HerePlatformComponents.Maps.Events
 @using HerePlatformComponents.Maps.Services
 @using HerePlatformComponents.Maps.Services.Routing
+@using HerePlatformComponents.Maps.Services.Isoline
 
 <PageTitle>Routing</PageTitle>
 
 <h3>Routing Demo</h3>
-<p>Click two points on the map to calculate a route, or use the presets below.</p>
+<p>Click two points on the map to calculate a route, use presets, try isoline, or enable turn-by-turn instructions.</p>
 
 <details class="mb-3">
     <summary class="fw-bold" role="button">Usage</summary>
@@ -49,6 +50,15 @@ var result = await RoutingService.CalculateRouteAsync(request);
             LineWidth="5" Visible="true" />
     }
 
+    @if (_isolinePaths != null)
+    {
+        @foreach (var iso in _isolinePaths)
+        {
+            <PolygonComponent Path="@iso.Points" FillColor="@iso.Color" StrokeColor="@iso.StrokeColor"
+                LineWidth="2" />
+        }
+    }
+
 </AdvancedHereMap>
 
 <div class="mt-3 d-flex gap-3 flex-wrap">
@@ -79,6 +89,47 @@ var result = await RoutingService.CalculateRouteAsync(request);
     </div>
 </div>
 
+<div class="mt-3 d-flex gap-3 flex-wrap align-items-end">
+    <div>
+        <h5>Turn-by-Turn</h5>
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" @bind="_showInstructions" @bind:after="RecalculateIfReady" />
+            <label class="form-check-label">Show Instructions</label>
+        </div>
+    </div>
+
+    <div>
+        <h5>Isoline (Isochrone)</h5>
+        <div class="input-group input-group-sm" style="max-width:260px;">
+            <span class="input-group-text">Range (min)</span>
+            <input type="number" class="form-control" @bind="_isolineMinutes" min="1" max="120" />
+            <button class="btn btn-outline-info" @onclick="CalculateIsoline">Calculate</button>
+        </div>
+        <p class="text-muted mb-0" style="font-size:0.8em;">Uses first click (origin) as center.</p>
+    </div>
+
+    @if (_transportMode == TransportMode.Truck)
+    {
+        <div>
+            <h5>Truck Parameters</h5>
+            <div class="d-flex gap-2 flex-wrap" style="font-size:0.85em;">
+                <div>
+                    <label>Height (m)</label>
+                    <input type="number" class="form-control form-control-sm" @bind="_truckHeight" step="0.1" style="width:80px;" />
+                </div>
+                <div>
+                    <label>Width (m)</label>
+                    <input type="number" class="form-control form-control-sm" @bind="_truckWidth" step="0.1" style="width:80px;" />
+                </div>
+                <div>
+                    <label>Weight (kg)</label>
+                    <input type="number" class="form-control form-control-sm" @bind="_truckWeight" step="1000" style="width:100px;" />
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
 @if (_isCalculating)
 {
     <div class="mt-3 alert alert-info">Calculating route...</div>
@@ -97,6 +148,27 @@ var result = await RoutingService.CalculateRouteAsync(request);
     </div>
 }
 
+@if (_turnInstructions != null && _turnInstructions.Count > 0)
+{
+    <div class="mt-3">
+        <h5>Turn-by-Turn Instructions</h5>
+        <div style="max-height:200px;overflow-y:auto;">
+            <ol class="list-group list-group-numbered">
+                @foreach (var instr in _turnInstructions)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-start py-1">
+                        <div class="ms-2 me-auto">
+                            <span class="badge bg-secondary me-1">@instr.Action</span>
+                            @(instr.Instruction ?? "")
+                        </div>
+                        <span class="badge bg-primary rounded-pill">@(instr.Length)m</span>
+                    </li>
+                }
+            </ol>
+        </div>
+    </div>
+}
+
 @if (!string.IsNullOrEmpty(_status))
 {
     <div class="mt-3 alert alert-info">@_status</div>
@@ -112,9 +184,23 @@ var result = await RoutingService.CalculateRouteAsync(request);
     private string _strokeColor = "#0066FF";
     private bool _isCalculating;
     private string? _status;
+    private bool _showInstructions;
+    private List<TurnInstruction>? _turnInstructions;
+    private int _isolineMinutes = 10;
+    private List<IsolineDisplay>? _isolinePaths;
+
+    // Truck parameters
+    private double _truckHeight = 4.0;
+    private double _truckWidth = 2.5;
+    private int _truckWeight = 36000;
 
     [Inject]
     private IRoutingService RoutingService { get; set; } = default!;
+
+    [Inject]
+    private IIsolineService IsolineService { get; set; } = default!;
+
+    private record IsolineDisplay(List<LatLngLiteral> Points, string Color, string StrokeColor);
 
     private MapOptions _mapOptions = new()
     {
@@ -180,6 +266,7 @@ var result = await RoutingService.CalculateRouteAsync(request);
         _isCalculating = true;
         _routePath = null;
         _routeSummary = null;
+        _turnInstructions = null;
         StateHasChanged();
 
         try
@@ -189,8 +276,20 @@ var result = await RoutingService.CalculateRouteAsync(request);
                 Origin = _origin.Value,
                 Destination = _destination.Value,
                 TransportMode = _transportMode,
-                ReturnPolyline = true
+                ReturnPolyline = true,
+                ReturnInstructions = _showInstructions
             };
+
+            // Truck parameters
+            if (_transportMode == TransportMode.Truck)
+            {
+                request.Truck = new TruckOptions
+                {
+                    Height = _truckHeight,
+                    Width = _truckWidth,
+                    GrossWeight = _truckWeight
+                };
+            }
 
             var result = await RoutingService.CalculateRouteAsync(request);
 
@@ -206,6 +305,12 @@ var result = await RoutingService.CalculateRouteAsync(request);
                             path.AddRange(section.DecodedPolyline);
 
                         _routeSummary ??= section.Summary;
+
+                        if (section.TurnByTurnActions != null)
+                        {
+                            _turnInstructions ??= new List<TurnInstruction>();
+                            _turnInstructions.AddRange(section.TurnByTurnActions);
+                        }
                     }
                 }
                 _routePath = path;
@@ -221,12 +326,68 @@ var result = await RoutingService.CalculateRouteAsync(request);
         }
     }
 
+    private async Task CalculateIsoline()
+    {
+        if (!_origin.HasValue) { _status = "Set an origin first (click the map)."; return; }
+
+        _isCalculating = true;
+        _isolinePaths = null;
+        StateHasChanged();
+
+        try
+        {
+            var request = new IsolineRequest
+            {
+                Center = _origin.Value,
+                Ranges = new List<int> { _isolineMinutes * 60 },
+                RangeType = IsolineRangeType.Time,
+                TransportMode = _transportMode
+            };
+
+            var result = await IsolineService.CalculateIsolineAsync(request);
+
+            if (result.Isolines is { Count: > 0 })
+            {
+                _isolinePaths = new();
+                foreach (var iso in result.Isolines)
+                {
+                    if (iso.Polygon is { Count: > 0 })
+                    {
+                        _isolinePaths.Add(new IsolineDisplay(iso.Polygon, "rgba(0,102,255,0.2)", "#0066FF"));
+                    }
+                }
+            }
+            else
+            {
+                _status = "No isoline returned.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _status = $"Error: {ex.Message}";
+        }
+        finally
+        {
+            _isCalculating = false;
+        }
+    }
+
+    private async Task RecalculateIfReady()
+    {
+        if (_origin.HasValue && _destination.HasValue)
+        {
+            await CalculateRoute();
+        }
+    }
+
     private void ClearRoute()
     {
         _origin = null;
         _destination = null;
         _routePath = null;
         _routeSummary = null;
+        _turnInstructions = null;
+        _isolinePaths = null;
         _status = "Click on the map to set origin.";
     }
 

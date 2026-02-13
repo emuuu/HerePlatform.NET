@@ -46,4 +46,19 @@ public class RoutingRequest
     /// Features to avoid.
     /// </summary>
     public RoutingAvoidFeature Avoid { get; set; } = RoutingAvoidFeature.None;
+
+    /// <summary>
+    /// When true, the response includes turn-by-turn instructions.
+    /// </summary>
+    public bool ReturnInstructions { get; set; }
+
+    /// <summary>
+    /// Truck-specific parameters (only used when TransportMode is Truck).
+    /// </summary>
+    public TruckOptions? Truck { get; set; }
+
+    /// <summary>
+    /// Electric vehicle parameters.
+    /// </summary>
+    public EvOptions? Ev { get; set; }
 }

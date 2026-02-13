@@ -279,6 +279,18 @@ public class Map : EventEntityBase, IJsObjectRef, IAsyncDisposable
     }
 
     /// <summary>
+    /// Adjusts the viewport to fit the given points.
+    /// </summary>
+    /// <param name="points">Points to fit in the viewport.</param>
+    /// <param name="animate">Whether to animate the transition.</param>
+    public Task ZoomToBoundsAsync(List<LatLngLiteral> points, bool animate = true)
+    {
+        return _jsObjectRef.JSRuntime.InvokeVoidAsync(
+            "blazorHerePlatform.objectManager.zoomToBounds",
+            Guid.ToString(), points, animate, null).AsTask();
+    }
+
+    /// <summary>
     /// Exports all map objects as a GeoJSON FeatureCollection string.
     /// </summary>
     public Task<string> ToGeoJsonAsync()

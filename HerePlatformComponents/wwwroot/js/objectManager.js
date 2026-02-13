@@ -1843,12 +1843,17 @@ window.blazorHerePlatform.objectManager = function () {
                 }
 
                 var router = herePlatform.getRoutingService(null, 8);
+                var returnParts = ['polyline', 'summary'];
+                if (request.returnInstructions) {
+                    returnParts.push('turnByTurnActions', 'actions');
+                }
+
                 var params = {
                     routingMode: request.routingMode || 'fast',
                     transportMode: request.transportMode || 'car',
                     origin: request.origin.lat + ',' + request.origin.lng,
                     destination: request.destination.lat + ',' + request.destination.lng,
-                    return: 'polyline,summary'
+                    return: returnParts.join(',')
                 };
 
                 if (request.via && request.via.length > 0) {
@@ -1861,6 +1866,33 @@ window.blazorHerePlatform.objectManager = function () {
                     params.alternatives = request.alternatives;
                 }
 
+                // Truck parameters
+                if (request.truck) {
+                    var t = request.truck;
+                    if (t.height != null) params['truck[height]'] = t.height;
+                    if (t.width != null) params['truck[width]'] = t.width;
+                    if (t.length != null) params['truck[length]'] = t.length;
+                    if (t.grossWeight != null) params['truck[grossWeight]'] = t.grossWeight;
+                    if (t.weightPerAxle != null) params['truck[weightPerAxle]'] = t.weightPerAxle;
+                    if (t.axleCount != null) params['truck[axleCount]'] = t.axleCount;
+                    if (t.trailerCount != null) params['truck[trailerCount]'] = t.trailerCount;
+                    if (t.tunnelCategory) params['truck[tunnelCategory]'] = t.tunnelCategory;
+                    if (t.hazardousGoods) params['truck[hazardousGoods]'] = t.hazardousGoods;
+                }
+
+                // EV parameters
+                if (request.ev) {
+                    var ev = request.ev;
+                    if (ev.initialCharge != null) params['ev[initialCharge]'] = ev.initialCharge;
+                    if (ev.maxCharge != null) params['ev[maxCharge]'] = ev.maxCharge;
+                    if (ev.maxChargeAfterChargingStation != null) params['ev[maxChargeAfterChargingStation]'] = ev.maxChargeAfterChargingStation;
+                    if (ev.minChargeAtChargingStation != null) params['ev[minChargeAtChargingStation]'] = ev.minChargeAtChargingStation;
+                    if (ev.minChargeAtDestination != null) params['ev[minChargeAtDestination]'] = ev.minChargeAtDestination;
+                    if (ev.chargingCurve) params['ev[chargingCurve]'] = ev.chargingCurve;
+                    if (ev.freeFlowSpeedTable) params['ev[freeFlowSpeedTable]'] = ev.freeFlowSpeedTable;
+                    if (ev.auxiliaryConsumption != null) params['ev[auxiliaryConsumption]'] = ev.auxiliaryConsumption;
+                }
+
                 router.calculateRoute(params, function (result) {
                     var routes = [];
                     if (result.routes) {
@@ -1868,15 +1900,53 @@ window.blazorHerePlatform.objectManager = function () {
                             var sections = [];
                             if (route.sections) {
                                 route.sections.forEach(function (section) {
-                                    sections.push({
+                                    var sectionData = {
                                         polyline: section.polyline || null,
                                         summary: section.summary ? {
                                             duration: section.summary.duration || 0,
                                             length: section.summary.length || 0,
                                             baseDuration: section.summary.baseDuration || null
                                         } : null,
-                                        transport: section.transport ? section.transport.mode : null
-                                    });
+                                        transport: section.transport ? section.transport.mode : null,
+                                        turnByTurnActions: null
+                                    };
+
+                                    // Extract turn-by-turn actions + instructions
+                                    if (request.returnInstructions) {
+                                        // HERE v8 returns actions in two places:
+                                        // - section.turnByTurnActions[] has: action, duration, length, offset, currentRoad, nextRoad, direction, severity
+                                        // - section.actions[] has: action, duration, length, offset, instruction (human-readable text)
+                                        // We prefer turnByTurnActions for detailed data, fall back to actions
+                                        var sourceActions = section.turnByTurnActions || section.actions;
+                                        var instructionSource = section.actions; // instruction text lives here
+
+                                        if (sourceActions && sourceActions.length > 0) {
+                                            sectionData.turnByTurnActions = sourceActions.map(function (action, idx) {
+                                                // Get instruction text from section.actions if available
+                                                var instruction = action.instruction || null;
+                                                if (!instruction && instructionSource && instructionSource[idx]) {
+                                                    instruction = instructionSource[idx].instruction || null;
+                                                }
+                                                // Build road description from currentRoad/nextRoad if no instruction
+                                                if (!instruction && action.nextRoad && action.nextRoad.name && action.nextRoad.name.length > 0) {
+                                                    var roadName = action.nextRoad.name[0].value || '';
+                                                    var roadNum = (action.nextRoad.number && action.nextRoad.number.length > 0)
+                                                        ? action.nextRoad.number[0].value : '';
+                                                    instruction = (action.action || '') + (roadName ? ' onto ' + roadName : '') + (roadNum ? ' (' + roadNum + ')' : '');
+                                                }
+                                                return {
+                                                    action: action.action || null,
+                                                    instruction: instruction,
+                                                    duration: action.duration || 0,
+                                                    length: action.length || 0,
+                                                    offset: action.offset != null ? action.offset : 0,
+                                                    position: null
+                                                };
+                                            });
+                                        }
+                                    }
+
+                                    sections.push(sectionData);
                                 });
                             }
                             routes.push({ sections: sections });
@@ -2878,6 +2948,352 @@ window.blazorHerePlatform.objectManager = function () {
                     });
                 });
             });
+        },
+
+        // ──────────────────────────────────────────
+        // Places Service (discover / browse / lookup)
+        // ──────────────────────────────────────────
+
+        discoverPlaces: function (request) {
+            return new Promise(function (resolve, reject) {
+                if (!herePlatform) {
+                    reject('Platform not initialized');
+                    return;
+                }
+
+                var service = herePlatform.getSearchService();
+                var params = { q: request.query || '', limit: request.limit || 20 };
+                if (request.at) params.at = request.at.lat + ',' + request.at.lng;
+                if (request.boundingBox) params.in = 'bbox:' + request.boundingBox;
+                if (request.lang) params.lang = request.lang;
+
+                service.discover(params, function (result) {
+                    resolve(blazorHerePlatform.objectManager._mapPlacesResult(result));
+                }, function (error) {
+                    console.warn('[BlazorHerePlatform] Discover places error:', error);
+                    resolve({ items: [] });
+                });
+            });
+        },
+
+        browsePlaces: function (request) {
+            return new Promise(function (resolve, reject) {
+                if (!herePlatform) {
+                    reject('Platform not initialized');
+                    return;
+                }
+
+                var service = herePlatform.getSearchService();
+                var params = { limit: request.limit || 20 };
+                if (request.at) params.at = request.at.lat + ',' + request.at.lng;
+                if (request.boundingBox) params.in = 'bbox:' + request.boundingBox;
+                if (request.categories && request.categories.length > 0) {
+                    params.categories = request.categories.join(',');
+                }
+                if (request.lang) params.lang = request.lang;
+
+                service.browse(params, function (result) {
+                    resolve(blazorHerePlatform.objectManager._mapPlacesResult(result));
+                }, function (error) {
+                    console.warn('[BlazorHerePlatform] Browse places error:', error);
+                    resolve({ items: [] });
+                });
+            });
+        },
+
+        lookupPlace: function (request) {
+            return new Promise(function (resolve, reject) {
+                if (!herePlatform) {
+                    reject('Platform not initialized');
+                    return;
+                }
+
+                var service = herePlatform.getSearchService();
+                var params = { id: request.id || '' };
+                if (request.lang) params.lang = request.lang;
+
+                service.lookup(params, function (result) {
+                    // lookup returns a single item, not an array
+                    var item = blazorHerePlatform.objectManager._mapSinglePlaceItem(result);
+                    resolve({ items: item ? [item] : [] });
+                }, function (error) {
+                    console.warn('[BlazorHerePlatform] Lookup place error:', error);
+                    resolve({ items: [] });
+                });
+            });
+        },
+
+        _mapSinglePlaceItem: function (item) {
+            if (!item) return null;
+            var mapped = {
+                title: item.title || null,
+                position: item.position ? { lat: item.position.lat, lng: item.position.lng } : null,
+                address: item.address ? item.address.label : null,
+                categories: null,
+                openingHours: null,
+                contacts: null,
+                distance: item.distance != null ? item.distance : null,
+                placeId: item.id || null
+            };
+            if (item.categories && item.categories.length > 0) {
+                mapped.categories = item.categories.map(function (c) { return c.name || c.id; });
+            }
+            if (item.openingHours && item.openingHours.length > 0) {
+                mapped.openingHours = item.openingHours.map(function (oh) { return oh.text || ''; }).join('; ');
+            }
+            if (item.contacts && item.contacts.length > 0) {
+                mapped.contacts = [];
+                item.contacts.forEach(function (contact) {
+                    if (contact.phone) {
+                        contact.phone.forEach(function (p) {
+                            mapped.contacts.push({ type: 'phone', value: p.value });
+                        });
+                    }
+                    if (contact.www) {
+                        contact.www.forEach(function (w) {
+                            mapped.contacts.push({ type: 'website', value: w.value });
+                        });
+                    }
+                    if (contact.email) {
+                        contact.email.forEach(function (e) {
+                            mapped.contacts.push({ type: 'email', value: e.value });
+                        });
+                    }
+                });
+            }
+            return mapped;
+        },
+
+        _mapPlacesResult: function (result) {
+            var items = (result.items || []).map(function (item) {
+                return blazorHerePlatform.objectManager._mapSinglePlaceItem(item);
+            }).filter(function (i) { return i !== null; });
+            return { items: items };
+        },
+
+        // ──────────────────────────────────────────
+        // Isoline Routing Service
+        // ──────────────────────────────────────────
+
+        calculateIsoline: function (request) {
+            return new Promise(function (resolve, reject) {
+                if (!herePlatform) {
+                    reject('Platform not initialized');
+                    return;
+                }
+
+                var router = herePlatform.getRoutingService(null, 8);
+                var params = {
+                    'origin': request.center.lat + ',' + request.center.lng,
+                    'range[type]': request.rangeType || 'time',
+                    'range[values]': (request.ranges || []).join(','),
+                    'transportMode': request.transportMode || 'car',
+                    'routingMode': request.routingMode || 'fast'
+                };
+
+                if (request.departureTime) params.departureTime = request.departureTime;
+
+                router.calculateIsoline(params, function (result) {
+                    var isolines = [];
+                    if (result.isolines) {
+                        result.isolines.forEach(function (isoline) {
+                            if (isoline.polygons) {
+                                isoline.polygons.forEach(function (polygon) {
+                                    var points = [];
+                                    if (polygon.outer) {
+                                        // Encoded flexible polyline
+                                        // Decode using H.geo.LineString if available, or pass raw
+                                        try {
+                                            var lineString = H.geo.LineString.fromFlexiblePolyline(polygon.outer);
+                                            var each = lineString.getLatLngAltArray();
+                                            for (var i = 0; i < each.length; i += 3) {
+                                                points.push({ lat: each[i], lng: each[i + 1] });
+                                            }
+                                        } catch (e) {
+                                            // Fallback: return encoded string for C# decoding
+                                            console.warn('[BlazorHerePlatform] Failed to decode isoline polyline:', e);
+                                        }
+                                    }
+                                    isolines.push({
+                                        range: isoline.range ? isoline.range.value : 0,
+                                        polygon: points,
+                                        encodedPolyline: polygon.outer || null
+                                    });
+                                });
+                            }
+                        });
+                    }
+                    resolve({ isolines: isolines });
+                }, function (error) {
+                    console.warn('[BlazorHerePlatform] Isoline error:', error);
+                    resolve({ isolines: [] });
+                });
+            });
+        },
+
+        // ──────────────────────────────────────────
+        // Image Overlay Component
+        // ──────────────────────────────────────────
+
+        updateImageOverlayComponent: function (id, options, callbackRef) {
+            if (!isHereApiLoaded()) {
+                console.warn('[BlazorHerePlatform] HERE API not loaded. Cannot create image overlay.');
+                return;
+            }
+
+            var map = mapObjects[options.mapId];
+            if (!map || map._blzPlaceholder) return;
+
+            var bounds = new H.geo.Rect(options.top, options.left, options.bottom, options.right);
+
+            var existing = mapObjects[id];
+            if (existing) {
+                // Update existing overlay
+                existing.setBounds(bounds);
+                if (typeof existing.setOpacity === 'function') {
+                    existing.setOpacity(options.opacity != null ? options.opacity : 1.0);
+                }
+                if (typeof existing.setVisibility === 'function') {
+                    existing.setVisibility(options.visible !== false);
+                }
+                return;
+            }
+
+            // Create new overlay
+            var overlay = new H.map.Overlay(bounds, options.imageUrl, {
+                volatility: true
+            });
+            if (options.opacity != null) {
+                overlay.setOpacity(options.opacity);
+            }
+            if (options.visible === false) {
+                overlay.setVisibility(false);
+            }
+            map.addObject(overlay);
+            addMapObject(id, overlay);
+        },
+
+        disposeImageOverlayComponent: function (id) {
+            var overlay = mapObjects[id];
+            if (!overlay) return;
+
+            // Remove from any map
+            for (var key of Object.keys(mapObjects)) {
+                var obj = mapObjects[key];
+                if (obj instanceof H.Map) {
+                    try { obj.removeObject(overlay); } catch (e) { }
+                }
+            }
+            removeMapObject(id);
+        },
+
+        // ──────────────────────────────────────────
+        // Zoom to Bounds
+        // ──────────────────────────────────────────
+
+        zoomToBounds: function (mapGuid, points, animate, padding) {
+            var map = mapObjects[mapGuid];
+            if (!map || map._blzPlaceholder || !points || points.length === 0) return;
+
+            // Build bounding rect from points
+            var minLat = 90, maxLat = -90, minLng = 180, maxLng = -180;
+            points.forEach(function (p) {
+                if (p.lat < minLat) minLat = p.lat;
+                if (p.lat > maxLat) maxLat = p.lat;
+                if (p.lng < minLng) minLng = p.lng;
+                if (p.lng > maxLng) maxLng = p.lng;
+            });
+
+            var rect = new H.geo.Rect(maxLat, minLng, minLat, maxLng);
+            var lookAtData = { bounds: rect };
+
+            if (padding) {
+                lookAtData.bounds = rect.resizeToCenter(
+                    new H.geo.Point(rect.getCenter().lat, rect.getCenter().lng)
+                );
+            }
+
+            map.getViewModel().setLookAtData(lookAtData, animate !== false);
+        },
+
+        // ──────────────────────────────────────────
+        // Context Menu
+        // ──────────────────────────────────────────
+
+        showContextMenu: function (mapGuid, items, x, y, callbackRef) {
+            // Remove any existing context menu
+            blazorHerePlatform.objectManager.hideContextMenu(mapGuid);
+
+            var map = mapObjects[mapGuid];
+            if (!map || map._blzPlaceholder) return;
+
+            // Get the map container element
+            var mapElement = map.getElement();
+            if (!mapElement) return;
+
+            // Create menu DOM
+            var menu = document.createElement('div');
+            menu.className = 'blz-here-context-menu';
+            menu.setAttribute('data-map-guid', mapGuid);
+            menu.style.cssText = 'position:absolute;z-index:10000;background:white;border:1px solid #ccc;' +
+                'border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,0.15);padding:4px 0;min-width:140px;' +
+                'font-family:sans-serif;font-size:13px;';
+            menu.style.left = x + 'px';
+            menu.style.top = y + 'px';
+
+            items.forEach(function (item, index) {
+                var menuItem = document.createElement('div');
+                menuItem.style.cssText = 'padding:6px 16px;cursor:pointer;white-space:nowrap;' +
+                    'color:' + (item.disabled ? '#aaa' : '#333') + ';' +
+                    'pointer-events:' + (item.disabled ? 'none' : 'auto') + ';';
+                menuItem.textContent = item.label || '';
+                if (!item.disabled) {
+                    menuItem.addEventListener('mouseenter', function () {
+                        menuItem.style.background = '#f0f0f0';
+                    });
+                    menuItem.addEventListener('mouseleave', function () {
+                        menuItem.style.background = 'transparent';
+                    });
+                    menuItem.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        blazorHerePlatform.objectManager.hideContextMenu(mapGuid);
+                        if (callbackRef) {
+                            callbackRef.invokeMethodAsync('OnContextMenuItemClicked', index, item.label || '');
+                        }
+                    });
+                }
+                menu.appendChild(menuItem);
+            });
+
+            mapElement.style.position = 'relative';
+            mapElement.appendChild(menu);
+
+            // Auto-hide on click outside or scroll
+            var hideHandler = function (e) {
+                if (!menu.contains(e.target)) {
+                    blazorHerePlatform.objectManager.hideContextMenu(mapGuid);
+                }
+            };
+            // Delay the listener so this click doesn't immediately close it
+            setTimeout(function () {
+                document.addEventListener('click', hideHandler, { once: true });
+                document.addEventListener('contextmenu', hideHandler, { once: true });
+            }, 0);
+
+            // Store reference for cleanup
+            map['_blzContextMenu'] = { menu: menu, hideHandler: hideHandler };
+        },
+
+        hideContextMenu: function (mapGuid) {
+            var map = mapObjects[mapGuid];
+            if (!map) return;
+            var ctx = map['_blzContextMenu'];
+            if (ctx) {
+                if (ctx.menu && ctx.menu.parentNode) {
+                    ctx.menu.parentNode.removeChild(ctx.menu);
+                }
+                map['_blzContextMenu'] = null;
+            }
         }
     };
 }();

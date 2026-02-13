@@ -596,6 +596,10 @@
 
         if (callback.HasDelegate)
             await callback.InvokeAsync(args);
+
+        // Forward to registered context menu handler (ContextMenuComponent)
+        if (eventName == "contextmenu" && _contextMenuHandler != null)
+            await _contextMenuHandler(args);
     }
 
     [JSInvokable]
@@ -684,6 +688,34 @@
     }
 
     #endregion
+
+    private Func<MapPointerEventArgs, Task>? _contextMenuHandler;
+
+    internal void RegisterContextMenuHandler(Func<MapPointerEventArgs, Task> handler)
+    {
+        _contextMenuHandler = handler;
+    }
+
+    internal void UnregisterContextMenuHandler()
+    {
+        _contextMenuHandler = null;
+    }
+
+    /// <summary>
+    /// Adjusts the viewport to fit all current markers.
+    /// </summary>
+    public async Task ZoomToMarkersAsync(bool animate = true)
+    {
+        if (MapRef?.InteropObject == null || _mapComponents.Count == 0) return;
+
+        var points = new List<LatLngLiteral>();
+        foreach (var marker in _mapComponents.Values)
+        {
+            points.Add(new LatLngLiteral(marker.Lat, marker.Lng));
+        }
+
+        await MapRef.InteropObject.ZoomToBoundsAsync(points, animate);
+    }
 
     internal void AddMarker(MarkerComponent marker)
     {
