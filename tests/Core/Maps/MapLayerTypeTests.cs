@@ -11,7 +11,7 @@ public class MapLayerTypeTests
     {
         var values = Enum.GetValues<MapLayerType>();
 
-        Assert.That(values, Has.Length.EqualTo(30));
+        Assert.That(values, Has.Length.EqualTo(27));
 
         // Vector base layers
         Assert.That(values, Does.Contain(MapLayerType.VectorNormalMap));

@@ -56,15 +56,12 @@
         }
     </div>
 
-    <h5>Vector Traffic Layers</h5>
+    <h5>Traffic Overlay</h5>
     <div class="btn-group flex-wrap mb-2" role="group">
-        @foreach (var (type, label) in _vectorTrafficLayers)
-        {
-            <button class="btn btn-outline-warning btn-sm @(_layerType == type ? "active" : "")"
-                    @onclick="() => ChangeLayer(type)">
-                @label
-            </button>
-        }
+        <button class="btn btn-sm @(_trafficOverlay ? "btn-warning" : "btn-outline-warning")"
+                @onclick="ToggleTraffic">
+            Traffic @(_trafficOverlay ? "ON" : "OFF")
+        </button>
     </div>
 
     <h5>Raster Layers</h5>
@@ -102,6 +99,7 @@
     private HereMap? _map;
     private bool _mapReady;
     private MapLayerType _layerType = MapLayerType.VectorNormalMap;
+    private bool _trafficOverlay;
     private string _selectedLocale = "de-DE";
 
     private MapOptions _mapOptions = new()
@@ -145,14 +143,6 @@
         (MapLayerType.VectorNormalTopoNight, "Topo Night"),
     ];
 
-    private static readonly (MapLayerType Type, string Label)[] _vectorTrafficLayers =
-    [
-        (MapLayerType.VectorTrafficMap, "Traffic Map"),
-        (MapLayerType.VectorTrafficMapNight, "Traffic Map Night"),
-        (MapLayerType.VectorTrafficLite, "Traffic Lite"),
-        (MapLayerType.VectorTrafficLiteNight, "Traffic Lite Night"),
-    ];
-
     private static readonly (MapLayerType Type, string Label)[] _rasterLayers =
     [
         (MapLayerType.RasterNormalMap, "Normal"),
@@ -188,6 +178,21 @@
         if (_map?.InteropObject == null) return;
         _layerType = layerType;
         await _map.InteropObject.SetBaseLayer(layerType);
+    }
+
+    private async Task ToggleTraffic()
+    {
+        if (_map?.InteropObject == null) return;
+        if (_trafficOverlay)
+        {
+            await _map.InteropObject.RemoveLayerAsync("vector.traffic.map");
+            _trafficOverlay = false;
+        }
+        else
+        {
+            await _map.InteropObject.AddLayerAsync("vector.traffic.map");
+            _trafficOverlay = true;
+        }
     }
 
     private async Task OnLocaleChanged(ChangeEventArgs e)

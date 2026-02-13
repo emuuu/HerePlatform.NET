@@ -36,19 +36,10 @@ public enum MapLayerType
     [EnumMember(Value = "vector.normal.toponight")]
     VectorNormalTopoNight,
 
-    // --- Vector traffic overlays ---
+    // --- Vector traffic overlay (add via AddLayerAsync, not SetBaseLayer) ---
 
     [EnumMember(Value = "vector.traffic.map")]
     VectorTrafficMap,
-
-    [EnumMember(Value = "vector.traffic.mapnight")]
-    VectorTrafficMapNight,
-
-    [EnumMember(Value = "vector.traffic.lite")]
-    VectorTrafficLite,
-
-    [EnumMember(Value = "vector.traffic.litenight")]
-    VectorTrafficLiteNight,
 
     // --- Raster layers ---
 
