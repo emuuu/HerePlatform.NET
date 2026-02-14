@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="blazor-here-platform.svg" alt="BlazorHerePlatform" width="128" />
+</p>
+
 # BlazorHerePlatform
 
 A comprehensive Blazor component library for the [HERE Maps JS API](https://developer.here.com/develop/javascript-api). Declarative map rendering, markers, shapes, clustering, heatmaps, routing, geocoding, and more — all as Blazor components and services.
