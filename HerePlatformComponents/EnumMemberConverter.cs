@@ -6,9 +6,9 @@ using System.Text.Json.Serialization;
 
 namespace HerePlatformComponents;
 
-internal class EnumMemberConverter<T> : JsonConverter<T> where T : IComparable, IFormattable, IConvertible
+internal class EnumMemberConverter<T> : JsonConverter<T> where T : struct, Enum
 {
-    public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var jsonValue = reader.GetString();
 
@@ -20,7 +20,7 @@ internal class EnumMemberConverter<T> : JsonConverter<T> where T : IComparable, 
             {
                 if (string.Equals(description.Value, jsonValue, StringComparison.OrdinalIgnoreCase))
                 {
-                    return (T?)fi.GetValue(null);
+                    return (T)fi.GetValue(null)!;
                 }
             }
         }

@@ -36,14 +36,12 @@ public class OneOfConverterFactory : JsonConverterFactory
             if (type.IsGenericType)
             {
                 var genericTypeDefinition = type.GetGenericTypeDefinition();
-                if (genericTypeDefinition == typeof(OneOf<,>) ||
-                    genericTypeDefinition == typeof(OneOf<,>))
+                if (genericTypeDefinition == typeof(OneOf<,>))
                 {
                     return (type, typeof(OneOf2JsonConverter<,>));
                 }
 
-                if (genericTypeDefinition == typeof(OneOf<,,>) ||
-                    genericTypeDefinition == typeof(OneOf<,,>))
+                if (genericTypeDefinition == typeof(OneOf<,,>))
                 {
                     return (type, typeof(OneOf3JsonConverter<,,>));
                 }
