@@ -16,7 +16,7 @@
 		<RepositoryType>git</RepositoryType>
 		<Nullable>enable</Nullable>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageIcon>logo.png</PackageIcon>
+		<PackageIcon>blazor-here-platform.png</PackageIcon>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<NoWarn>$(NoWarn);1591</NoWarn>
 	</PropertyGroup>
@@ -32,7 +32,7 @@
 
 	<ItemGroup>
 		<None Include="..\README.md" Pack="true" PackagePath="\" />
-		<None Include="..\logo.png" Pack="true" PackagePath="\" />
+		<None Include="..\blazor-here-platform.png" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 	<ItemGroup>
