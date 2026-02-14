@@ -675,7 +675,7 @@
         if (MapRef?.InteropObject == null || _markerComponents.Count == 0) return;
 
         var points = new List<LatLngLiteral>();
-        foreach (var marker in _markerComponents.Values)
+        foreach (var marker in _markerComponents.Values.ToList())
         {
             points.Add(new LatLngLiteral(marker.Lat, marker.Lng));
         }
