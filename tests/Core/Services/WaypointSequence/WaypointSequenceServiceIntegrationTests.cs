@@ -1,0 +1,44 @@
+using HerePlatformComponents.Maps;
+using HerePlatformComponents.Maps.Services;
+using HerePlatformComponents.Maps.Services.WaypointSequence;
+
+namespace HerePlatformComponents.Tests.Services.WaypointSequence;
+
+[TestFixture]
+public class WaypointSequenceServiceIntegrationTests : ServiceTestBase
+{
+    [Test]
+    public async Task OptimizeSequenceAsync_WithWaypoints_ReturnsOptimizedOrder()
+    {
+        MockJsResult("blazorHerePlatform.objectManager.optimizeWaypointSequence", new WaypointSequenceResult
+        {
+            OptimizedIndices = new List<int> { 2, 0, 1 },
+            OptimizedWaypoints = new List<LatLngLiteral>
+            {
+                new(52.5310, 13.3847),
+                new(52.5200, 13.4050),
+                new(52.5219, 13.4132)
+            },
+            TotalDistance = 15000,
+            TotalDuration = 1200
+        });
+        var service = new WaypointSequenceService(JsRuntime);
+
+        var result = await service.OptimizeSequenceAsync(new WaypointSequenceRequest
+        {
+            Start = new LatLngLiteral(52.5251, 13.3694),
+            End = new LatLngLiteral(52.4907, 13.3880),
+            Waypoints = new List<LatLngLiteral>
+            {
+                new(52.5200, 13.4050),
+                new(52.5219, 13.4132),
+                new(52.5310, 13.3847)
+            }
+        });
+
+        Assert.That(result.OptimizedIndices, Is.EqualTo(new List<int> { 2, 0, 1 }));
+        Assert.That(result.OptimizedWaypoints, Has.Count.EqualTo(3));
+        Assert.That(result.TotalDistance, Is.EqualTo(15000));
+        Assert.That(result.TotalDuration, Is.EqualTo(1200));
+    }
+}
