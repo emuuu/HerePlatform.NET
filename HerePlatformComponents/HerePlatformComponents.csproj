@@ -15,6 +15,7 @@
 		<RepositoryUrl>https://github.com/emuuu/BlazorHerePlatform</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<Nullable>enable</Nullable>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 		<NoWarn>$(NoWarn);1591</NoWarn>
 	</PropertyGroup>
@@ -26,6 +27,10 @@
 
 	<ItemGroup>
 		<SupportedPlatform Include="browser" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\README.md" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 	<ItemGroup>
