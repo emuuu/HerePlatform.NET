@@ -155,6 +155,9 @@ public abstract class MapObjectComponentBase : ComponentBase, IAsyncDisposable
             await UpdateOptions();
     }
 
+    // When AdvancedHereMap disposes, it calls MarkDisposed() on all children first,
+    // preventing redundant JS calls. When a child is removed independently from the
+    // render tree, DisposeAsync runs normally and fires Changed events correctly.
     public async ValueTask DisposeAsync()
     {
         if (_isDisposed) return;

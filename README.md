@@ -24,6 +24,11 @@ builder.Services.AddBlazorHerePlatform("YOUR_HERE_API_KEY");
 </AdvancedHereMap>
 ```
 
+## Limitations
+
+- **Single API key per page**: The HERE Maps JS API is loaded once per page with a single
+  API key. Multiple keys on the same page are not supported.
+
 ## License
 
 MIT
