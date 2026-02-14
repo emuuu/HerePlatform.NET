@@ -158,8 +158,6 @@ public partial class MarkerClusterComponent : IAsyncDisposable
         if (_isDisposed) return;
         _isDisposed = true;
 
-        MapRef?.RemoveCluster(this);
-
         try
         {
             await Js.InvokeVoidAsync("blazorHerePlatform.objectManager.disposeMarkerClusterComponent", Guid);
@@ -167,6 +165,7 @@ public partial class MarkerClusterComponent : IAsyncDisposable
         catch (JSDisconnectedException) { }
         catch (InvalidOperationException) { }
 
+        MapRef?.RemoveCluster(this);
         GC.SuppressFinalize(this);
     }
 

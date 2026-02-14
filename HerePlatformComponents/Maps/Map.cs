@@ -372,10 +372,16 @@ public class Map : EventEntityBase, IJsObjectRef, IAsyncDisposable
 
     protected override async ValueTask DisposeAsyncCore()
     {
-        await _jsObjectRef.JSRuntime.InvokeAsync<object>(
-            "blazorHerePlatform.objectManager.disposeMap", Guid.ToString());
-        await base.DisposeAsyncCore();
+        try
+        {
+            await _jsObjectRef.JSRuntime.InvokeAsync<object>(
+                "blazorHerePlatform.objectManager.disposeMap", Guid.ToString());
+        }
+        catch (JSDisconnectedException) { }
+        catch (InvalidOperationException) { }
+
         JsObjectRefInstances.Remove(_jsObjectRef.Guid.ToString());
+        await base.DisposeAsyncCore();
     }
 
     protected override void Dispose(bool disposing)
