@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{90F5DE15
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "demo", "demo", "{241CDA4F-FBDB-4C3D-86CF-B1E4A52E1063}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HerePlatformComponents.Tests", "tests\Core\HerePlatformComponents.Tests.csproj", "{3FCC3A69-159E-AB75-04FD-01CD488662F6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HerePlatformComponents.Tests", "tests\HerePlatformComponents.Tests\HerePlatformComponents.Tests.csproj", "{3FCC3A69-159E-AB75-04FD-01CD488662F6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HerePlatform.Demo", "demos\HerePlatform.Demo\HerePlatform.Demo.csproj", "{21B9F7C4-EEF0-4DA5-C63F-687ED02083CA}"
 EndProject
