@@ -115,15 +115,12 @@ public partial class DomMarkerComponent : MapObjectComponentBase
 
     protected override string JsDisposeFunction => "blazorHerePlatform.objectManager.disposeDomMarkerComponent";
 
-    protected override Task RegisterWithMapAsync()
-    {
-        MapRef.AddDomMarker(this);
-        return Task.CompletedTask;
-    }
+    protected override Task RegisterWithMapAsync() => MapRef.AddDomMarker(this);
 
     protected override Task UnregisterFromMapAsync()
     {
-        MapRef?.RemoveDomMarker(this);
+        if (MapRef is not null)
+            return MapRef.RemoveDomMarker(this);
         return Task.CompletedTask;
     }
 

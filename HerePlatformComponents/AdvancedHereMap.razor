@@ -24,36 +24,36 @@
 
     internal Guid? MapId => MapRef?.InteropObject?.Guid;
 
-    public int MarkerCount => _mapComponents.Count;
-    public IEnumerable<MarkerComponent> Markers => _mapComponents.Select(x => x.Value);
-    private readonly Dictionary<Guid, MarkerComponent> _mapComponents = [];
+    public int MarkerCount => _markerComponents.Count;
+    public IEnumerable<MarkerComponent> Markers => _markerComponents.Values.ToList();
+    private readonly Dictionary<Guid, MarkerComponent> _markerComponents = [];
 
     public int PolygonCount => _mapPolygonComponents.Count;
-    public IEnumerable<PolygonComponent> Polygons => _mapPolygonComponents.Select(x => x.Value);
+    public IEnumerable<PolygonComponent> Polygons => _mapPolygonComponents.Values.ToList();
     private readonly Dictionary<Guid, PolygonComponent> _mapPolygonComponents = [];
 
     public int PolylineCount => _mapPolylineComponents.Count;
-    public IEnumerable<PolylineComponent> Polylines => _mapPolylineComponents.Select(x => x.Value);
+    public IEnumerable<PolylineComponent> Polylines => _mapPolylineComponents.Values.ToList();
     private readonly Dictionary<Guid, PolylineComponent> _mapPolylineComponents = [];
 
     public int CircleCount => _mapCircleComponents.Count;
-    public IEnumerable<CircleComponent> Circles => _mapCircleComponents.Select(x => x.Value);
+    public IEnumerable<CircleComponent> Circles => _mapCircleComponents.Values.ToList();
     private readonly Dictionary<Guid, CircleComponent> _mapCircleComponents = [];
 
     public int RectCount => _mapRectComponents.Count;
-    public IEnumerable<RectComponent> Rects => _mapRectComponents.Select(x => x.Value);
+    public IEnumerable<RectComponent> Rects => _mapRectComponents.Values.ToList();
     private readonly Dictionary<Guid, RectComponent> _mapRectComponents = [];
 
     public int GroupCount => _mapGroupComponents.Count;
-    public IEnumerable<GroupComponent> Groups => _mapGroupComponents.Select(x => x.Value);
+    public IEnumerable<GroupComponent> Groups => _mapGroupComponents.Values.ToList();
     private readonly Dictionary<Guid, GroupComponent> _mapGroupComponents = [];
 
     public int DomMarkerCount => _mapDomMarkerComponents.Count;
-    public IEnumerable<DomMarkerComponent> DomMarkers => _mapDomMarkerComponents.Select(x => x.Value);
+    public IEnumerable<DomMarkerComponent> DomMarkers => _mapDomMarkerComponents.Values.ToList();
     private readonly Dictionary<Guid, DomMarkerComponent> _mapDomMarkerComponents = [];
 
     public int InfoBubbleCount => _mapInfoBubbleComponents.Count;
-    public IEnumerable<InfoBubbleComponent> InfoBubbles => _mapInfoBubbleComponents.Select(x => x.Value);
+    public IEnumerable<InfoBubbleComponent> InfoBubbles => _mapInfoBubbleComponents.Values.ToList();
     private readonly Dictionary<Guid, InfoBubbleComponent> _mapInfoBubbleComponents = [];
 
     private readonly Dictionary<Guid, MarkerClusterComponent> _mapClusterComponents = [];
@@ -106,6 +106,9 @@
 
     [Parameter]
     public EventCallback OnRectsChanged { get; set; }
+
+    [Parameter]
+    public EventCallback OnDomMarkersChanged { get; set; }
 
     [Parameter]
     public string? CssClass { get; set; }
@@ -374,7 +377,7 @@
     {
         // Legacy compat: still called by old JS for simple tap without event data.
         // New path uses OnObjectPointerEvent instead.
-        if (_mapComponents.TryGetValue(markerId, out var markerComponent))
+        if (_markerComponents.TryGetValue(markerId, out var markerComponent))
         {
             await markerComponent.HandlePointerEvent("tap", new MapPointerEventArgs { Type = "tap" });
         }
@@ -384,7 +387,7 @@
     public async Task OnMarkerDrag(Guid markerId, LatLngLiteral position)
     {
         // Legacy compat: still called by old JS for dragend.
-        if (_mapComponents.TryGetValue(markerId, out var markerComponent))
+        if (_markerComponents.TryGetValue(markerId, out var markerComponent))
         {
             await markerComponent.HandleDragEvent("dragend", new MapDragEventArgs
             {
@@ -669,10 +672,10 @@
     /// </summary>
     public async Task ZoomToMarkersAsync(bool animate = true)
     {
-        if (MapRef?.InteropObject == null || _mapComponents.Count == 0) return;
+        if (MapRef?.InteropObject == null || _markerComponents.Count == 0) return;
 
         var points = new List<LatLngLiteral>();
-        foreach (var marker in _mapComponents.Values)
+        foreach (var marker in _markerComponents.Values)
         {
             points.Add(new LatLngLiteral(marker.Lat, marker.Lng));
         }
@@ -682,14 +685,14 @@
 
     internal async Task AddMarker(MarkerComponent marker)
     {
-        _mapComponents.TryAdd(marker.Guid, marker);
+        _markerComponents.TryAdd(marker.Guid, marker);
         _eventRoutingMap[marker.Guid] = marker;
         await OnMarkersChanged.InvokeAsync();
     }
 
     internal async Task RemoveMarker(MarkerComponent marker)
     {
-        _mapComponents.Remove(marker.Guid);
+        _markerComponents.Remove(marker.Guid);
         _eventRoutingMap.Remove(marker.Guid);
         await OnMarkersChanged.InvokeAsync();
     }
@@ -750,6 +753,8 @@
         await OnRectsChanged.InvokeAsync();
     }
 
+    // Group, InfoBubble, Cluster, GeoJson, Kml: sync, keine Changed-Events
+    // (Infrastruktur-Komponenten, kein Consumer-Tracking noetig)
     internal void AddGroup(GroupComponent group)
     {
         _mapGroupComponents.TryAdd(group.Guid, group);
@@ -760,16 +765,18 @@
         _mapGroupComponents.Remove(group.Guid);
     }
 
-    internal void AddDomMarker(DomMarkerComponent domMarker)
+    internal async Task AddDomMarker(DomMarkerComponent domMarker)
     {
         _mapDomMarkerComponents.TryAdd(domMarker.Guid, domMarker);
         _eventRoutingMap[domMarker.Guid] = domMarker;
+        await OnDomMarkersChanged.InvokeAsync();
     }
 
-    internal void RemoveDomMarker(DomMarkerComponent domMarker)
+    internal async Task RemoveDomMarker(DomMarkerComponent domMarker)
     {
         _mapDomMarkerComponents.Remove(domMarker.Guid);
         _eventRoutingMap.Remove(domMarker.Guid);
+        await OnDomMarkersChanged.InvokeAsync();
     }
 
     internal void AddInfoBubble(InfoBubbleComponent bubble)
@@ -819,10 +826,11 @@
             component.MarkDisposed();
 
         // Mark non-shape components individually
-        foreach (var component in _mapGroupComponents)
-            component.Value.MarkDisposed();
-        foreach (var component in _mapInfoBubbleComponents)
-            component.Value.MarkDisposed();
+        foreach (var c in _mapGroupComponents.Values) c.MarkDisposed();
+        foreach (var c in _mapInfoBubbleComponents.Values) c.MarkDisposed();
+        foreach (var c in _mapClusterComponents.Values) c.MarkDisposed();
+        foreach (var c in _mapGeoJsonComponents.Values) c.MarkDisposed();
+        foreach (var c in _mapKmlComponents.Values) c.MarkDisposed();
 
         if (MapRef != null)
         {
