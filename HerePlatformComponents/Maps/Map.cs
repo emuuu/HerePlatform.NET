@@ -25,8 +25,6 @@ public class Map : EventEntityBase, IJsObjectRef, IAsyncDisposable
     /// </summary>
     public Guid? UIGuid { get; private set; }
 
-    private bool _isDisposed;
-
     public static async Task<Map> CreateAsync(
         IJSRuntime jsRuntime,
         ElementReference mapDiv,
@@ -363,13 +361,6 @@ public class Map : EventEntityBase, IJsObjectRef, IAsyncDisposable
 
     private record LookAtData(double Tilt = 0, double Heading = 0);
 
-    public override async ValueTask DisposeAsync()
-    {
-        await DisposeAsyncCore();
-        Dispose(false);
-        GC.SuppressFinalize(this);
-    }
-
     protected override async ValueTask DisposeAsyncCore()
     {
         try
@@ -382,25 +373,5 @@ public class Map : EventEntityBase, IJsObjectRef, IAsyncDisposable
 
         JsObjectRefInstances.Remove(_jsObjectRef.Guid.ToString());
         await base.DisposeAsyncCore();
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        if (!_isDisposed)
-        {
-            base.Dispose(disposing);
-
-            if (disposing)
-            {
-            }
-
-            _isDisposed = true;
-        }
-    }
-
-    public override void Dispose()
-    {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 }

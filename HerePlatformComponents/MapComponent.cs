@@ -8,15 +8,15 @@ using System.Threading.Tasks;
 
 namespace HerePlatformComponents;
 
-public class MapComponent : ComponentBase, IDisposable, IAsyncDisposable
+public class MapComponent : ComponentBase, IAsyncDisposable
 {
     private bool _isDisposed;
 
     [Inject]
-    public IJSRuntime JsRuntime { get; protected set; } = default!;
+    protected IJSRuntime JsRuntime { get; set; } = default!;
 
     [Inject]
-    public IServiceProvider ServiceProvider { get; protected set; } = default!;
+    protected IServiceProvider ServiceProvider { get; set; } = default!;
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object?>? UserAttributes { get; set; }
@@ -75,8 +75,10 @@ public class MapComponent : ComponentBase, IDisposable, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        if (_isDisposed) return;
+        _isDisposed = true;
+
         await DisposeAsyncCore();
-        Dispose(false);
         GC.SuppressFinalize(this);
     }
 
@@ -100,24 +102,5 @@ public class MapComponent : ComponentBase, IDisposable, IAsyncDisposable
                 }
             }
         }
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!_isDisposed)
-        {
-            if (disposing)
-            {
-                InteropObject?.Dispose();
-            }
-
-            _isDisposed = true;
-        }
-    }
-
-    public void Dispose()
-    {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 }

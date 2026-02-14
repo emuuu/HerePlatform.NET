@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace HerePlatformComponents.Maps.Extension;
 
-public abstract class EventEntityBase : IDisposable
+public abstract class EventEntityBase
 {
     protected readonly JsObjectRef _jsObjectRef;
     private readonly Dictionary<string, List<MapEventListener>> EventListeners;
@@ -93,8 +93,10 @@ public abstract class EventEntityBase : IDisposable
 
     public virtual async ValueTask DisposeAsync()
     {
+        if (_isDisposed) return;
+        _isDisposed = true;
+
         await DisposeAsyncCore();
-        Dispose(false);
         GC.SuppressFinalize(this);
     }
 
@@ -112,23 +114,5 @@ public abstract class EventEntityBase : IDisposable
 
         EventListeners.Clear();
         await _jsObjectRef.DisposeAsync();
-    }
-
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!_isDisposed)
-        {
-            if (disposing)
-            {
-            }
-
-            _isDisposed = true;
-        }
-    }
-
-    public virtual void Dispose()
-    {
-        Dispose(disposing: true);
-        GC.SuppressFinalize(this);
     }
 }

@@ -77,9 +77,4 @@ public class InfoBubble : EventEntityBase, IJsObjectRef
         return _jsObjectRef.InvokeAsync<LatLngLiteral>("getPosition");
     }
 
-    public override void Dispose()
-    {
-        base.Dispose();
-        _jsObjectRef.Dispose();
-    }
 }
