@@ -38,5 +38,12 @@ window.BlazorDocs = {
             this._keyHandler = null;
         }
         this._searchRef = null;
+    },
+
+    scrollNavToActive: function () {
+        var active = document.querySelector('.docs-sidebar .nav-link.active');
+        if (active) {
+            active.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
     }
 };

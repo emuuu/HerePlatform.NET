@@ -1,5 +1,7 @@
 @inject IDocContentService ContentService
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
+@implements IDisposable
 
 <div class="nav-menu p-3">
     <div class="nav-filter mb-3">
@@ -95,8 +97,32 @@
         string.IsNullOrWhiteSpace(_filter) ||
         title.Contains(_filter.Trim(), StringComparison.OrdinalIgnoreCase);
 
+    private bool _needsScroll;
+
     protected override async Task OnInitializedAsync()
     {
         await ContentService.InitializeAsync();
+        Navigation.LocationChanged += OnLocationChanged;
+        _needsScroll = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_needsScroll || firstRender)
+        {
+            _needsScroll = false;
+            await JS.InvokeVoidAsync("BlazorDocs.scrollNavToActive");
+        }
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        _needsScroll = true;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
     }
 }
