@@ -21,7 +21,7 @@ public static class DependencyInjectionExtensions
 
     public static IServiceCollection AddBlazorHerePlatform(this IServiceCollection services, IBlazorHerePlatformKeyService keyService)
     {
-        services.AddScoped(_ => keyService);
+        services.AddSingleton<IBlazorHerePlatformKeyService>(keyService);
         RegisterServices(services);
         return services;
     }
