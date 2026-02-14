@@ -24,7 +24,7 @@ A comprehensive Blazor component library for the [HERE Maps JS API](https://deve
 ## Prerequisites
 
 - A [HERE Developer](https://developer.here.com/) account and API key
-- .NET 8.0 or .NET 9.0
+- .NET 8.0, 9.0, or 10.0
 
 ## Installation
 
