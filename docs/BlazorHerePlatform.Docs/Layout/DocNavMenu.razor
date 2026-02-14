@@ -2,11 +2,21 @@
 @inject NavigationManager Navigation
 
 <div class="nav-menu p-3">
+    <div class="nav-filter mb-3">
+        <input type="text" class="form-control form-control-sm" placeholder="Filter..."
+               @bind="_filter" @bind:event="oninput" />
+    </div>
+
     @foreach (var section in ContentService.GetNavSections())
     {
-        <h6 class="nav-section-title text-uppercase text-muted fw-bold mt-3 mb-2">@(section.Category)</h6>
+        var visibleItems = section.Items
+            .Where(i => Matches(i.Title))
+            .ToList();
+        if (visibleItems.Count == 0) continue;
+
+        <h6 class="nav-section-title text-uppercase fw-bold mt-3 mb-2">@(section.Category)</h6>
         <ul class="nav flex-column">
-            @foreach (var item in section.Items)
+            @foreach (var item in visibleItems)
             {
                 var href = $"docs/{item.Slug}";
                 <li class="nav-item">
@@ -19,54 +29,69 @@
         </ul>
     }
 
-    <h6 class="nav-section-title text-uppercase text-muted fw-bold mt-3 mb-2">Demos</h6>
-    <ul class="nav flex-column">
-        <li class="nav-item">
-            <NavLink class="nav-link py-1" href="demo" Match="NavLinkMatch.All"
-                     @onclick="() => OnNavigate.InvokeAsync()">
-                Overview
-            </NavLink>
-        </li>
-    </ul>
+    @{
+        var filteredGroups = _demoGroups
+            .Select((g, i) => (Title: _demoGroupTitles[i], Items: g.Where(x => Matches(x.Title)).ToList()))
+            .ToList();
+        var hasOverview = Matches("Overview");
+        var anyDemo = hasOverview || filteredGroups.Any(g => g.Items.Count > 0);
+    }
 
-    <h6 class="nav-subsection-title text-muted fw-semibold mt-2 mb-1" style="font-size:.75rem;padding-left:.5rem;">Map Basics</h6>
-    <ul class="nav flex-column">
-        <li class="nav-item"><NavLink class="nav-link py-1" href="demo/map-basic" @onclick="() => OnNavigate.InvokeAsync()">Basic Map</NavLink></li>
-        <li class="nav-item"><NavLink class="nav-link py-1" href="demo/map-controls" @onclick="() => OnNavigate.InvokeAsync()">Map Controls</NavLink></li>
-        <li class="nav-item"><NavLink class="nav-link py-1" href="demo/map-enhancements" @onclick="() => OnNavigate.InvokeAsync()">Enhancements</NavLink></li>
-    </ul>
+    @if (anyDemo)
+    {
+        <h6 class="nav-section-title text-uppercase fw-bold mt-3 mb-2">Demos</h6>
 
-    <h6 class="nav-subsection-title text-muted fw-semibold mt-2 mb-1" style="font-size:.75rem;padding-left:.5rem;">Map Objects</h6>
-    <ul class="nav flex-column">
-        <li class="nav-item"><NavLink class="nav-link py-1" href="demo/map-markers" @onclick="() => OnNavigate.InvokeAsync()">Markers</NavLink></li>
-        <li class="nav-item"><NavLink class="nav-link py-1" href="demo/map-shapes" @onclick="() => OnNavigate.InvokeAsync()">Shapes</NavLink></li>
-        <li class="nav-item"><NavLink class="nav-link py-1" href="demo/map-infobubble" @onclick="() => OnNavigate.InvokeAsync()">InfoBubble</NavLink></li>
-        <li class="nav-item"><NavLink class="nav-link py-1" href="demo/map-groups" @onclick="() => OnNavigate.InvokeAsync()">Groups</NavLink></li>
-    </ul>
+        @if (hasOverview)
+        {
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <NavLink class="nav-link py-1" href="demo" Match="NavLinkMatch.All"
+                             @onclick="() => OnNavigate.InvokeAsync()">
+                        Overview
+                    </NavLink>
+                </li>
+            </ul>
+        }
 
-    <h6 class="nav-subsection-title text-muted fw-semibold mt-2 mb-1" style="font-size:.75rem;padding-left:.5rem;">Data &amp; Visualization</h6>
-    <ul class="nav flex-column">
-        <li class="nav-item"><NavLink class="nav-link py-1" href="demo/map-clustering" @onclick="() => OnNavigate.InvokeAsync()">Clustering</NavLink></li>
-        <li class="nav-item"><NavLink class="nav-link py-1" href="demo/map-data" @onclick="() => OnNavigate.InvokeAsync()">Data Import</NavLink></li>
-        <li class="nav-item"><NavLink class="nav-link py-1" href="demo/map-heatmap" @onclick="() => OnNavigate.InvokeAsync()">Heatmap</NavLink></li>
-        <li class="nav-item"><NavLink class="nav-link py-1" href="demo/map-traffic" @onclick="() => OnNavigate.InvokeAsync()">Traffic</NavLink></li>
-    </ul>
+        @foreach (var group in filteredGroups)
+        {
+            if (group.Items.Count == 0) continue;
 
-    <h6 class="nav-subsection-title text-muted fw-semibold mt-2 mb-1" style="font-size:.75rem;padding-left:.5rem;">Services</h6>
-    <ul class="nav flex-column">
-        <li class="nav-item"><NavLink class="nav-link py-1" href="demo/map-routing" @onclick="() => OnNavigate.InvokeAsync()">Routing</NavLink></li>
-        <li class="nav-item"><NavLink class="nav-link py-1" href="demo/map-geocoding" @onclick="() => OnNavigate.InvokeAsync()">Geocoding</NavLink></li>
-        <li class="nav-item"><NavLink class="nav-link py-1" href="demo/map-autosuggest" @onclick="() => OnNavigate.InvokeAsync()">Autosuggest</NavLink></li>
-        <li class="nav-item"><NavLink class="nav-link py-1" href="demo/map-matrix-routing" @onclick="() => OnNavigate.InvokeAsync()">Matrix Routing</NavLink></li>
-    </ul>
-
-    <h6 class="nav-subsection-title text-muted fw-semibold mt-2 mb-1" style="font-size:.75rem;padding-left:.5rem;">UI &amp; Utilities</h6>
-    <ul class="nav flex-column">
-        <li class="nav-item"><NavLink class="nav-link py-1" href="demo/map-ui-controls" @onclick="() => OnNavigate.InvokeAsync()">UI Controls</NavLink></li>
-        <li class="nav-item"><NavLink class="nav-link py-1" href="demo/map-utilities" @onclick="() => OnNavigate.InvokeAsync()">Utilities</NavLink></li>
-    </ul>
+            <h6 class="nav-subsection-title text-muted fw-semibold mt-2 mb-1"
+                style="font-size:.75rem;padding-left:.5rem;">@group.Title</h6>
+            <ul class="nav flex-column">
+                @foreach (var item in group.Items)
+                {
+                    <li class="nav-item">
+                        <NavLink class="nav-link py-1" href="@item.Href"
+                                 @onclick="() => OnNavigate.InvokeAsync()">
+                            @item.Title
+                        </NavLink>
+                    </li>
+                }
+            </ul>
+        }
+    }
 </div>
 
 @code {
     [Parameter] public EventCallback OnNavigate { get; set; }
+
+    private string _filter = "";
+
+    private static readonly (string Title, string Href)[][] _demoGroups =
+    [
+        [("Basic Map", "demo/map-basic"), ("Map Controls", "demo/map-controls"), ("Enhancements", "demo/map-enhancements")],
+        [("Markers", "demo/map-markers"), ("Shapes", "demo/map-shapes"), ("InfoBubble", "demo/map-infobubble"), ("Groups", "demo/map-groups")],
+        [("Clustering", "demo/map-clustering"), ("Data Import", "demo/map-data"), ("Heatmap", "demo/map-heatmap"), ("Traffic", "demo/map-traffic")],
+        [("Routing", "demo/map-routing"), ("Geocoding", "demo/map-geocoding"), ("Autosuggest", "demo/map-autosuggest"), ("Matrix Routing", "demo/map-matrix-routing")],
+        [("UI Controls", "demo/map-ui-controls"), ("Utilities", "demo/map-utilities")]
+    ];
+
+    private static readonly string[] _demoGroupTitles =
+        ["Map Basics", "Map Objects", "Data & Visualization", "Services", "UI & Utilities"];
+
+    private bool Matches(string title) =>
+        string.IsNullOrWhiteSpace(_filter) ||
+        title.Contains(_filter.Trim(), StringComparison.OrdinalIgnoreCase);
 }

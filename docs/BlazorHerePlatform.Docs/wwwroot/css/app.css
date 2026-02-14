@@ -99,6 +99,15 @@
     min-width: 0;
 }
 
+/* Nav filter */
+.nav-filter {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: var(--bs-body-bg);
+    padding-top: 0.25rem;
+}
+
 /* Nav menu */
 .nav-section-title {
     font-size: 0.75rem;
