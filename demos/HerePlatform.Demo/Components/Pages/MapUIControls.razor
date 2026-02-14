@@ -13,19 +13,34 @@
 
 &lt;AdvancedHereMap Options="@@_mapOptions" Height="500px"&gt;
 
+    &lt;!-- Click to measure distance between points --&gt;
     &lt;DistanceMeasurementComponent
         Active="true"
         Alignment="UIAlignment.TopRight" /&gt;
 
+    &lt;!-- Mini overview map in the corner --&gt;
     &lt;OverviewMapComponent
         Alignment="UIAlignment.BottomRight"
-        ZoomDelta="4" /&gt;
+        ZoomDelta="@@_overviewZoomDelta" /&gt;
 
+    &lt;!-- Draw a rectangle to zoom into an area --&gt;
     &lt;ZoomRectangleComponent
         Active="true"
         Alignment="UIAlignment.TopLeft" /&gt;
 
-&lt;/AdvancedHereMap&gt;</code></pre>
+&lt;/AdvancedHereMap&gt;
+
+@@code {
+    private int _overviewZoomDelta = 4;
+
+    private MapOptions _mapOptions = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 13,
+        EnableUI = true,
+        EnableInteraction = true
+    };
+}</code></pre>
 </details>
 
 <AdvancedHereMap @ref="_advMap" Options="@_mapOptions" Height="clamp(250px, 50vh, 500px)">

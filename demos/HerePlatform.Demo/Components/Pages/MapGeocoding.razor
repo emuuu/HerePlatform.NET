@@ -12,22 +12,86 @@
 
 <details class="mb-3">
     <summary class="fw-bold" role="button">Usage</summary>
-    <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>@@inject IGeocodingService GeocodingService
+    <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>@@using HerePlatformComponents.Maps.Events
+@@using HerePlatformComponents.Maps.Services
+@@using HerePlatformComponents.Maps.Services.Geocoding
+@@using HerePlatformComponents.Maps.Services.Places
 
-// Forward geocoding
-var result = await GeocodingService.GeocodeAsync(
-    "Brandenburger Tor, Berlin",
-    new GeocodeOptions { Limit = 5 });
+&lt;!-- Click the map to reverse-geocode a position --&gt;
+&lt;AdvancedHereMap @@ref="_advMap" Options="@@_mapOptions" Height="500px"
+    OnClick="@@OnMapClick"&gt;
 
-foreach (var item in result.Items)
-{
-    Console.WriteLine($"{item.Title}: {item.Position}");
-}
+    &lt;!-- Show results as markers with InfoBubble content --&gt;
+    @@foreach (var item in _markers)
+    {
+        &lt;MarkerComponent Lat="@@item.Position!.Value.Lat"
+                         Lng="@@item.Position!.Value.Lng"&gt;
+            &lt;ChildContent&gt;
+                &lt;div&gt;
+                    &lt;strong&gt;@@item.Title&lt;/strong&gt;
+                    &lt;br /&gt;@@item.Address
+                &lt;/div&gt;
+            &lt;/ChildContent&gt;
+        &lt;/MarkerComponent&gt;
+    }
 
-// Reverse geocoding
-var reverse = await GeocodingService.ReverseGeocodeAsync(
-    new LatLngLiteral(52.5163, 13.3777),
-    new GeocodeOptions { Limit = 3 });</code></pre>
+&lt;/AdvancedHereMap&gt;
+
+@@code {
+    [Inject] private IGeocodingService GeocodingService { get; set; } = default!;
+    [Inject] private IPlacesService PlacesService { get; set; } = default!;
+
+    private AdvancedHereMap? _advMap;
+    private List&lt;GeocodeItem&gt; _markers = new();
+
+    private MapOptions _mapOptions = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 10,
+        EnableUI = true,
+        EnableInteraction = true
+    };
+
+    // Forward geocoding: address string to coordinates
+    private async Task SearchForward(string query)
+    {
+        var result = await GeocodingService.GeocodeAsync(
+            query, new GeocodeOptions { Limit = 10 });
+        _markers = result.Items?.Where(i =&gt; i.Position.HasValue).ToList() ?? new();
+    }
+
+    // Reverse geocoding: coordinates to address
+    private async Task OnMapClick(MapPointerEventArgs e)
+    {
+        if (!e.Position.HasValue) return;
+        var result = await GeocodingService.ReverseGeocodeAsync(
+            e.Position.Value, new GeocodeOptions { Limit = 5 });
+        _markers = result.Items?.Where(i =&gt; i.Position.HasValue).ToList() ?? new();
+    }
+
+    // Places API: discover places by text query
+    private async Task DiscoverPlaces(string query)
+    {
+        var result = await PlacesService.DiscoverAsync(new PlacesRequest
+        {
+            Query = query,
+            At = _mapOptions.Center,
+            Limit = 10
+        });
+        // result.Items: PlaceItem with Title, Address, Categories, Distance
+    }
+
+    // Places API: browse by category near a location
+    private async Task BrowsePlaces(string categoryId)
+    {
+        var result = await PlacesService.BrowseAsync(new PlacesRequest
+        {
+            At = _mapOptions.Center,
+            Categories = new List&lt;string&gt; { categoryId },
+            Limit = 10
+        });
+    }
+}</code></pre>
 </details>
 
 <AdvancedHereMap @ref="_advMap" Options="@_mapOptions" Height="clamp(250px, 50vh, 500px)"

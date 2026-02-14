@@ -13,24 +13,57 @@
 
 &lt;AdvancedHereMap Options="@@_mapOptions" Height="500px"&gt;
 
-    &lt;!-- Load GeoJSON from URL --&gt;
-    &lt;GeoJsonReaderComponent
-        Url="https://example.com/data.geojson"
+    &lt;!-- Load GeoJSON from a URL --&gt;
+    &lt;GeoJsonReaderComponent Url="https://example.com/data.geojson"
         Visible="true"
-        OnLoaded="@@(e =&gt; Console.WriteLine($&amp;quot;{e.ObjectCount} objects&amp;quot;))" /&gt;
+        OnLoaded="@@OnGeoJsonLoaded" /&gt;
 
-    &lt;!-- Or load inline GeoJSON --&gt;
-    &lt;GeoJsonReaderComponent
-        GeoJsonString="@@_geoJson"
-        Visible="true" /&gt;
+    &lt;!-- Or load inline GeoJSON string --&gt;
+    &lt;GeoJsonReaderComponent GeoJsonString="@@_geoJsonSource"
+        Visible="true"
+        OnLoaded="@@OnGeoJsonLoaded" /&gt;
 
-    &lt;!-- Load KML from URL --&gt;
-    &lt;KmlReaderComponent
-        Url="https://example.com/data.kml"
+    &lt;!-- Load KML from a URL --&gt;
+    &lt;KmlReaderComponent Url="@@_kmlUrl"
         Visible="true"
         OnLoaded="@@OnKmlLoaded" /&gt;
 
-&lt;/AdvancedHereMap&gt;</code></pre>
+&lt;/AdvancedHereMap&gt;
+
+@@code {
+    private string _geoJsonSource = @@"{
+  ""type"": ""FeatureCollection"",
+  ""features"": [{
+    ""type"": ""Feature"",
+    ""geometry"": {
+      ""type"": ""Polygon"",
+      ""coordinates"": [[[13.35,52.55],[13.45,52.55],
+                         [13.45,52.49],[13.35,52.49],[13.35,52.55]]]
+    },
+    ""properties"": { ""name"": ""Berlin Center"" }
+  }]
+}";
+    private string _kmlUrl = "";
+
+    private MapOptions _mapOptions = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 10,
+        EnableUI = true,
+        EnableInteraction = true
+    };
+
+    // Called when data is parsed and rendered on the map
+    private void OnGeoJsonLoaded(GeoJsonLoadedEventArgs args)
+    {
+        // args.ObjectCount = number of map objects created
+    }
+
+    private void OnKmlLoaded(GeoJsonLoadedEventArgs args)
+    {
+        // Same event type for KML
+    }
+}</code></pre>
 </details>
 
 <AdvancedHereMap @ref="_advMap" Options="@_mapOptions" Height="clamp(250px, 50vh, 500px)">

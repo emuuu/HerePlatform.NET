@@ -12,23 +12,100 @@
 
 <details class="mb-3">
     <summary class="fw-bold" role="button">Usage</summary>
-    <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>@@inject IRoutingService RoutingService
+    <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>@@using HerePlatformComponents.Maps.Events
+@@using HerePlatformComponents.Maps.Services
+@@using HerePlatformComponents.Maps.Services.Routing
+@@using HerePlatformComponents.Maps.Services.Isoline
 
-var request = new RoutingRequest
-{
-    Origin = new LatLngLiteral(52.52, 13.405),
-    Destination = new LatLngLiteral(48.8566, 2.3522),
-    TransportMode = TransportMode.Car,
-    ReturnPolyline = true
-};
+&lt;!-- Click to set origin, then destination --&gt;
+&lt;AdvancedHereMap @@ref="_advMap" Options="@@_mapOptions" Height="500px"
+    OnClick="@@OnMapClick"&gt;
 
-var result = await RoutingService.CalculateRouteAsync(request);
+    &lt;MarkerComponent Lat="@@_origin.Lat" Lng="@@_origin.Lng" /&gt;
+    &lt;MarkerComponent Lat="@@_destination.Lat" Lng="@@_destination.Lng" /&gt;
 
-// Display route on map
-&lt;AdvancedHereMap Options="@@_mapOptions" Height="500px"&gt;
+    &lt;!-- Route polyline --&gt;
     &lt;PolylineComponent Path="@@_routePath"
         StrokeColor="#0066FF" LineWidth="5" /&gt;
-&lt;/AdvancedHereMap&gt;</code></pre>
+
+    &lt;!-- Isoline (isochrone) polygon --&gt;
+    &lt;PolygonComponent Path="@@_isolinePolygon"
+        FillColor="rgba(0,102,255,0.2)" StrokeColor="#0066FF" /&gt;
+
+&lt;/AdvancedHereMap&gt;
+
+@@code {
+    [Inject] private IRoutingService RoutingService { get; set; } = default!;
+    [Inject] private IIsolineService IsolineService { get; set; } = default!;
+
+    private AdvancedHereMap? _advMap;
+    private LatLngLiteral _origin, _destination;
+    private List&lt;LatLngLiteral&gt;? _routePath;
+    private List&lt;LatLngLiteral&gt;? _isolinePolygon;
+
+    private MapOptions _mapOptions = new()
+    {
+        Center = new LatLngLiteral(51.0, 10.0),
+        Zoom = 6,
+        EnableUI = true,
+        EnableInteraction = true
+    };
+
+    // Route calculation with optional truck/EV parameters
+    private async Task CalculateRoute()
+    {
+        var request = new RoutingRequest
+        {
+            Origin = _origin,
+            Destination = _destination,
+            TransportMode = TransportMode.Car,
+            ReturnPolyline = true,
+            ReturnInstructions = true,
+            // Optional truck constraints
+            Truck = new TruckOptions
+            {
+                Height = 4.0, Width = 2.5, GrossWeight = 36000
+            },
+            // Optional EV parameters
+            Ev = new EvOptions
+            {
+                InitialCharge = 48,
+                MaxCharge = 64,
+                MinChargeAtDestination = 6,
+                AuxiliaryConsumption = 1.6,
+                FreeFlowSpeedTable = "0,0.239,27,0.239,..."
+            }
+        };
+
+        var result = await RoutingService.CalculateRouteAsync(request);
+
+        if (result.Routes is { Count: &gt; 0 })
+        {
+            var route = result.Routes[0];
+            _routePath = route.Sections?
+                .SelectMany(s =&gt; s.DecodedPolyline ?? new())
+                .ToList();
+            // route.Sections[0].Summary.Length / Duration
+            // route.Sections[0].TurnByTurnActions
+        }
+    }
+
+    // Isoline (isochrone): reachable area within N seconds
+    private async Task CalculateIsoline()
+    {
+        var request = new IsolineRequest
+        {
+            Center = _origin,
+            Ranges = new List&lt;int&gt; { 600 },  // 10 minutes
+            RangeType = IsolineRangeType.Time,
+            TransportMode = TransportMode.Car
+        };
+        var result = await IsolineService.CalculateIsolineAsync(request);
+        _isolinePolygon = result.Isolines?.FirstOrDefault()?.Polygon;
+    }
+
+    private async Task OnMapClick(MapPointerEventArgs e) { /* set origin/destination */ }
+}</code></pre>
 </details>
 
 <AdvancedHereMap @ref="_advMap" Options="@_mapOptions" Height="clamp(250px, 50vh, 500px)"

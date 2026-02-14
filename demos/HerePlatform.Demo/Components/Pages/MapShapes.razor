@@ -10,30 +10,68 @@
     <summary class="fw-bold" role="button">Usage</summary>
     <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>&lt;AdvancedHereMap Options="@@_mapOptions" Height="500px"&gt;
 
-    &lt;PolylineComponent
-        Path="@@_path"
-        StrokeColor="#0066FF"
-        LineWidth="4"
-        LineCap="round"
-        Visible="@@_showPolyline"
+    &lt;!-- Polyline with styling options --&gt;
+    &lt;PolylineComponent Path="@@_polylinePath"
+        StrokeColor="#0066FF" LineWidth="4"
+        LineCap="round" LineJoin="@@_lineJoin"
+        Arrows="@@_showArrows" ZIndex="@@_polylineZIndex"
         OnClick="@@(e =&gt; ...)" /&gt;
 
+    &lt;!-- Dashed polyline --&gt;
+    &lt;PolylineComponent Path="@@_dashedPath"
+        StrokeColor="#9900CC" LineWidth="3"
+        LineDash="@@(new double[] { 10, 6 })"
+        LineDashOffset="@@_dashOffset" /&gt;
+
+    &lt;!-- Circle with two-way bound center (draggable) --&gt;
     &lt;CircleComponent
-        CenterLat="52.5163"
-        CenterLng="13.3777"
-        Radius="@@_radius"
-        StrokeColor="#FF0000"
-        FillColor="rgba(255, 0, 0, 0.2)"
-        Visible="@@_showCircle" /&gt;
+        @@bind-CenterLat="_circleLat" @@bind-CenterLng="_circleLng"
+        Radius="@@_circleRadius"
+        StrokeColor="#FF0000" FillColor="rgba(255, 0, 0, 0.2)"
+        Draggable="true" /&gt;
 
+    &lt;!-- Rectangle with two-way bound corners (draggable) --&gt;
     &lt;RectComponent
-        Top="52.525" Left="13.410"
-        Bottom="52.515" Right="13.430"
-        StrokeColor="#FF9900"
-        FillColor="rgba(255, 153, 0, 0.25)"
-        Visible="@@_showRect" /&gt;
+        @@bind-Top="_rectTop" @@bind-Left="_rectLeft"
+        @@bind-Bottom="_rectBottom" @@bind-Right="_rectRight"
+        StrokeColor="#FF9900" FillColor="rgba(255, 153, 0, 0.25)"
+        Draggable="true" ZIndex="@@_rectZIndex" /&gt;
 
-&lt;/AdvancedHereMap&gt;</code></pre>
+&lt;/AdvancedHereMap&gt;
+
+@@code {
+    private MapOptions _mapOptions = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 13,
+        EnableUI = true,
+        EnableInteraction = true
+    };
+
+    private string _lineJoin = "round";   // round | miter | bevel
+    private bool _showArrows;
+    private int _polylineZIndex = 0;
+    private double _dashOffset;
+    private double _circleRadius = 500;
+    private int _rectZIndex = 0;
+
+    // Two-way bound shape positions (updated when dragged)
+    private double _circleLat = 52.5163, _circleLng = 13.3777;
+    private double _rectTop = 52.525, _rectLeft = 13.410;
+    private double _rectBottom = 52.515, _rectRight = 13.430;
+
+    private List&lt;LatLngLiteral&gt; _polylinePath = new()
+    {
+        new(52.5200, 13.3900), new(52.5230, 13.4000),
+        new(52.5180, 13.4100), new(52.5210, 13.4200)
+    };
+
+    private List&lt;LatLngLiteral&gt; _dashedPath = new()
+    {
+        new(52.5170, 13.3900), new(52.5190, 13.4050),
+        new(52.5150, 13.4150), new(52.5175, 13.4250)
+    };
+}</code></pre>
 </details>
 
 <AdvancedHereMap Options="@_mapOptions" Height="clamp(250px, 50vh, 500px)">

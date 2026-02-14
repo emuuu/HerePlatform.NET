@@ -9,33 +9,76 @@
 
 <details class="mb-3">
     <summary class="fw-bold" role="button">Usage</summary>
-    <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>&lt;!-- Marker with auto-InfoBubble via ChildContent --&gt;
-&lt;MarkerComponent Lat="52.5163" Lng="13.3777"&gt;
-    &lt;div style="padding:8px"&gt;
-        &lt;strong&gt;Brandenburg Gate&lt;/strong&gt;
-        &lt;p&gt;Built 1788–1791&lt;/p&gt;
-    &lt;/div&gt;
-&lt;/MarkerComponent&gt;
+    <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>@@using HerePlatformComponents.Maps.Events
 
-&lt;!-- Clickable marker with event callback --&gt;
-&lt;MarkerComponent Lat="52.52" Lng="13.405"
-                 Clickable="true"
-                 OnClick="@@OnMarkerClicked" /&gt;
+&lt;!-- bind-Center/bind-Zoom: two-way binding with the map viewport --&gt;
+&lt;AdvancedHereMap @@ref="_advMap" Options="@@_mapOptions"
+                 @@bind-Center="_viewCenter" @@bind-Zoom="_viewZoom"
+                 Height="500px"&gt;
 
-&lt;!-- Draggable marker --&gt;
-&lt;MarkerComponent Lat="52.52" Lng="13.41"
-                 Draggable="true"
-                 OnDragEnd="@@OnMarkerDragged" /&gt;
+    &lt;!-- Two-way bound marker: drag updates _boundLat/_boundLng,
+         changing the values programmatically moves the pin --&gt;
+    &lt;MarkerComponent @@bind-Lat="_boundLat" @@bind-Lng="_boundLng"
+                     Draggable="true"
+                     Opacity="@@_markerOpacity"
+                     MinZoom="@@_markerMinZoom"
+                     MaxZoom="@@_markerMaxZoom" /&gt;
 
-&lt;!-- Two-way binding: drag updates variables, changing variables moves the pin --&gt;
-&lt;MarkerComponent @@bind-Lat="_lat" @@bind-Lng="_lng"
-                 Draggable="true" /&gt;
+    &lt;!-- Dynamic markers with click and drag events --&gt;
+    @@foreach (var marker in _markers)
+    {
+        &lt;MarkerComponent @@key="marker"
+                         Lat="@@marker.Lat" Lng="@@marker.Lng"
+                         Clickable="true"
+                         Draggable="@@marker.Draggable"
+                         Title="@@marker.Title"
+                         OnClick="@@(e =&gt; OnMarkerClicked(marker, e))"
+                         OnDragEnd="@@(e =&gt; OnMarkerDragged(marker, e))" /&gt;
+    }
 
-&lt;!-- Map view binding: pan/zoom updates variables, changing variables moves the map --&gt;
-&lt;AdvancedHereMap @@bind-Center="_center" @@bind-Zoom="_zoom"
-                 Options="@@_mapOptions"&gt;
-    ...
-&lt;/AdvancedHereMap&gt;</code></pre>
+&lt;/AdvancedHereMap&gt;
+
+@@code {
+    private AdvancedHereMap? _advMap;
+    private List&lt;MarkerInfo&gt; _markers = new();
+    private double _boundLat = 52.5200;
+    private double _boundLng = 13.4050;
+    private double _markerOpacity = 1.0;
+    private double? _markerMinZoom = null;  // visible from this zoom
+    private double? _markerMaxZoom = null;  // hidden above this zoom
+    private LatLngLiteral _viewCenter = new(52.52, 13.405);
+    private double _viewZoom = 13;
+
+    private MapOptions _mapOptions = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 13,
+        EnableUI = true,
+        EnableInteraction = true
+    };
+
+    private void OnMarkerClicked(MarkerInfo marker, MapPointerEventArgs e)
+    {
+        // e.Position contains the geo-coordinates of the click
+    }
+
+    private void OnMarkerDragged(MarkerInfo marker, MapDragEventArgs e)
+    {
+        if (e.Position.HasValue)
+        {
+            marker.Lat = e.Position.Value.Lat;
+            marker.Lng = e.Position.Value.Lng;
+        }
+    }
+
+    private class MarkerInfo
+    {
+        public double Lat { get; set; }
+        public double Lng { get; set; }
+        public string Title { get; set; } = "";
+        public bool Draggable { get; set; }
+    }
+}</code></pre>
 </details>
 
 <AdvancedHereMap @ref="_advMap"

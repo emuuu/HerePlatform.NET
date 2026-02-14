@@ -10,16 +10,71 @@
 
 <details class="mb-3">
     <summary class="fw-bold" role="button">Usage</summary>
-    <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>@@inject ITrafficService TrafficService
+    <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>@@using HerePlatformComponents.Maps.Services
+@@using HerePlatformComponents.Maps.Services.Traffic
 
-var result = await TrafficService.GetTrafficIncidentsAsync(
-    north: 52.56, south: 52.48,
-    east: 13.45, west: 13.35);
+&lt;AdvancedHereMap Options="@@_mapOptions" Height="500px"&gt;
 
-foreach (var incident in result.Incidents)
-{
-    Console.WriteLine($"{incident.Type}: {incident.RoadName}");
-    // Position, Severity, Description, StartTime, EndTime
+    &lt;!-- Show each incident as a marker with custom SVG icon
+         and an InfoBubble via ChildContent --&gt;
+    @@foreach (var incident in _incidents)
+    {
+        if (incident.Position.HasValue)
+        {
+            &lt;MarkerComponent
+                Lat="@@incident.Position.Value.Lat"
+                Lng="@@incident.Position.Value.Lng"
+                IconUrl="@@GetSeveritySvg(incident.Severity)"&gt;
+                &lt;ChildContent&gt;
+                    &lt;div style="min-width:180px"&gt;
+                        &lt;strong&gt;@@incident.Type&lt;/strong&gt;
+                        &lt;br /&gt;@@incident.RoadName
+                        &lt;br /&gt;&lt;small&gt;@@incident.Description&lt;/small&gt;
+                    &lt;/div&gt;
+                &lt;/ChildContent&gt;
+            &lt;/MarkerComponent&gt;
+        }
+    }
+
+&lt;/AdvancedHereMap&gt;
+
+@@code {
+    [Inject] private ITrafficService TrafficService { get; set; } = default!;
+
+    private List&lt;TrafficIncident&gt; _incidents = new();
+
+    private MapOptions _mapOptions = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 12,
+        EnableUI = true,
+        EnableInteraction = true
+    };
+
+    // Fetch incidents within a bounding box
+    private async Task LoadIncidents()
+    {
+        var result = await TrafficService.GetTrafficIncidentsAsync(
+            north: 52.56, south: 52.48,
+            east: 13.45, west: 13.35);
+        _incidents = result.Incidents ?? new();
+    }
+
+    // Generate inline SVG icon colored by severity (0-4)
+    private static string GetSeveritySvg(int severity)
+    {
+        var fill = severity switch
+        {
+            &gt;= 3 =&gt; "#c0392b",  // critical
+            2     =&gt; "#e67e22",  // major
+            1     =&gt; "#f39c12",  // minor
+            _     =&gt; "#7f8c8d"   // unknown
+        };
+        return "&lt;svg xmlns='http://www.w3.org/2000/svg' width='28' height='36'&gt;" +
+            $"&lt;circle cx='14' cy='14' r='12' fill='{fill}'/&gt;" +
+            "&lt;text x='14' y='18' text-anchor='middle' fill='white' " +
+            "font-size='14' font-weight='bold'&gt;!&lt;/text&gt;&lt;/svg&gt;";
+    }
 }</code></pre>
 </details>
 

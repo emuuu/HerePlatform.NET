@@ -9,20 +9,59 @@
 
 <details class="mb-3">
     <summary class="fw-bold" role="button">Usage</summary>
-    <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>// Create an InfoBubble
-var bubble = await InfoBubble.CreateAsync(Js,
-    new LatLngLiteral(52.5163, 13.3777),
-    new InfoBubbleOptions
+    <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>@@inject IJSRuntime Js
+
+&lt;!-- Programmatic InfoBubble requires EnableUI = true --&gt;
+&lt;HereMap @@ref="_map"
+         Options="@@_mapOptions"
+         OnAfterInit="@@OnMapInit"
+         Height="500px" /&gt;
+
+@@code {
+    private HereMap? _map;
+    private InfoBubble? _bubble;
+
+    private MapOptions _mapOptions = new()
     {
-        Content = "&lt;div&gt;&lt;strong&gt;Title&lt;/strong&gt;&lt;br/&gt;Description&lt;/div&gt;"
-    });
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 14,
+        EnableUI = true,       // required for InfoBubble
+        EnableInteraction = true
+    };
 
-// Open / Close (requires map with EnableUI = true)
-await bubble.Open(map.InteropObject);
-await bubble.Close(map.InteropObject);
+    private async Task OnMapInit() =&gt; await Task.CompletedTask;
 
-// Update content dynamically
-await bubble.SetContent("&lt;div&gt;New content&lt;/div&gt;");</code></pre>
+    // Create and open an InfoBubble at a position
+    private async Task ShowBubble()
+    {
+        if (_map?.InteropObject == null) return;
+
+        _bubble ??= await InfoBubble.CreateAsync(Js,
+            new LatLngLiteral(52.5163, 13.3777),
+            new InfoBubbleOptions
+            {
+                Content = "&lt;div style='padding:8px'&gt;" +
+                    "&lt;strong&gt;Brandenburg Gate&lt;/strong&gt;&lt;br/&gt;" +
+                    "Built 1788-1791&lt;/div&gt;"
+            });
+
+        await _bubble.Open(_map.InteropObject);
+    }
+
+    // Update content dynamically
+    private async Task UpdateContent()
+    {
+        if (_bubble != null)
+            await _bubble.SetContent("&lt;div&gt;Updated!&lt;/div&gt;");
+    }
+
+    // Close the bubble
+    private async Task CloseBubble()
+    {
+        if (_bubble != null &amp;&amp; _map?.InteropObject != null)
+            await _bubble.Close(_map.InteropObject);
+    }
+}</code></pre>
 </details>
 
 <HereMap @ref="_map"

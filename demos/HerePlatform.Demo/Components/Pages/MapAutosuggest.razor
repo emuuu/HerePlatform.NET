@@ -9,23 +9,39 @@
 
 <details class="mb-3">
     <summary class="fw-bold" role="button">Usage</summary>
-    <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>&lt;!-- Basic usage (CSS is auto-injected via HeadContent) --&gt;
+    <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>@@using HerePlatformComponents.Maps.Search
+
+&lt;!-- Basic usage — CSS is auto-injected via HeadContent --&gt;
 &lt;HereAutosuggest Placeholder="Enter an address..."
                  Options="@@_searchOptions"
-                 OnItemSelected="@@OnSelected"
-                 OnCleared="@@OnCleared" /&gt;
+                 Design="AutosuggestDesign.Rounded"
+                 OnItemSelected="@@OnSuggestionSelected"
+                 OnCleared="@@OnSearchCleared" /&gt;
 
-&lt;!-- With design variant --&gt;
-&lt;HereAutosuggest Design="AutosuggestDesign.Rounded"
-                 Options="@@_searchOptions"
-                 OnItemSelected="@@OnSelected" /&gt;
-
-&lt;!-- With custom item template --&gt;
-&lt;HereAutosuggest Options="@@_searchOptions" OnItemSelected="@@OnSelected"&gt;
+&lt;!-- Custom item template --&gt;
+&lt;HereAutosuggest Options="@@_searchOptions"
+                 OnItemSelected="@@OnSuggestionSelected"&gt;
     &lt;SuggestionItemTemplate&gt;
         &lt;span class="badge"&gt;@@context.ResultType&lt;/span&gt;
         &lt;strong&gt;@@context.Title&lt;/strong&gt;
     &lt;/SuggestionItemTemplate&gt;
+&lt;/HereAutosuggest&gt;
+
+&lt;!-- Custom list template (full control over the dropdown) --&gt;
+&lt;HereAutosuggest Options="@@_searchOptions"
+                 OnItemSelected="@@OnSuggestionSelected"&gt;
+    &lt;SuggestionListTemplate&gt;
+        &lt;div class="my-dropdown"&gt;
+            @@for (var i = 0; i &lt; context.Items.Count; i++)
+            {
+                var item = context.Items[i];
+                &lt;div class="@@(i == context.ActiveIndex ? &amp;quot;active&amp;quot; : &amp;quot;&amp;quot;)"
+                     @@onmousedown="() =&gt; context.SelectItem(item)"&gt;
+                    @@item.Title
+                &lt;/div&gt;
+            }
+        &lt;/div&gt;
+    &lt;/SuggestionListTemplate&gt;
 &lt;/HereAutosuggest&gt;
 
 &lt;!-- Override styles via CSS custom properties --&gt;
@@ -35,7 +51,24 @@
         --here-as-item-hover-bg: #e8f4fd;
         --here-as-title-color: #333;
     }
-&lt;/style&gt;</code></pre>
+&lt;/style&gt;
+
+@@code {
+    private AutosuggestOptions _searchOptions = new()
+    {
+        Lang = "de",
+        In = "countryCode:DEU",
+        Limit = 5,
+        At = new LatLngLiteral(52.52, 13.405)
+    };
+
+    private void OnSuggestionSelected(AutosuggestItem item)
+    {
+        // item.Title, item.Address, item.Position, item.ResultType
+    }
+
+    private void OnSearchCleared() { }
+}</code></pre>
 </details>
 
 <div class="row mb-3">

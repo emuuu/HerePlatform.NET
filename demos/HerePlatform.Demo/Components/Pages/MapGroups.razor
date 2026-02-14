@@ -10,22 +10,55 @@
     <summary class="fw-bold" role="button">Usage</summary>
     <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>&lt;AdvancedHereMap Options="@@_mapOptions" Height="500px"&gt;
 
-    &lt;GroupComponent Visible="@@_showGroup"&gt;
-        &lt;DomMarkerComponent Lat="52.52" Lng="13.405"
+    &lt;!-- GroupComponent: toggle visibility of all children at once --&gt;
+    &lt;GroupComponent @@ref="_group" Visible="@@_showGroup"&gt;
+
+        &lt;!-- DomMarkerComponent renders custom HTML as a marker --&gt;
+        &lt;DomMarkerComponent Lat="52.5200" Lng="13.4050"
             Clickable="true"
-            OnClick="@@(e =&gt; ...)"&gt;
-            &lt;div style="background:#E74C3C;color:white;padding:4px 8px;"&gt;
+            OnClick="@@(e =&gt; _status = &amp;quot;Marker A clicked&amp;quot;)"&gt;
+            &lt;div style="background:#E74C3C;color:white;
+                        padding:4px 8px;border-radius:4px"&gt;
                 Custom HTML Marker
             &lt;/div&gt;
         &lt;/DomMarkerComponent&gt;
+
     &lt;/GroupComponent&gt;
 
+    &lt;!-- Declarative InfoBubble with two-way IsOpen binding --&gt;
     &lt;InfoBubbleComponent Lat="52.5163" Lng="13.3777"
-        @@bind-IsOpen="_showBubble"&gt;
-        &lt;div&gt;&lt;strong&gt;Title&lt;/strong&gt;&lt;br /&gt;Content&lt;/div&gt;
+        @@bind-IsOpen="_showInfoBubble" AutoPan="@@_autoPan"&gt;
+        &lt;div&gt;
+            &lt;strong&gt;Victory Column&lt;/strong&gt;&lt;br /&gt;
+            A monument in Berlin, Germany.
+        &lt;/div&gt;
     &lt;/InfoBubbleComponent&gt;
 
-&lt;/AdvancedHereMap&gt;</code></pre>
+&lt;/AdvancedHereMap&gt;
+
+@@code {
+    private GroupComponent? _group;
+    private bool _showGroup = true;
+    private bool _showInfoBubble = false;
+    private bool _autoPan = true;
+    private string? _status;
+
+    private MapOptions _mapOptions = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 14,
+        EnableUI = true,
+        EnableInteraction = true
+    };
+
+    // Get the bounding box of all objects in the group
+    private async Task GetGroupBounds()
+    {
+        if (_group == null) return;
+        var bounds = await _group.GetBoundsAsync();
+        // bounds.Top, bounds.Left, bounds.Bottom, bounds.Right
+    }
+}</code></pre>
 </details>
 
 <AdvancedHereMap Options="@_mapOptions" Height="clamp(250px, 50vh, 500px)">

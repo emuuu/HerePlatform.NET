@@ -11,26 +11,41 @@
     <summary class="fw-bold" role="button">Usage</summary>
     <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>@@using HerePlatformComponents.Maps.Utilities
 
-// WKT parsing
-var point = WktParser.ParsePoint("POINT(13.405 52.52)");
-var line = WktParser.ParseLineString("LINESTRING(13.4 52.5, 2.35 48.85)");
-var rings = WktParser.ParsePolygon("POLYGON((13.35 52.55, ...))");
+&lt;AdvancedHereMap Options="@@_mapOptions" Height="400px"&gt;
 
-// GeoJSON export
-var json = GeoJsonExporter.ToFeatureCollection(new[] {
-    GeoJsonExporter.ToPolygonFeature(ring)
-});
-
-// Flexible Polyline codec
-var decoded = FlexiblePolyline.Decode("BFoz5xJ67i1B...");
-var encoded = FlexiblePolyline.Encode(points);
-
-// Custom tile overlay
-&lt;AdvancedHereMap Options="@@_opts" Height="400px"&gt;
+    &lt;!-- Custom XYZ tile overlay (e.g. OpenTopoMap) --&gt;
     &lt;CustomTileLayerComponent
         UrlPattern="https://tile.opentopomap.org/{z}/{x}/{y}.png"
         Opacity="0.6" /&gt;
-&lt;/AdvancedHereMap&gt;</code></pre>
+
+&lt;/AdvancedHereMap&gt;
+
+@@code {
+    // --- WKT Parsing ---
+    // Parse WKT geometry strings into LatLngLiteral collections
+    var point = WktParser.ParsePoint("POINT(13.405 52.52)");
+    var line = WktParser.ParseLineString(
+        "LINESTRING(13.405 52.52, 2.3522 48.8566, -0.1278 51.5074)");
+    var rings = WktParser.ParsePolygon(
+        "POLYGON((13.35 52.55, 13.45 52.55, 13.45 52.49, 13.35 52.49, 13.35 52.55))");
+    var multi = WktParser.ParseMultiPoint(
+        "MULTIPOINT(13.405 52.52, 11.582 48.1351)");
+
+    // --- GeoJSON Export ---
+    // Convert parsed geometries to GeoJSON strings
+    var geoJson = GeoJsonExporter.ToFeatureCollection(new[]
+    {
+        GeoJsonExporter.ToPolygonFeature(rings[0]),
+        GeoJsonExporter.ToLineStringFeature(line),
+        GeoJsonExporter.ToGeoJsonFeature(point.Value)
+    });
+
+    // --- Flexible Polyline Codec ---
+    // Decode HERE-format encoded polylines to coordinates
+    var decoded = FlexiblePolyline.Decode("BFoz5xJ67i1B...");
+    // Encode coordinates back to compact polyline string
+    var encoded = FlexiblePolyline.Encode(decoded);
+}</code></pre>
 </details>
 
 <AdvancedHereMap @ref="_advMap" Options="@_mapOptions" Height="clamp(250px, 50vh, 400px)">

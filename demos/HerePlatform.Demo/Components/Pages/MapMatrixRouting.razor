@@ -12,16 +12,71 @@
 
 <details class="mb-3">
     <summary class="fw-bold" role="button">Usage</summary>
-    <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>@@inject IMatrixRoutingService MatrixService
+    <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>@@using HerePlatformComponents.Maps.Events
+@@using HerePlatformComponents.Maps.Services
+@@using HerePlatformComponents.Maps.Services.MatrixRouting
+@@using HerePlatformComponents.Maps.Services.Routing
 
-var request = new MatrixRoutingRequest
-{
-    Origins = new() { new(52.52, 13.405), new(48.8566, 2.3522) },
-    Destinations = new() { new(51.5074, -0.1278), new(48.1351, 11.582) },
-    TransportMode = TransportMode.Car
-};
+&lt;!-- Click map to add origins/destinations, then calculate matrix --&gt;
+&lt;AdvancedHereMap @@ref="_advMap" Options="@@_mapOptions" Height="500px"
+    OnClick="@@OnMapClick"&gt;
 
-var result = await MatrixService.CalculateMatrixAsync(request);</code></pre>
+    @@foreach (var origin in _origins)
+    {
+        &lt;MarkerComponent Lat="@@origin.Lat" Lng="@@origin.Lng"
+            IconUrl="@@_greenIcon" /&gt;
+    }
+    @@foreach (var dest in _destinations)
+    {
+        &lt;MarkerComponent Lat="@@dest.Lat" Lng="@@dest.Lng"
+            IconUrl="@@_redIcon" /&gt;
+    }
+
+&lt;/AdvancedHereMap&gt;
+
+@@code {
+    [Inject] private IMatrixRoutingService MatrixService { get; set; } = default!;
+
+    private AdvancedHereMap? _advMap;
+    private List&lt;LatLngLiteral&gt; _origins = new();
+    private List&lt;LatLngLiteral&gt; _destinations = new();
+    private MatrixRoutingResult? _result;
+    private TransportMode _transportMode = TransportMode.Car;
+
+    // Inline SVG icons for origin (green) and destination (red)
+    private string _greenIcon = "&lt;svg xmlns='http://www.w3.org/2000/svg' " +
+        "width='24' height='24'&gt;&lt;circle cx='12' cy='12' r='10' " +
+        "fill='#28a745' stroke='white' stroke-width='2'/&gt;&lt;/svg&gt;";
+    private string _redIcon = "&lt;svg xmlns='http://www.w3.org/2000/svg' " +
+        "width='24' height='24'&gt;&lt;circle cx='12' cy='12' r='10' " +
+        "fill='#dc3545' stroke='white' stroke-width='2'/&gt;&lt;/svg&gt;";
+
+    private MapOptions _mapOptions = new()
+    {
+        Center = new LatLngLiteral(51.0, 10.0),
+        Zoom = 6,
+        EnableUI = true,
+        EnableInteraction = true
+    };
+
+    // Calculate N:M travel time/distance matrix
+    private async Task CalculateMatrix()
+    {
+        var request = new MatrixRoutingRequest
+        {
+            Origins = _origins.ToList(),
+            Destinations = _destinations.ToList(),
+            TransportMode = _transportMode
+        };
+
+        _result = await MatrixService.CalculateMatrixAsync(request);
+        // _result.Matrix: list of entries with
+        //   OriginIndex, DestinationIndex, Duration, Length
+        // _result.NumOrigins, _result.NumDestinations
+    }
+
+    private void OnMapClick(MapPointerEventArgs e) { /* add to origins or destinations */ }
+}</code></pre>
 </details>
 
 <AdvancedHereMap @ref="_advMap" Options="@_mapOptions" Height="clamp(250px, 50vh, 500px)"

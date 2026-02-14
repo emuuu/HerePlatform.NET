@@ -13,10 +13,13 @@
 
 &lt;AdvancedHereMap Options="@@_mapOptions" Height="500px"&gt;
 
+    &lt;!-- Eps = cluster radius in px, MinWeight = min points to form cluster --&gt;
     &lt;MarkerClusterComponent
         DataPoints="@@_dataPoints"
         Eps="32"
         MinWeight="2"
+        MinZoom="@@_clusterMinZoom"
+        MaxZoom="@@_clusterMaxZoom"
         ClusterSvgTemplate="@@_clusterSvg"
         NoiseSvgTemplate="@@_noiseSvg"
         OnClusterTap="@@OnClusterTap"
@@ -25,11 +28,53 @@
 &lt;/AdvancedHereMap&gt;
 
 @@code {
-    private List&lt;ClusterDataPoint&gt; _dataPoints = new()
+    private List&lt;ClusterDataPoint&gt; _dataPoints = new();
+    private double? _clusterMinZoom;
+    private double? _clusterMaxZoom;
+
+    // SVG templates: {count} and {color} are replaced at render time
+    private string _clusterSvg = "&lt;svg xmlns='http://www.w3.org/2000/svg' " +
+        "width='50' height='50'&gt;&lt;circle cx='25' cy='25' r='20' " +
+        "fill='{color}' opacity='0.8'/&gt;&lt;text x='25' y='30' " +
+        "text-anchor='middle' fill='white' font-size='12'&gt;" +
+        "{count}&lt;/text&gt;&lt;/svg&gt;";
+
+    private string _noiseSvg = "&lt;svg xmlns='http://www.w3.org/2000/svg' " +
+        "width='16' height='16'&gt;&lt;circle cx='8' cy='8' r='6' " +
+        "fill='#4285F4' stroke='white' stroke-width='2'/&gt;&lt;/svg&gt;";
+
+    private MapOptions _mapOptions = new()
     {
-        new(52.52, 13.405),
-        new(52.53, 13.41, weight: 3),
+        Center = new LatLngLiteral(51.0, 10.0),
+        Zoom = 6,
+        EnableUI = true,
+        EnableInteraction = true
     };
+
+    // Generate random data points (lat, lng, weight)
+    private void GeneratePoints(int count)
+    {
+        var rng = new Random(42);
+        _dataPoints = new List&lt;ClusterDataPoint&gt;();
+        for (int i = 0; i &lt; count; i++)
+        {
+            _dataPoints.Add(new ClusterDataPoint(
+                47.3 + rng.NextDouble() * 7.5,
+                6.0 + rng.NextDouble() * 9.0,
+                1 + (int)(rng.NextDouble() * 3)
+            ));
+        }
+    }
+
+    private void OnClusterTap(ClusterTapEventArgs args)
+    {
+        // args.PointCount, args.Weight, args.Position
+    }
+
+    private void OnNoiseTap(ClusterTapEventArgs args)
+    {
+        // Single unclustered point tapped
+    }
 }</code></pre>
 </details>
 

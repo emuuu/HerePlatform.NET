@@ -8,19 +8,87 @@
 
 <details class="mb-3">
     <summary class="fw-bold" role="button">Usage</summary>
-    <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>// Zoom
-await map.InteropObject.SetZoom(14);
-var zoom = await map.InteropObject.GetZoom();
+    <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>&lt;HereMap @@ref="_map"
+         Options="@@_mapOptions"
+         OnAfterInit="@@OnMapInit"
+         Height="500px" /&gt;
 
-// Center
-await map.InteropObject.SetCenter(new LatLngLiteral(48.8566, 2.3522));
-var center = await map.InteropObject.GetCenter();
+@@code {
+    private HereMap? _map;
+    private double _currentZoom = 12;
+    private double _currentTilt;
+    private double _currentHeading;
+    private LatLngLiteral? _currentCenter;
+    private bool _trafficLayerAdded;
 
-// Tilt (3D perspective)
-await map.InteropObject.SetTilt(45);
+    private MapOptions _mapOptions = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 12,
+        EnableUI = true,
+        EnableInteraction = true
+    };
 
-// Heading (rotation)
-await map.InteropObject.SetHeading(90);</code></pre>
+    private async Task OnMapInit() =&gt; await ReadMapState();
+
+    // Programmatic zoom control
+    private async Task ZoomIn()
+    {
+        if (_map?.InteropObject == null) return;
+        _currentZoom = Math.Min(_currentZoom + 1, 20);
+        await _map.InteropObject.SetZoom(_currentZoom);
+    }
+
+    // Navigate to a specific location
+    private async Task GoTo(double lat, double lng, double zoom)
+    {
+        if (_map?.InteropObject == null) return;
+        await _map.InteropObject.SetCenter(new LatLngLiteral(lat, lng));
+        await _map.InteropObject.SetZoom(zoom);
+    }
+
+    // 3D tilt and heading (rotation)
+    private async Task SetTilt(double tilt)
+    {
+        if (_map?.InteropObject == null) return;
+        await _map.InteropObject.SetTilt(tilt);
+    }
+
+    private async Task SetHeading(double heading)
+    {
+        if (_map?.InteropObject == null) return;
+        await _map.InteropObject.SetHeading(heading);
+    }
+
+    // Constrain zoom range
+    private async Task ApplyZoomLimits()
+    {
+        if (_map?.InteropObject == null) return;
+        await _map.InteropObject.SetMinZoom(3);
+        await _map.InteropObject.SetMaxZoom(16);
+    }
+
+    // Read current map state
+    private async Task ReadMapState()
+    {
+        if (_map?.InteropObject == null) return;
+        _currentCenter = await _map.InteropObject.GetCenter();
+        _currentZoom = await _map.InteropObject.GetZoom();
+        _currentTilt = await _map.InteropObject.GetTilt();
+        _currentHeading = await _map.InteropObject.GetHeading();
+    }
+
+    // Toggle traffic overlay
+    private async Task ToggleTrafficLayer()
+    {
+        if (_map?.InteropObject == null) return;
+        if (_trafficLayerAdded)
+            await _map.InteropObject.RemoveLayerAsync("vector.traffic.map");
+        else
+            await _map.InteropObject.AddLayerAsync("vector.traffic.map");
+        _trafficLayerAdded = !_trafficLayerAdded;
+    }
+}</code></pre>
 </details>
 
 <HereMap @ref="_map"

@@ -9,24 +9,97 @@
 
 <details class="mb-3">
     <summary class="fw-bold" role="button">Usage</summary>
-    <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>&lt;AdvancedHereMap @@ref="_advMap" Options="@@_mapOptions" Height="500px"
+    <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>@@using HerePlatformComponents.Maps.Events
+
+&lt;!-- Animate enables smooth transitions when Center/Zoom change.
+     DisabledBehaviors selectively disables Panning, WheelZoom, etc.
+     bind-Center/Zoom/Tilt enables two-way binding with the map viewport. --&gt;
+&lt;AdvancedHereMap @@ref="_advMap" Options="@@_mapOptions" Height="500px"
     Animate="@@_animate"
     DisabledBehaviors="@@_disabledBehaviors"
-    @@bind-Center="_center" @@bind-Zoom="_zoom"&gt;
+    @@bind-Center="_center" @@bind-Zoom="_zoom" @@bind-Tilt="_tilt"&gt;
 
-    &lt;!-- Polygon with hole --&gt;
-    &lt;PolygonComponent Path="@@_outer" Holes="@@_holes"
-        FillColor="rgba(0,204,0,0.4)" /&gt;
+    &lt;!-- Polygon with a hole cut out --&gt;
+    &lt;PolygonComponent Path="@@_polygonPath" Holes="@@_polygonHoles"
+        StrokeColor="#00CC00" FillColor="rgba(0, 204, 0, 0.4)"
+        LineWidth="2" Clickable="true"
+        OnClick="@@(e =&gt; _status = &amp;quot;Polygon clicked&amp;quot;)" /&gt;
 
-    &lt;!-- 3D extrusion --&gt;
-    &lt;PolygonComponent Path="@@_path"
-        Extrusion="100" Elevation="0" /&gt;
+    &lt;!-- 3D extruded polygon (tilt the map to see) --&gt;
+    &lt;PolygonComponent Path="@@_extrusionPath"
+        StrokeColor="#3498DB" FillColor="rgba(52, 152, 219, 0.6)"
+        Extrusion="@@_extrusionHeight" Elevation="@@_extrusionElevation" /&gt;
+
+    &lt;!-- Image overlay positioned by geo bounds --&gt;
+    &lt;ImageOverlayComponent ImageUrl="@@_imageUrl"
+        Top="52.53" Left="13.37" Bottom="52.51" Right="13.43"
+        Opacity="0.7" /&gt;
+
+    &lt;!-- Right-click context menu --&gt;
+    &lt;ContextMenuComponent OnItemClick="@@OnContextMenuItem"&gt;
+        &lt;ContextMenuItem Label="Add Marker Here" /&gt;
+        &lt;ContextMenuItem Label="Zoom In" /&gt;
+    &lt;/ContextMenuComponent&gt;
 
 &lt;/AdvancedHereMap&gt;
 
 @@code {
-    // Capture map as Base64 image
-    var image = await _advMap.InteropObject.CaptureAsync();
+    private AdvancedHereMap? _advMap;
+    private bool _animate = true;
+    private LatLngLiteral _center = new(52.52, 13.405);
+    private double _zoom = 13;
+    private double _tilt = 0;
+    private string? _status;
+    private BehaviorFeature _disabledBehaviors;
+
+    private double _extrusionHeight = 100;
+    private double _extrusionElevation = 0;
+
+    private MapOptions _mapOptions = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 13,
+        EnableUI = true,
+        EnableInteraction = true
+    };
+
+    // Outer ring and hole for polygon
+    private List&lt;LatLngLiteral&gt; _polygonPath = new()
+    {
+        new(52.530, 13.370), new(52.530, 13.400),
+        new(52.510, 13.400), new(52.510, 13.370)
+    };
+
+    private List&lt;List&lt;LatLngLiteral&gt;&gt; _polygonHoles = new()
+    {
+        new() { new(52.525, 13.378), new(52.525, 13.392),
+                new(52.515, 13.392), new(52.515, 13.378) }
+    };
+
+    private List&lt;LatLngLiteral&gt; _extrusionPath = new()
+    {
+        new(52.522, 13.410), new(52.522, 13.425),
+        new(52.515, 13.425), new(52.515, 13.410)
+    };
+
+    // Capture map as Base64 PNG image
+    private async Task CaptureMap()
+    {
+        if (_advMap?.InteropObject == null) return;
+        var base64 = await _advMap.InteropObject.CaptureAsync();
+    }
+
+    // Zoom to fit all child markers
+    private async Task ZoomToMarkers()
+    {
+        if (_advMap != null)
+            await _advMap.ZoomToMarkersAsync(_animate);
+    }
+
+    private async Task OnContextMenuItem(ContextMenuEventArgs args)
+    {
+        // args.ItemLabel, args.Position
+    }
 }</code></pre>
 </details>
 

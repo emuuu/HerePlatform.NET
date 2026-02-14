@@ -8,14 +8,20 @@
 
 <details class="mb-3">
     <summary class="fw-bold" role="button">Usage</summary>
-    <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>&lt;HereMap @@ref="_map"
+    <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>&lt;!-- Basic HereMap with initial options --&gt;
+&lt;HereMap @@ref="_map"
          Options="@@_mapOptions"
          OnAfterInit="@@OnMapInit"
          Height="500px" /&gt;
 
 @@code {
     private HereMap? _map;
+    private bool _mapReady;
+    private MapLayerType _layerType = MapLayerType.VectorNormalMap;
+    private bool _trafficOverlay;
 
+    // All available layer types: VectorNormalMap, VectorNormalMapNight,
+    // RasterSatelliteMap, HybridDayRaster, HybridDayVector, etc.
     private MapOptions _mapOptions = new()
     {
         Center = new LatLngLiteral(52.52, 13.405),
@@ -25,6 +31,47 @@
         EnableInteraction = true,
         UiLocale = "de-DE"
     };
+
+    private void OnMapInit()
+    {
+        _mapReady = true;
+        StateHasChanged();
+    }
+
+    // Switch base layer (vector, raster, or hybrid)
+    private async Task ChangeLayer(MapLayerType layerType)
+    {
+        if (_map?.InteropObject == null) return;
+        _layerType = layerType;
+        await _map.InteropObject.SetBaseLayer(layerType);
+    }
+
+    // Toggle traffic overlay on/off
+    private async Task ToggleTraffic()
+    {
+        if (_map?.InteropObject == null) return;
+        if (_trafficOverlay)
+            await _map.InteropObject.RemoveLayerAsync("vector.traffic.map");
+        else
+            await _map.InteropObject.AddLayerAsync("vector.traffic.map");
+        _trafficOverlay = !_trafficOverlay;
+    }
+
+    // Change locale requires full re-initialization
+    private async Task ChangeLocale(string locale)
+    {
+        _mapOptions = new MapOptions
+        {
+            Center = _mapOptions.Center,
+            Zoom = _mapOptions.Zoom,
+            LayerType = _layerType,
+            EnableUI = true,
+            EnableInteraction = true,
+            UiLocale = locale
+        };
+        if (_map != null)
+            await _map.ReInitializeAsync(_mapOptions);
+    }
 }</code></pre>
 </details>
 

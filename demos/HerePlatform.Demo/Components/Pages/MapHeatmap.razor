@@ -15,23 +15,48 @@
 
     &lt;HeatmapComponent
         DataPoints="@@_dataPoints"
-        Opacity="0.6"
+        Opacity="@@_opacity"
+        SampleDepth="@@_sampleDepth"
         Colors="@@_colors"
         Visible="true" /&gt;
 
 &lt;/AdvancedHereMap&gt;
 
 @@code {
-    private List&lt;HeatmapDataPoint&gt; _dataPoints = new()
-    {
-        new(52.52, 13.405, 0.8),
-        new(52.53, 13.41, 0.5),
-    };
+    private double _opacity = 0.6;
+    private int? _sampleDepth;    // null = auto
+    private List&lt;HeatmapDataPoint&gt; _dataPoints = new();
 
+    // Color stops: value (0-1) mapped to color
     private Dictionary&lt;double, string&gt; _colors = new()
     {
-        { 0, "blue" }, { 0.5, "yellow" }, { 1, "red" }
+        { 0, "blue" },
+        { 0.5, "yellow" },
+        { 1, "red" }
     };
+
+    private MapOptions _mapOptions = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 12,
+        EnableUI = true,
+        EnableInteraction = true
+    };
+
+    // Generate data points: HeatmapDataPoint(lat, lng, value)
+    private void GeneratePoints(int count)
+    {
+        var rng = new Random(42);
+        _dataPoints = new List&lt;HeatmapDataPoint&gt;();
+        for (int i = 0; i &lt; count; i++)
+        {
+            _dataPoints.Add(new HeatmapDataPoint(
+                52.52 + (rng.NextDouble() - 0.5) * 0.08,
+                13.405 + (rng.NextDouble() - 0.5) * 0.12,
+                rng.NextDouble()   // intensity 0..1
+            ));
+        }
+    }
 }</code></pre>
 </details>
 
