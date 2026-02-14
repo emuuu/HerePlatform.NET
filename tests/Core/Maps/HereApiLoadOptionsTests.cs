@@ -52,13 +52,4 @@ public class HereApiLoadOptionsTests
         Assert.That(opts.UseHarpEngine, Is.False);
         Assert.That(opts.Language, Is.EqualTo("de-DE"));
     }
-
-    [Test]
-    public void ApiKey_CanBeOverwritten()
-    {
-        var opts = new HereApiLoadOptions("original");
-        opts.ApiKey = "updated";
-
-        Assert.That(opts.ApiKey, Is.EqualTo("updated"));
-    }
 }

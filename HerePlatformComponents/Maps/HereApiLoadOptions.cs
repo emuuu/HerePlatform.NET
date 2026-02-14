@@ -4,7 +4,7 @@ namespace HerePlatformComponents.Maps;
 
 public class HereApiLoadOptions
 {
-    public string ApiKey { get; set; }
+    public string ApiKey { get; init; }
     public string Version { get; set; } = "3.1";
     public string? BaseUrl { get; set; }
     public bool LoadMapEvents { get; set; } = true;
