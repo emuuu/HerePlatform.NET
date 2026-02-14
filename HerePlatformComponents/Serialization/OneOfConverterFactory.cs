@@ -90,16 +90,29 @@ public class OneOfConverterFactory : JsonConverterFactory
             JsonSerializerOptions options)
         {
             using var doc = JsonDocument.ParseValue(ref reader);
-            if (!doc.RootElement.TryGetProperty(IndexKey, out var indexElement) ||
-                !indexElement.TryGetInt32(out var index) ||
-                index is < 0 or > 1)
+
+            // Support $index (legacy) path
+            if (doc.RootElement.TryGetProperty(IndexKey, out var indexElement) &&
+                indexElement.TryGetInt32(out var index) &&
+                index >= 0 && index <= 1)
             {
-                throw new JsonException("Cannot not find type index or type index is not a valid number");
+                return (OneOf<T0, T1>)CreateOneOf(options, index, doc, OneOfType, Types);
             }
 
-            var oneOf = CreateOneOf(options, index, doc, OneOfType, Types);
+            // Support dotnetTypeName path (matches Write output)
+            if (doc.RootElement.TryGetProperty("dotnetTypeName", out var typeNameElement))
+            {
+                var typeName = typeNameElement.GetString();
+                for (int i = 0; i < Types.Length; i++)
+                {
+                    if (Types[i].FullName == typeName)
+                    {
+                        return (OneOf<T0, T1>)CreateOneOf(options, i, doc, OneOfType, Types);
+                    }
+                }
+            }
 
-            return (OneOf<T0, T1>)Activator.CreateInstance(typeToConvert, oneOf)!;
+            throw new JsonException("OneOf JSON must contain either '$index' (int) or 'dotnetTypeName' (string) property.");
         }
 
         public override void Write(Utf8JsonWriter writer,
@@ -144,16 +157,29 @@ public class OneOfConverterFactory : JsonConverterFactory
             JsonSerializerOptions options)
         {
             using var doc = JsonDocument.ParseValue(ref reader);
-            if (!doc.RootElement.TryGetProperty(IndexKey, out var indexElement) ||
-                !indexElement.TryGetInt32(out var index) ||
-                index is < 0 or > 2)
+
+            // Support $index (legacy) path
+            if (doc.RootElement.TryGetProperty(IndexKey, out var indexElement) &&
+                indexElement.TryGetInt32(out var index) &&
+                index >= 0 && index <= 2)
             {
-                throw new JsonException("Cannot not find type index or type index is not a valid number");
+                return (OneOf<T0, T1, T2>)CreateOneOf(options, index, doc, OneOfType, Types);
             }
 
-            var oneOfBase = CreateOneOf(options, index, doc, OneOfType, Types);
+            // Support dotnetTypeName path (matches Write output)
+            if (doc.RootElement.TryGetProperty("dotnetTypeName", out var typeNameElement))
+            {
+                var typeName = typeNameElement.GetString();
+                for (int i = 0; i < Types.Length; i++)
+                {
+                    if (Types[i].FullName == typeName)
+                    {
+                        return (OneOf<T0, T1, T2>)CreateOneOf(options, i, doc, OneOfType, Types);
+                    }
+                }
+            }
 
-            return (OneOf<T0, T1, T2>)Activator.CreateInstance(typeToConvert, oneOfBase)!;
+            throw new JsonException("OneOf JSON must contain either '$index' (int) or 'dotnetTypeName' (string) property.");
         }
 
         public override void Write(Utf8JsonWriter writer,
