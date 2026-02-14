@@ -1,7 +1,5 @@
-using HerePlatformComponents.Maps.Events;
 using HerePlatformComponents.Maps.Extension;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -9,25 +7,8 @@ using System.Threading.Tasks;
 
 namespace HerePlatformComponents.Maps;
 
-public partial class PolygonComponent : IAsyncDisposable
+public partial class PolygonComponent : MapObjectComponentBase
 {
-    public PolygonComponent()
-    {
-        _guid = Guid.NewGuid();
-    }
-
-    private bool _hasRendered = false;
-    internal bool IsDisposed = false;
-    private Guid _guid;
-
-    public Guid Guid => _guid;
-
-    [Inject]
-    private IJSRuntime Js { get; set; } = default!;
-
-    [CascadingParameter(Name = "HereMap")]
-    private AdvancedHereMap MapRef { get; set; } = default!;
-
     /// <summary>
     /// Path defining the polygon boundary. Two-way bindable via <c>@bind-Path</c>.
     /// </summary>
@@ -127,137 +108,6 @@ public partial class PolygonComponent : IAsyncDisposable
     [Parameter, JsonIgnore]
     public double? Elevation { get; set; }
 
-    /// <summary>
-    /// Fired when the polygon is tapped/clicked.
-    /// Breaking change: now provides MapPointerEventArgs.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnClick { get; set; }
-
-    /// <summary>
-    /// Fired on double-tap/double-click.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnDoubleClick { get; set; }
-
-    /// <summary>
-    /// Fired on long press.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnLongPress { get; set; }
-
-    /// <summary>
-    /// Fired on right-click / long-press context menu.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnContextMenu { get; set; }
-
-    /// <summary>
-    /// Fired when the context menu interaction ends.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback OnContextMenuClose { get; set; }
-
-    /// <summary>
-    /// Fired when a pointer touches the polygon surface.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerDown { get; set; }
-
-    /// <summary>
-    /// Fired when a pointer leaves the polygon surface.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerUp { get; set; }
-
-    /// <summary>
-    /// Fired when a pointer moves over the polygon.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerMove { get; set; }
-
-    /// <summary>
-    /// Fired when a pointer enters the polygon area.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerEnter { get; set; }
-
-    /// <summary>
-    /// Fired when a pointer leaves the polygon area.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerLeave { get; set; }
-
-    /// <summary>
-    /// Fired when a pointer action is cancelled.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback OnPointerCancel { get; set; }
-
-    /// <summary>
-    /// Fired when a drag operation starts on the polygon.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapDragEventArgs> OnDragStart { get; set; }
-
-    /// <summary>
-    /// Fired continuously during a drag operation.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapDragEventArgs> OnDrag { get; set; }
-
-    /// <summary>
-    /// Fired when a drag operation ends.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapDragEventArgs> OnDragEnd { get; set; }
-
-    internal async Task HandlePointerEvent(string eventName, MapPointerEventArgs args)
-    {
-        var callback = eventName switch
-        {
-            "tap" => OnClick,
-            "dbltap" => OnDoubleClick,
-            "longpress" => OnLongPress,
-            "contextmenu" => OnContextMenu,
-            "pointerdown" => OnPointerDown,
-            "pointerup" => OnPointerUp,
-            "pointermove" => OnPointerMove,
-            "pointerenter" => OnPointerEnter,
-            "pointerleave" => OnPointerLeave,
-            _ => default
-        };
-
-        if (callback.HasDelegate)
-            await callback.InvokeAsync(args);
-    }
-
-    internal async Task HandleContextMenuClose()
-    {
-        if (OnContextMenuClose.HasDelegate)
-            await OnContextMenuClose.InvokeAsync();
-    }
-
-    internal async Task HandlePointerCancel()
-    {
-        if (OnPointerCancel.HasDelegate)
-            await OnPointerCancel.InvokeAsync();
-    }
-
-    internal async Task HandleDragEvent(string eventName, MapDragEventArgs args)
-    {
-        var callback = eventName switch
-        {
-            "dragstart" => OnDragStart,
-            "drag" => OnDrag,
-            "dragend" => OnDragEnd,
-            _ => default
-        };
-
-        if (callback.HasDelegate)
-            await callback.InvokeAsync(args);
-    }
-
     internal async Task HandleGeometryChanged(List<LatLngLiteral> path)
     {
         Path = path;
@@ -266,34 +116,25 @@ public partial class PolygonComponent : IAsyncDisposable
             await PathChanged.InvokeAsync(path);
     }
 
-    /// <summary>
-    /// Returns true if any pointer/interaction event callback is bound.
-    /// </summary>
-    internal bool HasAnyEventCallback =>
-        OnClick.HasDelegate || OnDoubleClick.HasDelegate || OnLongPress.HasDelegate ||
-        OnContextMenu.HasDelegate || OnContextMenuClose.HasDelegate ||
-        OnPointerDown.HasDelegate || OnPointerUp.HasDelegate || OnPointerMove.HasDelegate ||
-        OnPointerEnter.HasDelegate || OnPointerLeave.HasDelegate || OnPointerCancel.HasDelegate ||
-        OnDragStart.HasDelegate || OnDrag.HasDelegate || OnDragEnd.HasDelegate ||
-        PathChanged.HasDelegate;
+    internal override bool HasAnyEventCallback =>
+        HasBaseEventCallbacks || PathChanged.HasDelegate;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override string JsDisposeFunction => "blazorHerePlatform.objectManager.disposePolygonComponent";
+
+    protected override Task RegisterWithMapAsync() => MapRef.AddPolygon(this);
+
+    protected override Task UnregisterFromMapAsync()
     {
-        if (firstRender)
-        {
-            MapRef.AddPolygon(this);
-            _hasRendered = true;
-            await UpdateOptions();
-        }
-
-        await base.OnAfterRenderAsync(firstRender);
+        if (MapRef is not null)
+            return MapRef.RemovePolygon(this);
+        return Task.CompletedTask;
     }
 
-    private async Task UpdateOptions()
+    protected override async Task UpdateOptions()
     {
         await Js.InvokeAsync<string>(
             "blazorHerePlatform.objectManager.updatePolygonComponent",
-            Guid,
+            [Guid,
             new PolygonComponentOptions
             {
                 Path = Path,
@@ -313,19 +154,12 @@ public partial class PolygonComponent : IAsyncDisposable
                 Elevation = Elevation,
                 MapId = MapRef.MapId,
             },
-            MapRef.CallbackRef);
+            MapRef.CallbackRef]);
     }
 
-    public override async Task SetParametersAsync(ParameterView parameters)
+    protected override bool CheckParameterChanges(ParameterView parameters)
     {
-        if (!_hasRendered)
-        {
-            await base.SetParametersAsync(parameters);
-            return;
-        }
-
-        var optionsChanged =
-            parameters.DidParameterChange(Path) ||
+        return parameters.DidParameterChange(Path) ||
             parameters.DidParameterChange(StrokeColor) ||
             parameters.DidParameterChange(FillColor) ||
             parameters.DidParameterChange(LineWidth) ||
@@ -340,22 +174,6 @@ public partial class PolygonComponent : IAsyncDisposable
             parameters.DidParameterChange(Holes) ||
             parameters.DidParameterChange(Extrusion) ||
             parameters.DidParameterChange(Elevation);
-
-        await base.SetParametersAsync(parameters);
-
-        if (optionsChanged)
-        {
-            await UpdateOptions();
-        }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (IsDisposed) return;
-        IsDisposed = true;
-        await Js.InvokeVoidAsync("blazorHerePlatform.objectManager.disposePolygonComponent", Guid);
-        MapRef?.RemovePolygon(this);
-        GC.SuppressFinalize(this);
     }
 
     internal readonly struct PolygonComponentOptions

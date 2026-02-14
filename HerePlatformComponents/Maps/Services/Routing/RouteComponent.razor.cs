@@ -18,7 +18,8 @@ public partial class RouteComponent : IAsyncDisposable
     }
 
     private bool _hasRendered = false;
-    internal bool IsDisposed = false;
+    private bool _isDisposed;
+    internal void MarkDisposed() => _isDisposed = true;
     private Guid _guid;
     private RoutingResult? _lastResult;
     private bool _isCalculating;
@@ -150,7 +151,7 @@ public partial class RouteComponent : IAsyncDisposable
 
     private async Task CalculateAndRender()
     {
-        if (IsDisposed) return;
+        if (_isDisposed) return;
 
         _isCalculating = true;
 
@@ -221,7 +222,7 @@ public partial class RouteComponent : IAsyncDisposable
 
     private async Task UpdatePolylineStyle()
     {
-        if (IsDisposed || _lastResult?.Routes is not { Count: > 0 }) return;
+        if (_isDisposed || _lastResult?.Routes is not { Count: > 0 }) return;
 
         // Collect path again
         var path = new List<LatLngLiteral>();
@@ -255,8 +256,8 @@ public partial class RouteComponent : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (IsDisposed) return;
-        IsDisposed = true;
+        if (_isDisposed) return;
+        _isDisposed = true;
 
         try
         {

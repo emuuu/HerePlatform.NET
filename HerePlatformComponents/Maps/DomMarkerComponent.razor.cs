@@ -1,7 +1,6 @@
 using HerePlatformComponents.Maps.Events;
 using HerePlatformComponents.Maps.Extension;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using System;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -13,26 +12,9 @@ namespace HerePlatformComponents.Maps;
 /// ChildContent provides the HTML template for the DomIcon.
 /// Note: ChildContent is read as static HTML — no live Blazor interactivity inside the DomIcon.
 /// </summary>
-public partial class DomMarkerComponent : IAsyncDisposable
+public partial class DomMarkerComponent : MapObjectComponentBase
 {
-    public DomMarkerComponent()
-    {
-        _guid = Guid.NewGuid();
-    }
-
-    private bool _hasRendered = false;
-    internal bool IsDisposed = false;
-    private Guid _guid;
-
-    public Guid Guid => _guid;
-
-    internal string TemplateElementId => $"blz-dm-{_guid}";
-
-    [Inject]
-    private IJSRuntime Js { get; set; } = default!;
-
-    [CascadingParameter(Name = "HereMap")]
-    private AdvancedHereMap MapRef { get; set; } = default!;
+    internal string TemplateElementId => $"blz-dm-{Guid}";
 
     [CascadingParameter(Name = "HereGroup")]
     private GroupComponent? GroupRef { get; set; }
@@ -109,81 +91,7 @@ public partial class DomMarkerComponent : IAsyncDisposable
     [Parameter, JsonIgnore]
     public object? Data { get; set; }
 
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnClick { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnDoubleClick { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnLongPress { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnContextMenu { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback OnContextMenuClose { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerDown { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerUp { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerMove { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerEnter { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerLeave { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback OnPointerCancel { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapDragEventArgs> OnDragStart { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapDragEventArgs> OnDrag { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapDragEventArgs> OnDragEnd { get; set; }
-
-    internal async Task HandlePointerEvent(string eventName, MapPointerEventArgs args)
-    {
-        var callback = eventName switch
-        {
-            "tap" => OnClick,
-            "dbltap" => OnDoubleClick,
-            "longpress" => OnLongPress,
-            "contextmenu" => OnContextMenu,
-            "pointerdown" => OnPointerDown,
-            "pointerup" => OnPointerUp,
-            "pointermove" => OnPointerMove,
-            "pointerenter" => OnPointerEnter,
-            "pointerleave" => OnPointerLeave,
-            _ => default
-        };
-
-        if (callback.HasDelegate)
-            await callback.InvokeAsync(args);
-    }
-
-    internal async Task HandleContextMenuClose()
-    {
-        if (OnContextMenuClose.HasDelegate)
-            await OnContextMenuClose.InvokeAsync();
-    }
-
-    internal async Task HandlePointerCancel()
-    {
-        if (OnPointerCancel.HasDelegate)
-            await OnPointerCancel.InvokeAsync();
-    }
-
-    internal async Task HandleDragEvent(string eventName, MapDragEventArgs args)
+    internal override async Task HandleDragEvent(string eventName, MapDragEventArgs args)
     {
         if (eventName == "dragend" && args.Position.HasValue)
         {
@@ -199,43 +107,31 @@ public partial class DomMarkerComponent : IAsyncDisposable
                 await LngChanged.InvokeAsync(newLng);
         }
 
-        var callback = eventName switch
-        {
-            "dragstart" => OnDragStart,
-            "drag" => OnDrag,
-            "dragend" => OnDragEnd,
-            _ => default
-        };
-
-        if (callback.HasDelegate)
-            await callback.InvokeAsync(args);
+        await base.HandleDragEvent(eventName, args);
     }
 
-    internal bool HasAnyEventCallback =>
-        OnClick.HasDelegate || OnDoubleClick.HasDelegate || OnLongPress.HasDelegate ||
-        OnContextMenu.HasDelegate || OnContextMenuClose.HasDelegate ||
-        OnPointerDown.HasDelegate || OnPointerUp.HasDelegate || OnPointerMove.HasDelegate ||
-        OnPointerEnter.HasDelegate || OnPointerLeave.HasDelegate || OnPointerCancel.HasDelegate ||
-        OnDragStart.HasDelegate || OnDrag.HasDelegate || OnDragEnd.HasDelegate ||
-        LatChanged.HasDelegate || LngChanged.HasDelegate;
+    internal override bool HasAnyEventCallback =>
+        HasBaseEventCallbacks || LatChanged.HasDelegate || LngChanged.HasDelegate;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override string JsDisposeFunction => "blazorHerePlatform.objectManager.disposeDomMarkerComponent";
+
+    protected override Task RegisterWithMapAsync()
     {
-        if (firstRender)
-        {
-            MapRef.AddDomMarker(this);
-            _hasRendered = true;
-            await UpdateOptions();
-        }
-
-        await base.OnAfterRenderAsync(firstRender);
+        MapRef.AddDomMarker(this);
+        return Task.CompletedTask;
     }
 
-    private async Task UpdateOptions()
+    protected override Task UnregisterFromMapAsync()
+    {
+        MapRef?.RemoveDomMarker(this);
+        return Task.CompletedTask;
+    }
+
+    protected override async Task UpdateOptions()
     {
         await Js.InvokeAsync<string>(
             "blazorHerePlatform.objectManager.updateDomMarkerComponent",
-            Guid,
+            [Guid,
             new DomMarkerComponentOptions
             {
                 Position = new LatLngLiteral(Lat, Lng),
@@ -250,19 +146,12 @@ public partial class DomMarkerComponent : IAsyncDisposable
                 GroupId = GroupRef?.Guid,
                 TemplateId = ChildContent is not null ? TemplateElementId : null,
             },
-            MapRef.CallbackRef);
+            MapRef.CallbackRef]);
     }
 
-    public override async Task SetParametersAsync(ParameterView parameters)
+    protected override bool CheckParameterChanges(ParameterView parameters)
     {
-        if (!_hasRendered)
-        {
-            await base.SetParametersAsync(parameters);
-            return;
-        }
-
-        var optionsChanged =
-            parameters.DidParameterChange(Lat) ||
+        return parameters.DidParameterChange(Lat) ||
             parameters.DidParameterChange(Lng) ||
             parameters.DidParameterChange(Clickable) ||
             parameters.DidParameterChange(Draggable) ||
@@ -271,29 +160,6 @@ public partial class DomMarkerComponent : IAsyncDisposable
             parameters.DidParameterChange(MinZoom) ||
             parameters.DidParameterChange(MaxZoom) ||
             parameters.DidParameterChange(Visible);
-
-        await base.SetParametersAsync(parameters);
-
-        if (optionsChanged)
-        {
-            await UpdateOptions();
-        }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (IsDisposed) return;
-        IsDisposed = true;
-
-        try
-        {
-            await Js.InvokeVoidAsync("blazorHerePlatform.objectManager.disposeDomMarkerComponent", Guid);
-        }
-        catch (JSDisconnectedException) { }
-        catch (InvalidOperationException) { }
-
-        MapRef?.RemoveDomMarker(this);
-        GC.SuppressFinalize(this);
     }
 
     internal readonly struct DomMarkerComponentOptions

@@ -1,32 +1,13 @@
-using HerePlatformComponents.Maps.Events;
 using HerePlatformComponents.Maps.Extension;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using System;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace HerePlatformComponents.Maps;
 
-public partial class CircleComponent : IAsyncDisposable
+public partial class CircleComponent : MapObjectComponentBase
 {
-    public CircleComponent()
-    {
-        _guid = Guid.NewGuid();
-    }
-
-    private bool _hasRendered = false;
-    internal bool IsDisposed = false;
-    private Guid _guid;
-
-    public Guid Guid => _guid;
-
-    [Inject]
-    private IJSRuntime Js { get; set; } = default!;
-
-    [CascadingParameter(Name = "HereMap")]
-    private AdvancedHereMap MapRef { get; set; } = default!;
-
     /// <summary>
     /// Center latitude. Two-way bindable via <c>@bind-CenterLat</c>.
     /// </summary>
@@ -144,94 +125,6 @@ public partial class CircleComponent : IAsyncDisposable
     [Parameter, JsonIgnore]
     public double? Elevation { get; set; }
 
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnClick { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnDoubleClick { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnLongPress { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnContextMenu { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback OnContextMenuClose { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerDown { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerUp { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerMove { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerEnter { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerLeave { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback OnPointerCancel { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapDragEventArgs> OnDragStart { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapDragEventArgs> OnDrag { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapDragEventArgs> OnDragEnd { get; set; }
-
-    internal async Task HandlePointerEvent(string eventName, MapPointerEventArgs args)
-    {
-        var callback = eventName switch
-        {
-            "tap" => OnClick,
-            "dbltap" => OnDoubleClick,
-            "longpress" => OnLongPress,
-            "contextmenu" => OnContextMenu,
-            "pointerdown" => OnPointerDown,
-            "pointerup" => OnPointerUp,
-            "pointermove" => OnPointerMove,
-            "pointerenter" => OnPointerEnter,
-            "pointerleave" => OnPointerLeave,
-            _ => default
-        };
-
-        if (callback.HasDelegate)
-            await callback.InvokeAsync(args);
-    }
-
-    internal async Task HandleContextMenuClose()
-    {
-        if (OnContextMenuClose.HasDelegate)
-            await OnContextMenuClose.InvokeAsync();
-    }
-
-    internal async Task HandlePointerCancel()
-    {
-        if (OnPointerCancel.HasDelegate)
-            await OnPointerCancel.InvokeAsync();
-    }
-
-    internal async Task HandleDragEvent(string eventName, MapDragEventArgs args)
-    {
-        var callback = eventName switch
-        {
-            "dragstart" => OnDragStart,
-            "drag" => OnDrag,
-            "dragend" => OnDragEnd,
-            _ => default
-        };
-
-        if (callback.HasDelegate)
-            await callback.InvokeAsync(args);
-    }
-
     internal async Task HandleGeometryChanged(double lat, double lng)
     {
         CenterLat = lat;
@@ -243,31 +136,25 @@ public partial class CircleComponent : IAsyncDisposable
             await CenterLngChanged.InvokeAsync(lng);
     }
 
-    internal bool HasAnyEventCallback =>
-        OnClick.HasDelegate || OnDoubleClick.HasDelegate || OnLongPress.HasDelegate ||
-        OnContextMenu.HasDelegate || OnContextMenuClose.HasDelegate ||
-        OnPointerDown.HasDelegate || OnPointerUp.HasDelegate || OnPointerMove.HasDelegate ||
-        OnPointerEnter.HasDelegate || OnPointerLeave.HasDelegate || OnPointerCancel.HasDelegate ||
-        OnDragStart.HasDelegate || OnDrag.HasDelegate || OnDragEnd.HasDelegate ||
-        CenterLatChanged.HasDelegate || CenterLngChanged.HasDelegate;
+    internal override bool HasAnyEventCallback =>
+        HasBaseEventCallbacks || CenterLatChanged.HasDelegate || CenterLngChanged.HasDelegate;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override string JsDisposeFunction => "blazorHerePlatform.objectManager.disposeCircleComponent";
+
+    protected override Task RegisterWithMapAsync() => MapRef.AddCircle(this);
+
+    protected override Task UnregisterFromMapAsync()
     {
-        if (firstRender)
-        {
-            MapRef.AddCircle(this);
-            _hasRendered = true;
-            await UpdateOptions();
-        }
-
-        await base.OnAfterRenderAsync(firstRender);
+        if (MapRef is not null)
+            return MapRef.RemoveCircle(this);
+        return Task.CompletedTask;
     }
 
-    private async Task UpdateOptions()
+    protected override async Task UpdateOptions()
     {
         await Js.InvokeAsync<string>(
             "blazorHerePlatform.objectManager.updateCircleComponent",
-            Guid,
+            [Guid,
             new CircleComponentOptions
             {
                 CenterLat = CenterLat,
@@ -289,19 +176,12 @@ public partial class CircleComponent : IAsyncDisposable
                 Elevation = Elevation,
                 MapId = MapRef.MapId,
             },
-            MapRef.CallbackRef);
+            MapRef.CallbackRef]);
     }
 
-    public override async Task SetParametersAsync(ParameterView parameters)
+    protected override bool CheckParameterChanges(ParameterView parameters)
     {
-        if (!_hasRendered)
-        {
-            await base.SetParametersAsync(parameters);
-            return;
-        }
-
-        var optionsChanged =
-            parameters.DidParameterChange(CenterLat) ||
+        return parameters.DidParameterChange(CenterLat) ||
             parameters.DidParameterChange(CenterLng) ||
             parameters.DidParameterChange(Radius) ||
             parameters.DidParameterChange(StrokeColor) ||
@@ -316,29 +196,6 @@ public partial class CircleComponent : IAsyncDisposable
             parameters.DidParameterChange(Draggable) ||
             parameters.DidParameterChange(Clickable) ||
             parameters.DidParameterChange(Visible);
-
-        await base.SetParametersAsync(parameters);
-
-        if (optionsChanged)
-        {
-            await UpdateOptions();
-        }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (IsDisposed) return;
-        IsDisposed = true;
-
-        try
-        {
-            await Js.InvokeVoidAsync("blazorHerePlatform.objectManager.disposeCircleComponent", Guid);
-        }
-        catch (JSDisconnectedException) { }
-        catch (InvalidOperationException) { }
-
-        MapRef?.RemoveCircle(this);
-        GC.SuppressFinalize(this);
     }
 
     internal readonly struct CircleComponentOptions

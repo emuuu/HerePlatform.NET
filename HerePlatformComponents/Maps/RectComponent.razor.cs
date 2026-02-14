@@ -1,32 +1,13 @@
-using HerePlatformComponents.Maps.Events;
 using HerePlatformComponents.Maps.Extension;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using System;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace HerePlatformComponents.Maps;
 
-public partial class RectComponent : IAsyncDisposable
+public partial class RectComponent : MapObjectComponentBase
 {
-    public RectComponent()
-    {
-        _guid = Guid.NewGuid();
-    }
-
-    private bool _hasRendered = false;
-    internal bool IsDisposed = false;
-    private Guid _guid;
-
-    public Guid Guid => _guid;
-
-    [Inject]
-    private IJSRuntime Js { get; set; } = default!;
-
-    [CascadingParameter(Name = "HereMap")]
-    private AdvancedHereMap MapRef { get; set; } = default!;
-
     /// <summary>
     /// Top latitude of the bounding rectangle. Two-way bindable via <c>@bind-Top</c>.
     /// </summary>
@@ -147,94 +128,6 @@ public partial class RectComponent : IAsyncDisposable
     [Parameter, JsonIgnore]
     public double? Elevation { get; set; }
 
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnClick { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnDoubleClick { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnLongPress { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnContextMenu { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback OnContextMenuClose { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerDown { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerUp { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerMove { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerEnter { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerLeave { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback OnPointerCancel { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapDragEventArgs> OnDragStart { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapDragEventArgs> OnDrag { get; set; }
-
-    [Parameter, JsonIgnore]
-    public EventCallback<MapDragEventArgs> OnDragEnd { get; set; }
-
-    internal async Task HandlePointerEvent(string eventName, MapPointerEventArgs args)
-    {
-        var callback = eventName switch
-        {
-            "tap" => OnClick,
-            "dbltap" => OnDoubleClick,
-            "longpress" => OnLongPress,
-            "contextmenu" => OnContextMenu,
-            "pointerdown" => OnPointerDown,
-            "pointerup" => OnPointerUp,
-            "pointermove" => OnPointerMove,
-            "pointerenter" => OnPointerEnter,
-            "pointerleave" => OnPointerLeave,
-            _ => default
-        };
-
-        if (callback.HasDelegate)
-            await callback.InvokeAsync(args);
-    }
-
-    internal async Task HandleContextMenuClose()
-    {
-        if (OnContextMenuClose.HasDelegate)
-            await OnContextMenuClose.InvokeAsync();
-    }
-
-    internal async Task HandlePointerCancel()
-    {
-        if (OnPointerCancel.HasDelegate)
-            await OnPointerCancel.InvokeAsync();
-    }
-
-    internal async Task HandleDragEvent(string eventName, MapDragEventArgs args)
-    {
-        var callback = eventName switch
-        {
-            "dragstart" => OnDragStart,
-            "drag" => OnDrag,
-            "dragend" => OnDragEnd,
-            _ => default
-        };
-
-        if (callback.HasDelegate)
-            await callback.InvokeAsync(args);
-    }
-
     internal async Task HandleGeometryChanged(double top, double left, double bottom, double right)
     {
         Top = top;
@@ -252,31 +145,26 @@ public partial class RectComponent : IAsyncDisposable
             await RightChanged.InvokeAsync(right);
     }
 
-    internal bool HasAnyEventCallback =>
-        OnClick.HasDelegate || OnDoubleClick.HasDelegate || OnLongPress.HasDelegate ||
-        OnContextMenu.HasDelegate || OnContextMenuClose.HasDelegate ||
-        OnPointerDown.HasDelegate || OnPointerUp.HasDelegate || OnPointerMove.HasDelegate ||
-        OnPointerEnter.HasDelegate || OnPointerLeave.HasDelegate || OnPointerCancel.HasDelegate ||
-        OnDragStart.HasDelegate || OnDrag.HasDelegate || OnDragEnd.HasDelegate ||
+    internal override bool HasAnyEventCallback =>
+        HasBaseEventCallbacks ||
         TopChanged.HasDelegate || LeftChanged.HasDelegate || BottomChanged.HasDelegate || RightChanged.HasDelegate;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            MapRef.AddRect(this);
-            _hasRendered = true;
-            await UpdateOptions();
-        }
+    protected override string JsDisposeFunction => "blazorHerePlatform.objectManager.disposeRectComponent";
 
-        await base.OnAfterRenderAsync(firstRender);
+    protected override Task RegisterWithMapAsync() => MapRef.AddRect(this);
+
+    protected override Task UnregisterFromMapAsync()
+    {
+        if (MapRef is not null)
+            return MapRef.RemoveRect(this);
+        return Task.CompletedTask;
     }
 
-    private async Task UpdateOptions()
+    protected override async Task UpdateOptions()
     {
         await Js.InvokeAsync<string>(
             "blazorHerePlatform.objectManager.updateRectComponent",
-            Guid,
+            [Guid,
             new RectComponentOptions
             {
                 Top = Top,
@@ -298,19 +186,12 @@ public partial class RectComponent : IAsyncDisposable
                 Elevation = Elevation,
                 MapId = MapRef.MapId,
             },
-            MapRef.CallbackRef);
+            MapRef.CallbackRef]);
     }
 
-    public override async Task SetParametersAsync(ParameterView parameters)
+    protected override bool CheckParameterChanges(ParameterView parameters)
     {
-        if (!_hasRendered)
-        {
-            await base.SetParametersAsync(parameters);
-            return;
-        }
-
-        var optionsChanged =
-            parameters.DidParameterChange(Top) ||
+        return parameters.DidParameterChange(Top) ||
             parameters.DidParameterChange(Left) ||
             parameters.DidParameterChange(Bottom) ||
             parameters.DidParameterChange(Right) ||
@@ -325,29 +206,6 @@ public partial class RectComponent : IAsyncDisposable
             parameters.DidParameterChange(Draggable) ||
             parameters.DidParameterChange(Clickable) ||
             parameters.DidParameterChange(Visible);
-
-        await base.SetParametersAsync(parameters);
-
-        if (optionsChanged)
-        {
-            await UpdateOptions();
-        }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (IsDisposed) return;
-        IsDisposed = true;
-
-        try
-        {
-            await Js.InvokeVoidAsync("blazorHerePlatform.objectManager.disposeRectComponent", Guid);
-        }
-        catch (JSDisconnectedException) { }
-        catch (InvalidOperationException) { }
-
-        MapRef?.RemoveRect(this);
-        GC.SuppressFinalize(this);
     }
 
     internal readonly struct RectComponentOptions

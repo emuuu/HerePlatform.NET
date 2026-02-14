@@ -1,33 +1,15 @@
 using HerePlatformComponents.Maps.Events;
 using HerePlatformComponents.Maps.Extension;
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using System;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace HerePlatformComponents.Maps;
 
-public partial class MarkerComponent : IAsyncDisposable
+public partial class MarkerComponent : MapObjectComponentBase
 {
-    public MarkerComponent()
-    {
-        _guid = Guid.NewGuid();
-    }
-
-    private bool _hasRendered = false;
-    internal bool IsDisposed = false;
-    private Guid _guid;
-
-    public Guid Guid => _guid;
-
-    internal string TemplateElementId => $"blz-mc-{_guid}";
-
-    [Inject]
-    private IJSRuntime Js { get; set; } = default!;
-
-    [CascadingParameter(Name = "HereMap")]
-    private AdvancedHereMap MapRef { get; set; } = default!;
+    internal string TemplateElementId => $"blz-mc-{Guid}";
 
     [Parameter, JsonIgnore]
     public RenderFragment? ChildContent { get; set; }
@@ -112,128 +94,8 @@ public partial class MarkerComponent : IAsyncDisposable
     [Parameter, JsonIgnore]
     public string? IconUrl { get; set; }
 
-    /// <summary>
-    /// Fired when the marker is tapped/clicked.
-    /// Breaking change: now provides MapPointerEventArgs with position and viewport data.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnClick { get; set; }
-
-    /// <summary>
-    /// Fired on double-tap/double-click.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnDoubleClick { get; set; }
-
-    /// <summary>
-    /// Fired on long press.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnLongPress { get; set; }
-
-    /// <summary>
-    /// Fired on right-click / long-press context menu.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnContextMenu { get; set; }
-
-    /// <summary>
-    /// Fired when the context menu interaction ends.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback OnContextMenuClose { get; set; }
-
-    /// <summary>
-    /// Fired when a pointer touches the marker surface.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerDown { get; set; }
-
-    /// <summary>
-    /// Fired when a pointer leaves the marker surface.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerUp { get; set; }
-
-    /// <summary>
-    /// Fired when a pointer moves over the marker.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerMove { get; set; }
-
-    /// <summary>
-    /// Fired when a pointer enters the marker area.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerEnter { get; set; }
-
-    /// <summary>
-    /// Fired when a pointer leaves the marker area.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapPointerEventArgs> OnPointerLeave { get; set; }
-
-    /// <summary>
-    /// Fired when a pointer action is cancelled.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback OnPointerCancel { get; set; }
-
-    /// <summary>
-    /// Fired when a drag operation starts on the marker.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapDragEventArgs> OnDragStart { get; set; }
-
-    /// <summary>
-    /// Fired continuously during a drag operation.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapDragEventArgs> OnDrag { get; set; }
-
-    /// <summary>
-    /// Fired when a drag operation ends.
-    /// Breaking change: replaces OnMove. Now provides MapDragEventArgs.
-    /// </summary>
-    [Parameter, JsonIgnore]
-    public EventCallback<MapDragEventArgs> OnDragEnd { get; set; }
-
-    internal async Task HandlePointerEvent(string eventName, MapPointerEventArgs args)
+    internal override async Task HandleDragEvent(string eventName, MapDragEventArgs args)
     {
-        var callback = eventName switch
-        {
-            "tap" => OnClick,
-            "dbltap" => OnDoubleClick,
-            "longpress" => OnLongPress,
-            "contextmenu" => OnContextMenu,
-            "pointerdown" => OnPointerDown,
-            "pointerup" => OnPointerUp,
-            "pointermove" => OnPointerMove,
-            "pointerenter" => OnPointerEnter,
-            "pointerleave" => OnPointerLeave,
-            _ => default
-        };
-
-        if (callback.HasDelegate)
-            await callback.InvokeAsync(args);
-    }
-
-    internal async Task HandleContextMenuClose()
-    {
-        if (OnContextMenuClose.HasDelegate)
-            await OnContextMenuClose.InvokeAsync();
-    }
-
-    internal async Task HandlePointerCancel()
-    {
-        if (OnPointerCancel.HasDelegate)
-            await OnPointerCancel.InvokeAsync();
-    }
-
-    internal async Task HandleDragEvent(string eventName, MapDragEventArgs args)
-    {
-        // On dragend, update Lat/Lng and fire two-way binding callbacks
-        // BEFORE the OnDragEnd event, so consumers see the updated position.
         if (eventName == "dragend" && args.Position.HasValue)
         {
             var newLat = args.Position.Value.Lat;
@@ -242,62 +104,41 @@ public partial class MarkerComponent : IAsyncDisposable
             Lat = newLat;
             Lng = newLng;
 
-            // Use local copies so no re-render between the two callbacks
-            // can overwrite the values via SetParametersAsync.
             if (LatChanged.HasDelegate)
                 await LatChanged.InvokeAsync(newLat);
             if (LngChanged.HasDelegate)
                 await LngChanged.InvokeAsync(newLng);
         }
 
-        var callback = eventName switch
-        {
-            "dragstart" => OnDragStart,
-            "drag" => OnDrag,
-            "dragend" => OnDragEnd,
-            _ => default
-        };
-
-        if (callback.HasDelegate)
-            await callback.InvokeAsync(args);
+        await base.HandleDragEvent(eventName, args);
     }
 
-    /// <summary>
-    /// Returns true if any pointer/interaction event callback is bound.
-    /// Used to determine whether JS should wire up event listeners.
-    /// </summary>
-    internal bool HasAnyEventCallback =>
-        OnClick.HasDelegate || OnDoubleClick.HasDelegate || OnLongPress.HasDelegate ||
-        OnContextMenu.HasDelegate || OnContextMenuClose.HasDelegate ||
-        OnPointerDown.HasDelegate || OnPointerUp.HasDelegate || OnPointerMove.HasDelegate ||
-        OnPointerEnter.HasDelegate || OnPointerLeave.HasDelegate || OnPointerCancel.HasDelegate ||
-        OnDragStart.HasDelegate || OnDrag.HasDelegate || OnDragEnd.HasDelegate ||
-        LatChanged.HasDelegate || LngChanged.HasDelegate;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            MapRef.AddMarker(this);
-            _hasRendered = true;
-            await UpdateOptions();
-        }
-
-        await base.OnAfterRenderAsync(firstRender);
-    }
+    internal override bool HasAnyEventCallback =>
+        HasBaseEventCallbacks || LatChanged.HasDelegate || LngChanged.HasDelegate;
 
     public async Task ForceRender()
     {
-        if (!_hasRendered) return;
+        if (!HasRendered) return;
         await UpdateOptions();
     }
 
-    private async Task UpdateOptions()
+    protected override string JsDisposeFunction => "blazorHerePlatform.objectManager.disposeMarkerComponent";
+
+    protected override Task RegisterWithMapAsync() => MapRef.AddMarker(this);
+
+    protected override Task UnregisterFromMapAsync()
+    {
+        if (MapRef is not null)
+            return MapRef.RemoveMarker(this);
+        return Task.CompletedTask;
+    }
+
+    protected override async Task UpdateOptions()
     {
         var hasInfoBubbleContent = ChildContent is not null;
         await Js.InvokeAsync<string>(
             "blazorHerePlatform.objectManager.updateMarkerComponent",
-            Guid,
+            [Guid,
             new MarkerComponentOptions
             {
                 Position = new LatLngLiteral(Lat, Lng),
@@ -312,19 +153,12 @@ public partial class MarkerComponent : IAsyncDisposable
                 MapId = MapRef.MapId,
                 InfoBubbleTemplateId = hasInfoBubbleContent ? TemplateElementId : null,
             },
-            MapRef.CallbackRef);
+            MapRef.CallbackRef]);
     }
 
-    public override async Task SetParametersAsync(ParameterView parameters)
+    protected override bool CheckParameterChanges(ParameterView parameters)
     {
-        if (!_hasRendered)
-        {
-            await base.SetParametersAsync(parameters);
-            return;
-        }
-
-        var optionsChanged =
-            parameters.DidParameterChange(Lat) ||
+        return parameters.DidParameterChange(Lat) ||
             parameters.DidParameterChange(Lng) ||
             parameters.DidParameterChange(ZIndex) ||
             parameters.DidParameterChange(Opacity) ||
@@ -334,29 +168,6 @@ public partial class MarkerComponent : IAsyncDisposable
             parameters.DidParameterChange(Draggable) ||
             parameters.DidParameterChange(Visible) ||
             parameters.DidParameterChange(IconUrl);
-
-        await base.SetParametersAsync(parameters);
-
-        if (optionsChanged)
-        {
-            await UpdateOptions();
-        }
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (IsDisposed) return;
-        IsDisposed = true;
-
-        try
-        {
-            await Js.InvokeVoidAsync("blazorHerePlatform.objectManager.disposeMarkerComponent", Guid);
-        }
-        catch (JSDisconnectedException) { }
-        catch (InvalidOperationException) { }
-
-        MapRef?.RemoveMarker(this);
-        GC.SuppressFinalize(this);
     }
 
     internal readonly struct MarkerComponentOptions
@@ -371,10 +182,6 @@ public partial class MarkerComponent : IAsyncDisposable
         public double? MaxZoom { get; init; }
         public bool Visible { get; init; }
         public string? IconUrl { get; init; }
-        /// <summary>
-        /// DOM element ID of the hidden &lt;template&gt; containing InfoBubble HTML.
-        /// When set, a tap on the marker automatically opens an InfoBubble with that content.
-        /// </summary>
         public string? InfoBubbleTemplateId { get; init; }
     }
 }

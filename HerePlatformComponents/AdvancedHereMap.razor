@@ -18,11 +18,11 @@
 }
 
 @code {
-    public HereMap? MapRef;
+    public HereMap? MapRef { get; private set; }
 
     public Map? InteropObject => MapRef?.InteropObject;
 
-    internal Guid? MapId => MapRef?.InteropObject.Guid;
+    internal Guid? MapId => MapRef?.InteropObject?.Guid;
 
     public int MarkerCount => _mapComponents.Count;
     public IEnumerable<MarkerComponent> Markers => _mapComponents.Select(x => x.Value);
@@ -59,6 +59,9 @@
     private readonly Dictionary<Guid, MarkerClusterComponent> _mapClusterComponents = [];
     private readonly Dictionary<Guid, GeoJsonReaderComponent> _mapGeoJsonComponents = [];
     private readonly Dictionary<Guid, KmlReaderComponent> _mapKmlComponents = [];
+
+    // Unified routing map for all shape components (MapObjectComponentBase descendants).
+    private readonly Dictionary<Guid, MapObjectComponentBase> _eventRoutingMap = [];
 
     internal DotNetObjectReference<AdvancedHereMap>? CallbackRef;
 
@@ -407,100 +410,25 @@
     [JSInvokable]
     public async Task OnObjectPointerEvent(string objectType, Guid objectId, string eventName, MapPointerEventArgs args)
     {
-        if (objectType == "marker" && _mapComponents.TryGetValue(objectId, out var marker))
-        {
-            await marker.HandlePointerEvent(eventName, args);
-        }
-        else if (objectType == "polygon" && _mapPolygonComponents.TryGetValue(objectId, out var polygon))
-        {
-            await polygon.HandlePointerEvent(eventName, args);
-        }
-        else if (objectType == "polyline" && _mapPolylineComponents.TryGetValue(objectId, out var polyline))
-        {
-            await polyline.HandlePointerEvent(eventName, args);
-        }
-        else if (objectType == "circle" && _mapCircleComponents.TryGetValue(objectId, out var circle))
-        {
-            await circle.HandlePointerEvent(eventName, args);
-        }
-        else if (objectType == "rect" && _mapRectComponents.TryGetValue(objectId, out var rect))
-        {
-            await rect.HandlePointerEvent(eventName, args);
-        }
-        else if (objectType == "dommarker" && _mapDomMarkerComponents.TryGetValue(objectId, out var domMarker))
-        {
-            await domMarker.HandlePointerEvent(eventName, args);
-        }
+        if (_eventRoutingMap.TryGetValue(objectId, out var component))
+            await component.HandlePointerEvent(eventName, args);
     }
 
-    /// <summary>
-    /// Called from JS for parameterless events (contextmenuclose, pointercancel) on objects.
-    /// </summary>
     [JSInvokable]
     public async Task OnObjectSimpleEvent(string objectType, Guid objectId, string eventName)
     {
-        if (objectType == "marker" && _mapComponents.TryGetValue(objectId, out var marker))
+        if (_eventRoutingMap.TryGetValue(objectId, out var component))
         {
-            if (eventName == "contextmenuclose") await marker.HandleContextMenuClose();
-            else if (eventName == "pointercancel") await marker.HandlePointerCancel();
-        }
-        else if (objectType == "polygon" && _mapPolygonComponents.TryGetValue(objectId, out var polygon))
-        {
-            if (eventName == "contextmenuclose") await polygon.HandleContextMenuClose();
-            else if (eventName == "pointercancel") await polygon.HandlePointerCancel();
-        }
-        else if (objectType == "polyline" && _mapPolylineComponents.TryGetValue(objectId, out var polyline))
-        {
-            if (eventName == "contextmenuclose") await polyline.HandleContextMenuClose();
-            else if (eventName == "pointercancel") await polyline.HandlePointerCancel();
-        }
-        else if (objectType == "circle" && _mapCircleComponents.TryGetValue(objectId, out var circle))
-        {
-            if (eventName == "contextmenuclose") await circle.HandleContextMenuClose();
-            else if (eventName == "pointercancel") await circle.HandlePointerCancel();
-        }
-        else if (objectType == "rect" && _mapRectComponents.TryGetValue(objectId, out var rect))
-        {
-            if (eventName == "contextmenuclose") await rect.HandleContextMenuClose();
-            else if (eventName == "pointercancel") await rect.HandlePointerCancel();
-        }
-        else if (objectType == "dommarker" && _mapDomMarkerComponents.TryGetValue(objectId, out var domMarker))
-        {
-            if (eventName == "contextmenuclose") await domMarker.HandleContextMenuClose();
-            else if (eventName == "pointercancel") await domMarker.HandlePointerCancel();
+            if (eventName == "contextmenuclose") await component.HandleContextMenuClose();
+            else if (eventName == "pointercancel") await component.HandlePointerCancel();
         }
     }
 
-    /// <summary>
-    /// Called from JS for drag events on markers and polygons.
-    /// </summary>
     [JSInvokable]
     public async Task OnObjectDragEvent(string objectType, Guid objectId, string eventName, MapDragEventArgs args)
     {
-        if (objectType == "marker" && _mapComponents.TryGetValue(objectId, out var marker))
-        {
-            await marker.HandleDragEvent(eventName, args);
-        }
-        else if (objectType == "polygon" && _mapPolygonComponents.TryGetValue(objectId, out var polygon))
-        {
-            await polygon.HandleDragEvent(eventName, args);
-        }
-        else if (objectType == "polyline" && _mapPolylineComponents.TryGetValue(objectId, out var polyline))
-        {
-            await polyline.HandleDragEvent(eventName, args);
-        }
-        else if (objectType == "circle" && _mapCircleComponents.TryGetValue(objectId, out var circle))
-        {
-            await circle.HandleDragEvent(eventName, args);
-        }
-        else if (objectType == "rect" && _mapRectComponents.TryGetValue(objectId, out var rect))
-        {
-            await rect.HandleDragEvent(eventName, args);
-        }
-        else if (objectType == "dommarker" && _mapDomMarkerComponents.TryGetValue(objectId, out var domMarker))
-        {
-            await domMarker.HandleDragEvent(eventName, args);
-        }
+        if (_eventRoutingMap.TryGetValue(objectId, out var component))
+            await component.HandleDragEvent(eventName, args);
     }
 
     /// <summary>
@@ -510,25 +438,23 @@
     [JSInvokable]
     public async Task OnShapeDragEndGeometry(string objectType, Guid objectId, ShapeDragGeometry geometry)
     {
-        if (objectType == "circle" && geometry.CenterLat.HasValue && geometry.CenterLng.HasValue
-            && _mapCircleComponents.TryGetValue(objectId, out var circle))
+        if (!_eventRoutingMap.TryGetValue(objectId, out var component))
+            return;
+
+        switch (component)
         {
-            await circle.HandleGeometryChanged(geometry.CenterLat.Value, geometry.CenterLng.Value);
-        }
-        else if (objectType == "rect" && geometry.Top.HasValue
-            && _mapRectComponents.TryGetValue(objectId, out var rect))
-        {
-            await rect.HandleGeometryChanged(geometry.Top.Value, geometry.Left!.Value, geometry.Bottom!.Value, geometry.Right!.Value);
-        }
-        else if (objectType == "polygon" && geometry.Path != null
-            && _mapPolygonComponents.TryGetValue(objectId, out var polygon))
-        {
-            await polygon.HandleGeometryChanged(geometry.Path);
-        }
-        else if (objectType == "polyline" && geometry.Path != null
-            && _mapPolylineComponents.TryGetValue(objectId, out var polyline))
-        {
-            await polyline.HandleGeometryChanged(geometry.Path);
+            case CircleComponent circle when geometry.CenterLat.HasValue && geometry.CenterLng.HasValue:
+                await circle.HandleGeometryChanged(geometry.CenterLat.Value, geometry.CenterLng.Value);
+                break;
+            case RectComponent rect when geometry.Top.HasValue:
+                await rect.HandleGeometryChanged(geometry.Top.Value, geometry.Left!.Value, geometry.Bottom!.Value, geometry.Right!.Value);
+                break;
+            case PolygonComponent polygon when geometry.Path != null:
+                await polygon.HandleGeometryChanged(geometry.Path);
+                break;
+            case PolylineComponent polyline when geometry.Path != null:
+                await polyline.HandleGeometryChanged(geometry.Path);
+                break;
         }
     }
 
@@ -754,64 +680,74 @@
         await MapRef.InteropObject.ZoomToBoundsAsync(points, animate);
     }
 
-    internal void AddMarker(MarkerComponent marker)
+    internal async Task AddMarker(MarkerComponent marker)
     {
         _mapComponents.TryAdd(marker.Guid, marker);
-        OnMarkersChanged.InvokeAsync();
+        _eventRoutingMap[marker.Guid] = marker;
+        await OnMarkersChanged.InvokeAsync();
     }
 
-    internal void RemoveMarker(MarkerComponent marker)
+    internal async Task RemoveMarker(MarkerComponent marker)
     {
         _mapComponents.Remove(marker.Guid);
-        OnMarkersChanged.InvokeAsync();
+        _eventRoutingMap.Remove(marker.Guid);
+        await OnMarkersChanged.InvokeAsync();
     }
 
-    internal void AddPolygon(PolygonComponent poly)
+    internal async Task AddPolygon(PolygonComponent polygon)
     {
-        _mapPolygonComponents.TryAdd(poly.Guid, poly);
-        OnPolygonsChanged.InvokeAsync();
+        _mapPolygonComponents.TryAdd(polygon.Guid, polygon);
+        _eventRoutingMap[polygon.Guid] = polygon;
+        await OnPolygonsChanged.InvokeAsync();
     }
 
-    internal void RemovePolygon(PolygonComponent poly)
+    internal async Task RemovePolygon(PolygonComponent polygon)
     {
-        _mapPolygonComponents.Remove(poly.Guid);
-        OnPolygonsChanged.InvokeAsync();
+        _mapPolygonComponents.Remove(polygon.Guid);
+        _eventRoutingMap.Remove(polygon.Guid);
+        await OnPolygonsChanged.InvokeAsync();
     }
 
-    internal void AddPolyline(PolylineComponent polyline)
+    internal async Task AddPolyline(PolylineComponent polyline)
     {
         _mapPolylineComponents.TryAdd(polyline.Guid, polyline);
-        OnPolylinesChanged.InvokeAsync();
+        _eventRoutingMap[polyline.Guid] = polyline;
+        await OnPolylinesChanged.InvokeAsync();
     }
 
-    internal void RemovePolyline(PolylineComponent polyline)
+    internal async Task RemovePolyline(PolylineComponent polyline)
     {
         _mapPolylineComponents.Remove(polyline.Guid);
-        OnPolylinesChanged.InvokeAsync();
+        _eventRoutingMap.Remove(polyline.Guid);
+        await OnPolylinesChanged.InvokeAsync();
     }
 
-    internal void AddCircle(CircleComponent circle)
+    internal async Task AddCircle(CircleComponent circle)
     {
         _mapCircleComponents.TryAdd(circle.Guid, circle);
-        OnCirclesChanged.InvokeAsync();
+        _eventRoutingMap[circle.Guid] = circle;
+        await OnCirclesChanged.InvokeAsync();
     }
 
-    internal void RemoveCircle(CircleComponent circle)
+    internal async Task RemoveCircle(CircleComponent circle)
     {
         _mapCircleComponents.Remove(circle.Guid);
-        OnCirclesChanged.InvokeAsync();
+        _eventRoutingMap.Remove(circle.Guid);
+        await OnCirclesChanged.InvokeAsync();
     }
 
-    internal void AddRect(RectComponent rect)
+    internal async Task AddRect(RectComponent rect)
     {
         _mapRectComponents.TryAdd(rect.Guid, rect);
-        OnRectsChanged.InvokeAsync();
+        _eventRoutingMap[rect.Guid] = rect;
+        await OnRectsChanged.InvokeAsync();
     }
 
-    internal void RemoveRect(RectComponent rect)
+    internal async Task RemoveRect(RectComponent rect)
     {
         _mapRectComponents.Remove(rect.Guid);
-        OnRectsChanged.InvokeAsync();
+        _eventRoutingMap.Remove(rect.Guid);
+        await OnRectsChanged.InvokeAsync();
     }
 
     internal void AddGroup(GroupComponent group)
@@ -827,11 +763,13 @@
     internal void AddDomMarker(DomMarkerComponent domMarker)
     {
         _mapDomMarkerComponents.TryAdd(domMarker.Guid, domMarker);
+        _eventRoutingMap[domMarker.Guid] = domMarker;
     }
 
     internal void RemoveDomMarker(DomMarkerComponent domMarker)
     {
         _mapDomMarkerComponents.Remove(domMarker.Guid);
+        _eventRoutingMap.Remove(domMarker.Guid);
     }
 
     internal void AddInfoBubble(InfoBubbleComponent bubble)
@@ -876,45 +814,15 @@
 
     public async ValueTask DisposeAsync()
     {
-        foreach (var component in _mapComponents)
-        {
-            component.Value.IsDisposed = true;
-        }
+        // Mark all shape components (via unified routing map)
+        foreach (var (_, component) in _eventRoutingMap)
+            component.MarkDisposed();
 
-        foreach (var component in _mapPolygonComponents)
-        {
-            component.Value.IsDisposed = true;
-        }
-
-        foreach (var component in _mapPolylineComponents)
-        {
-            component.Value.IsDisposed = true;
-        }
-
-        foreach (var component in _mapCircleComponents)
-        {
-            component.Value.IsDisposed = true;
-        }
-
-        foreach (var component in _mapRectComponents)
-        {
-            component.Value.IsDisposed = true;
-        }
-
+        // Mark non-shape components individually
         foreach (var component in _mapGroupComponents)
-        {
-            component.Value.IsDisposed = true;
-        }
-
-        foreach (var component in _mapDomMarkerComponents)
-        {
-            component.Value.IsDisposed = true;
-        }
-
+            component.Value.MarkDisposed();
         foreach (var component in _mapInfoBubbleComponents)
-        {
-            component.Value.IsDisposed = true;
-        }
+            component.Value.MarkDisposed();
 
         if (MapRef != null)
         {

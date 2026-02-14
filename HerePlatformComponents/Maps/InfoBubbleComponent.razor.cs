@@ -19,7 +19,8 @@ public partial class InfoBubbleComponent : IAsyncDisposable
     }
 
     private bool _hasRendered = false;
-    internal bool IsDisposed = false;
+    private bool _isDisposed;
+    internal void MarkDisposed() => _isDisposed = true;
     private Guid _guid;
 
     public Guid Guid => _guid;
@@ -138,8 +139,8 @@ public partial class InfoBubbleComponent : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (IsDisposed) return;
-        IsDisposed = true;
+        if (_isDisposed) return;
+        _isDisposed = true;
 
         try
         {
