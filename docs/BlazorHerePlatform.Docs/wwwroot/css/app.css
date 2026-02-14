@@ -4,12 +4,63 @@
     --sidebar-width: 260px;
     --toc-width: 200px;
     --header-height: 56px;
+
+    /* HERE-inspired palette */
+    --here-dark: #333b47;
+    --here-teal: #48a9a6;
+    --here-teal-dark: #007e79;
+    --here-teal-light: #65c1c2;
+    --here-teal-subtle: #e6f4f4;
+
+    /* Bootstrap primary overrides */
+    --bs-primary: #48a9a6;
+    --bs-primary-rgb: 72, 169, 166;
+    --bs-link-color: #007e79;
+    --bs-link-color-rgb: 0, 126, 121;
+    --bs-link-hover-color: #48a9a6;
+    --bs-link-hover-color-rgb: 72, 169, 166;
+    --bs-primary-bg-subtle: #e6f4f4;
+    --bs-primary-text-emphasis: #005653;
+}
+
+/* Bootstrap component color overrides */
+.btn-primary {
+    --bs-btn-bg: #48a9a6;
+    --bs-btn-border-color: #48a9a6;
+    --bs-btn-hover-bg: #3d918e;
+    --bs-btn-hover-border-color: #3d918e;
+    --bs-btn-active-bg: #007e79;
+    --bs-btn-active-border-color: #007e79;
+    --bs-btn-disabled-bg: #48a9a6;
+    --bs-btn-disabled-border-color: #48a9a6;
+}
+
+.btn-outline-primary {
+    --bs-btn-color: #007e79;
+    --bs-btn-border-color: #48a9a6;
+    --bs-btn-hover-bg: #48a9a6;
+    --bs-btn-hover-border-color: #48a9a6;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-active-bg: #007e79;
+    --bs-btn-active-border-color: #007e79;
+    --bs-btn-active-color: #fff;
+}
+
+.badge.bg-primary-subtle {
+    background-color: var(--here-teal-subtle) !important;
+    color: var(--here-teal-dark) !important;
+}
+
+.list-group-item.active {
+    --bs-list-group-active-bg: #48a9a6;
+    --bs-list-group-active-border-color: #48a9a6;
 }
 
 /* Header */
 .docs-header {
     z-index: 1030;
     height: var(--header-height);
+    background-color: var(--here-dark) !important;
 }
 
 .docs-header kbd {
@@ -17,6 +68,10 @@
     padding: 2px 5px;
     background-color: rgba(255, 255, 255, 0.15);
     border-radius: 3px;
+}
+
+.docs-header .navbar-brand strong {
+    color: var(--here-teal-light);
 }
 
 /* Layout */
@@ -48,6 +103,7 @@
 .nav-section-title {
     font-size: 0.75rem;
     letter-spacing: 0.05em;
+    color: var(--here-teal-dark) !important;
 }
 
 .nav-menu .nav-link {
@@ -62,9 +118,11 @@
 }
 
 .nav-menu .nav-link.active {
-    color: var(--bs-primary);
-    background-color: var(--bs-primary-bg-subtle);
+    color: var(--here-teal-dark);
+    background-color: var(--here-teal-subtle);
     font-weight: 500;
+    border-left: 3px solid var(--here-teal);
+    margin-left: -3px;
 }
 
 /* Doc content layout */
@@ -86,7 +144,8 @@
     margin-top: 2rem;
     margin-bottom: 0.75rem;
     padding-bottom: 0.3rem;
-    border-bottom: 1px solid var(--bs-border-color);
+    border-bottom: 2px solid var(--here-teal-subtle);
+    color: var(--here-dark);
 }
 
 .doc-content h3 {
@@ -111,19 +170,21 @@
 }
 
 .on-this-page-link:hover {
-    color: var(--bs-primary) !important;
+    color: var(--here-teal) !important;
 }
 
 /* Code blocks */
 .code-block {
     border-radius: 0.375rem;
     overflow: hidden;
+    border: 1px solid #e2e8f0;
 }
 
 .code-block pre {
-    background-color: #2d2d2d;
+    background-color: #1e2530;
     padding: 1rem;
     overflow-x: auto;
+    margin: 0;
 }
 
 .code-block code {
@@ -149,7 +210,7 @@
 /* API reference */
 .api-reference table code {
     font-size: 0.85rem;
-    color: var(--bs-pink);
+    color: var(--here-teal-dark);
 }
 
 /* Search */
@@ -178,6 +239,17 @@
     border-right: 0;
 }
 
+.search-dialog .form-control:focus {
+    border-color: var(--here-teal);
+    box-shadow: 0 0 0 0.25rem rgba(72, 169, 166, 0.25);
+}
+
+/* Form focus states */
+.form-control:focus {
+    border-color: var(--here-teal);
+    box-shadow: 0 0 0 0.25rem rgba(72, 169, 166, 0.25);
+}
+
 /* Markdown body */
 .markdown-body img {
     max-width: 100%;
@@ -202,19 +274,41 @@
 .markdown-body blockquote {
     padding: 0.75rem 1rem;
     margin: 1rem 0;
-    border-left: 4px solid var(--bs-primary);
-    background-color: var(--bs-primary-bg-subtle);
+    border-left: 4px solid var(--here-teal);
+    background-color: var(--here-teal-subtle);
     border-radius: 0 0.25rem 0.25rem 0;
 }
 
 /* Landing page */
 .landing-page .card {
     transition: transform 0.2s, box-shadow 0.2s;
+    border-color: #e2e8f0;
 }
 
 .landing-page .card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 16px rgba(72, 169, 166, 0.15);
+    border-color: var(--here-teal-light);
+}
+
+.landing-page .display-4 {
+    color: var(--here-dark);
+}
+
+/* Demo link card on doc pages */
+.demo-link-section .card {
+    border-color: var(--here-teal) !important;
+    background-color: var(--here-teal-subtle);
+}
+
+.demo-link-section .card .btn {
+    background-color: var(--here-teal);
+    border-color: var(--here-teal);
+}
+
+.demo-link-section .card .btn:hover {
+    background-color: var(--here-teal-dark);
+    border-color: var(--here-teal-dark);
 }
 
 /* Loading */
