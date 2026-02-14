@@ -351,7 +351,7 @@
       "Namespace Imports",
       "What Gets Registered"
     ],
-    "searchText": "NuGet Package Install the BlazorHerePlatform package from NuGet: Or via the .NET CLI: Supported Frameworks BlazorHerePlatform multi-targets three .NET versions: | Framework | Status | |-----------|--------| | .NET 8.0 | Supported (LTS) | | .NET 9.0 | Supported | | .NET 10.0 | Supported | Your project only needs to target one of these. The correct dependency set is selected automatically based on your \u003CTargetFramework\u003E. Blazor Server Projects Add the package reference, then register services in P"
+    "searchText": "NuGet Package Install the BlazorHerePlatform package from NuGet: Or via the .NET CLI: Supported Frameworks BlazorHerePlatform multi-targets three .NET versions: | Framework | Status | |-----------|--------| | .NET 8.0 | Supported | | .NET 9.0 | Supported | | .NET 10.0 | Supported (LTS) | Your project only needs to target one of these. The correct dependency set is selected automatically based on your \u003CTargetFramework\u003E. Blazor Server Projects Add the package reference, then register services in P"
   },
   {
     "slug": "getting-started/quick-start",
