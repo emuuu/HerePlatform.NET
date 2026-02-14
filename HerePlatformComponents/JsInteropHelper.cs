@@ -182,6 +182,11 @@ internal static partial class Helper
         }
     }
 
+    // Note: DotNetObjectReference instances created here for Action/Func parameters
+    // are not tracked for disposal. Their lifetime is tied to the JS event listener
+    // or callback they wrap. For v0.1 this is acceptable — the leak is proportional
+    // to the number of imperative AddListener calls. A future version should track
+    // these references on the parent JsObjectRef for cleanup in DisposeAsync.
     private static IEnumerable<object?> MakeArgJsFriendly(IJSRuntime jsRuntime, IEnumerable<object?> args)
     {
         var jsFriendlyArgs = args
