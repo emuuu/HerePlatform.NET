@@ -5,7 +5,7 @@ using HerePlatformComponents.Maps.Services.Transit;
 namespace HerePlatformComponents.Tests.Services.Transit;
 
 [TestFixture]
-public class PublicTransitServiceIntegrationTests : ServiceTestBase
+public class PublicTransitServiceTests : ServiceTestBase
 {
     [Test]
     public async Task GetDeparturesAsync_WithDepartures_ReturnsTransitInfo()

@@ -5,7 +5,7 @@ using HerePlatformComponents.Maps.Services.Geocoding;
 namespace HerePlatformComponents.Tests.Services.Geocoding;
 
 [TestFixture]
-public class GeocodingServiceIntegrationTests : ServiceTestBase
+public class GeocodingServiceTests : ServiceTestBase
 {
     [Test]
     public async Task GeocodeAsync_WithResults_ReturnsItems()

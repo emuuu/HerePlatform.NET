@@ -6,7 +6,7 @@ using HerePlatformComponents.Maps.Utilities;
 namespace HerePlatformComponents.Tests.Services.Routing;
 
 [TestFixture]
-public class RoutingServiceIntegrationTests : ServiceTestBase
+public class RoutingServiceTests : ServiceTestBase
 {
     [Test]
     public async Task CalculateRouteAsync_WithPolyline_DecodesPolyline()

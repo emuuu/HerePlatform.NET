@@ -5,7 +5,7 @@ using HerePlatformComponents.Maps.Services.Places;
 namespace HerePlatformComponents.Tests.Services.Places;
 
 [TestFixture]
-public class PlacesServiceIntegrationTests : ServiceTestBase
+public class PlacesServiceTests : ServiceTestBase
 {
     [Test]
     public async Task DiscoverAsync_WithResults_ReturnsPlaces()

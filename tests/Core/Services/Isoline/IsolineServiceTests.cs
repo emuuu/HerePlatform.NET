@@ -6,7 +6,7 @@ using HerePlatformComponents.Maps.Utilities;
 namespace HerePlatformComponents.Tests.Services.Isoline;
 
 [TestFixture]
-public class IsolineServiceIntegrationTests : ServiceTestBase
+public class IsolineServiceTests : ServiceTestBase
 {
     [Test]
     public async Task CalculateIsolineAsync_WithPolygons_ReturnsIsolines()

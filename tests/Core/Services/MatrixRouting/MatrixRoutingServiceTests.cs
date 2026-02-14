@@ -5,7 +5,7 @@ using HerePlatformComponents.Maps.Services.MatrixRouting;
 namespace HerePlatformComponents.Tests.Services.MatrixRouting;
 
 [TestFixture]
-public class MatrixRoutingServiceIntegrationTests : ServiceTestBase
+public class MatrixRoutingServiceTests : ServiceTestBase
 {
     [Test]
     public async Task CalculateMatrixAsync_2x2Matrix_ReturnsAllEntries()

@@ -5,7 +5,7 @@ using HerePlatformComponents.Maps.Services.Traffic;
 namespace HerePlatformComponents.Tests.Services.Traffic;
 
 [TestFixture]
-public class TrafficServiceIntegrationTests : ServiceTestBase
+public class TrafficServiceTests : ServiceTestBase
 {
     [Test]
     public async Task GetTrafficIncidentsAsync_WithIncidents_ReturnsTypesAndSeverities()

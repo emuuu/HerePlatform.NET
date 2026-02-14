@@ -5,7 +5,7 @@ using HerePlatformComponents.Maps.Services.WaypointSequence;
 namespace HerePlatformComponents.Tests.Services.WaypointSequence;
 
 [TestFixture]
-public class WaypointSequenceServiceIntegrationTests : ServiceTestBase
+public class WaypointSequenceServiceTests : ServiceTestBase
 {
     [Test]
     public async Task OptimizeSequenceAsync_WithWaypoints_ReturnsOptimizedOrder()
