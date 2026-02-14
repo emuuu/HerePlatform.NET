@@ -109,4 +109,15 @@ public class DependencyInjectionExtensionsTests
 
         Assert.That(descriptor.Lifetime, Is.EqualTo(ServiceLifetime.Scoped));
     }
+
+    [Test]
+    public void AddBlazorHerePlatform_WithCustomService_RegistersAsScoped()
+    {
+        var services = new ServiceCollection();
+        services.AddBlazorHerePlatform(new BlazorHerePlatformKeyService("key"));
+
+        var descriptor = services.Single(d => d.ServiceType == typeof(IBlazorHerePlatformKeyService));
+
+        Assert.That(descriptor.Lifetime, Is.EqualTo(ServiceLifetime.Scoped));
+    }
 }

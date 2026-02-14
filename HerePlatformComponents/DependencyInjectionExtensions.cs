@@ -5,6 +5,9 @@ namespace HerePlatformComponents;
 
 public static class DependencyInjectionExtensions
 {
+    /// <summary>
+    /// Registers BlazorHerePlatform services. Only one API key per page is supported.
+    /// </summary>
     public static IServiceCollection AddBlazorHerePlatform(this IServiceCollection services, string apiKey)
     {
         services.AddScoped<IBlazorHerePlatformKeyService>(_ => new BlazorHerePlatformKeyService(apiKey));
@@ -21,7 +24,7 @@ public static class DependencyInjectionExtensions
 
     public static IServiceCollection AddBlazorHerePlatform(this IServiceCollection services, IBlazorHerePlatformKeyService keyService)
     {
-        services.AddSingleton<IBlazorHerePlatformKeyService>(keyService);
+        services.AddScoped<IBlazorHerePlatformKeyService>(_ => keyService);
         RegisterServices(services);
         return services;
     }
