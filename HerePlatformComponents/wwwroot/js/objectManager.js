@@ -485,8 +485,9 @@ window.blazorHerePlatform.objectManager = function () {
             apiKeyValid = true;
         },
 
-        isHereMapsReady: function () {
-            // Returns true even without a valid key so components can render the placeholder
+        canRenderMap: function () {
+            // Returns true when a map can be rendered — either as a real map
+            // (herePlatform loaded) or as a placeholder (API not yet initialized).
             return herePlatform !== null || apiKeyValid === false;
         },
 
@@ -985,6 +986,34 @@ window.blazorHerePlatform.objectManager = function () {
             if (!map || map._blzPlaceholder) return { tilt: 0, heading: 0 };
             const data = map.getViewModel().getLookAtData();
             return { tilt: data.tilt || 0, heading: data.heading || 0 };
+        },
+
+        getViewBounds: function (mapGuid) {
+            const map = mapObjects[mapGuid];
+            if (!map || map._blzPlaceholder) return null;
+            try {
+                const lookAt = map.getViewModel().getLookAtData();
+                if (lookAt && lookAt.bounds) {
+                    const bbox = lookAt.bounds.getBoundingBox();
+                    return { top: bbox.getTop(), left: bbox.getLeft(), bottom: bbox.getBottom(), right: bbox.getRight() };
+                }
+            } catch (e) { console.warn('[BlazorHerePlatform] getViewBounds failed:', e); }
+            return null;
+        },
+
+        setViewBounds: function (mapGuid, bounds) {
+            const map = mapObjects[mapGuid];
+            if (!map || map._blzPlaceholder) return;
+            try {
+                var rect = new H.geo.Rect(bounds.top, bounds.left, bounds.bottom, bounds.right);
+                map.getViewModel().setLookAtData({ bounds: rect });
+            } catch (e) { console.warn('[BlazorHerePlatform] setViewBounds failed:', e); }
+        },
+
+        resizeMap: function (mapGuid) {
+            const map = mapObjects[mapGuid];
+            if (!map || map._blzPlaceholder) return;
+            try { map.getViewPort().resize(); } catch (e) { }
         },
 
         invokeWithReturnedObjectRef: async function (args) {

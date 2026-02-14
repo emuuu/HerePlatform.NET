@@ -90,14 +90,15 @@ public class Map : EventEntityBase, IJsObjectRef, IAsyncDisposable
 
     public Task<GeoRect> GetViewBounds()
     {
-        return _jsObjectRef.InvokeAsync<GeoRect>("getViewModel().getLookAtData().bounds.getBoundingBox");
+        return _jsObjectRef.JSRuntime.InvokeAsync<GeoRect>(
+            "blazorHerePlatform.objectManager.getViewBounds", Guid.ToString()).AsTask();
     }
 
     public Task SetViewBounds(GeoRect bounds)
     {
-        return _jsObjectRef.JSRuntime.MyInvokeAsync(
-            "blazorHerePlatform.objectManager.invoke",
-            _jsObjectRef.Guid.ToString(), "getViewModel().getLookAtData", bounds);
+        return _jsObjectRef.JSRuntime.InvokeVoidAsync(
+            "blazorHerePlatform.objectManager.setViewBounds",
+            Guid.ToString(), bounds).AsTask();
     }
 
     /// <summary>
@@ -233,8 +234,7 @@ public class Map : EventEntityBase, IJsObjectRef, IAsyncDisposable
     public Task Resize()
     {
         return _jsObjectRef.JSRuntime.InvokeVoidAsync(
-            "blazorHerePlatform.objectManager.invoke",
-            new object[] { Guid.ToString(), "getViewPort().resize" }).AsTask();
+            "blazorHerePlatform.objectManager.resizeMap", Guid.ToString()).AsTask();
     }
 
     /// <summary>
