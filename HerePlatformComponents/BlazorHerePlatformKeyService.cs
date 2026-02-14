@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 
 namespace HerePlatformComponents;
@@ -19,11 +20,13 @@ public class BlazorHerePlatformKeyService : IBlazorHerePlatformKeyService
 
     public BlazorHerePlatformKeyService(string apiKey)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
         _initOptions = new Maps.HereApiLoadOptions(apiKey);
     }
 
     public BlazorHerePlatformKeyService(Maps.HereApiLoadOptions opts)
     {
+        ArgumentNullException.ThrowIfNull(opts);
         _initOptions = opts;
     }
 
@@ -34,6 +37,7 @@ public class BlazorHerePlatformKeyService : IBlazorHerePlatformKeyService
 
     public void UpdateApiKey(string apiKey)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
         _initOptions = new Maps.HereApiLoadOptions(apiKey);
         IsApiInitialized = false;
     }

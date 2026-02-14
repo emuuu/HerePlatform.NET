@@ -120,4 +120,39 @@ public class DependencyInjectionExtensionsTests
 
         Assert.That(descriptor.Lifetime, Is.EqualTo(ServiceLifetime.Scoped));
     }
+
+    [Test]
+    public void AddBlazorHerePlatform_NullApiKey_Throws()
+    {
+        var services = new ServiceCollection();
+        Assert.Throws<ArgumentNullException>(() => services.AddBlazorHerePlatform((string)null!));
+    }
+
+    [Test]
+    public void AddBlazorHerePlatform_EmptyApiKey_Throws()
+    {
+        var services = new ServiceCollection();
+        Assert.Throws<ArgumentException>(() => services.AddBlazorHerePlatform(""));
+    }
+
+    [Test]
+    public void AddBlazorHerePlatform_WhitespaceApiKey_Throws()
+    {
+        var services = new ServiceCollection();
+        Assert.Throws<ArgumentException>(() => services.AddBlazorHerePlatform("   "));
+    }
+
+    [Test]
+    public void AddBlazorHerePlatform_NullOptions_Throws()
+    {
+        var services = new ServiceCollection();
+        Assert.Throws<ArgumentNullException>(() => services.AddBlazorHerePlatform((HereApiLoadOptions)null!));
+    }
+
+    [Test]
+    public void AddBlazorHerePlatform_NullKeyService_Throws()
+    {
+        var services = new ServiceCollection();
+        Assert.Throws<ArgumentNullException>(() => services.AddBlazorHerePlatform((IBlazorHerePlatformKeyService)null!));
+    }
 }

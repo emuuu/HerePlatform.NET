@@ -1,3 +1,5 @@
+using System;
+
 namespace HerePlatformComponents.Maps;
 
 public class HereApiLoadOptions
@@ -14,6 +16,7 @@ public class HereApiLoadOptions
 
     public HereApiLoadOptions(string apiKey)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(apiKey);
         ApiKey = apiKey;
     }
 }
