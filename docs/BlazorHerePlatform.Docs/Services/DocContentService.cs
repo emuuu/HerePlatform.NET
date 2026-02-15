@@ -22,6 +22,7 @@ public partial class DocContentService : IDocContentService
         _pipeline = new MarkdownPipelineBuilder()
             .UseAdvancedExtensions()
             .UseAutoIdentifiers()
+            .DisableHtml()
             .Build();
     }
 

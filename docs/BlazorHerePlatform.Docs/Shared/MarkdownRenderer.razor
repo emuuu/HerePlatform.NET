@@ -1,6 +1,7 @@
 @inject IJSRuntime JS
 
 <div class="markdown-body" @ref="_element">
+    @* Content is repo-controlled markdown; raw HTML in source is escaped by DisableHtml() in the pipeline *@
     @((MarkupString)Html)
 </div>
 
