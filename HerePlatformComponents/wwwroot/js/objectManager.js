@@ -3481,9 +3481,9 @@ window.blazorHerePlatform.objectManager = function () {
             }
 
             try {
-                var resp = await fetch('https://matrix.router.hereapi.com/v8/matrix?async=false&apiKey=' + encodeURIComponent(hereApiKey), {
+                var resp = await fetch('https://matrix.router.hereapi.com/v8/matrix?async=false', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'apiKey': hereApiKey },
                     body: JSON.stringify(body)
                 });
                 var data = await resp.json();
