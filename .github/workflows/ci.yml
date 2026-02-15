@@ -25,6 +25,6 @@ jobs:
           dotnet-version: ${{ matrix.dotnet-version }}
       - run: dotnet restore
       - run: dotnet build -c Release -f ${{ matrix.target-framework }} --no-restore
-        working-directory: HerePlatformComponents
+        working-directory: tests/HerePlatformComponents.Tests
       - run: dotnet test -c Release -f ${{ matrix.target-framework }} --no-build
         working-directory: tests/HerePlatformComponents.Tests
