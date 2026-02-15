@@ -582,6 +582,26 @@ string encoded = FlexiblePolyline.Encode(coordinates, precision: 5);
 
 The HERE Maps JS API is loaded once per page with a single API key. Multiple keys on the same page are not supported.
 
+## Repository Setup
+
+After forking or cloning, configure the following GitHub settings:
+
+### Branch Protection Rules (main)
+
+- Require at least 1 approval before merging
+- Require the **CI** status check to pass
+- Require branches to be up to date before merging
+- Do not allow force pushes
+
+### GitHub Pages
+
+- Go to **Settings > Pages**
+- Set **Source** to **GitHub Actions**
+
+### Secrets
+
+- `NUGET_API_KEY` — required for the release workflow to push packages to NuGet.org
+
 ## License
 
 MIT
