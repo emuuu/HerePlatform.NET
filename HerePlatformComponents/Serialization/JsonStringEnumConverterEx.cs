@@ -43,7 +43,12 @@ public class JsonStringEnumConverterEx<TEnum> : JsonConverter<TEnum> where TEnum
     {
         var stringValue = reader.GetString();
 
-        return _stringToEnum.GetValueOrDefault(stringValue ?? "");
+        if (_stringToEnum.TryGetValue(stringValue ?? "", out var result))
+            return result;
+
+        System.Diagnostics.Debug.WriteLine(
+            $"[BlazorHerePlatform] Unknown enum value '{stringValue}' for {typeof(TEnum).Name}, falling back to default");
+        return default;
     }
 
     public override void Write(Utf8JsonWriter writer, TEnum value, JsonSerializerOptions options)

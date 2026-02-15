@@ -37,7 +37,9 @@ public class JsCallableAction
                 var obj = Helper.DeSerializeObject(x.jToken, x.type);
                 if (obj is IActionArgument actionArg)
                 {
-                    actionArg.JsObjectRef = new JsObjectRef(_jsRuntime, new Guid(guid));
+                    if (!Guid.TryParse(guid, out var parsedGuid))
+                        throw new InvalidOperationException($"JS returned invalid GUID: '{guid}'");
+                    actionArg.JsObjectRef = new JsObjectRef(_jsRuntime, parsedGuid);
                 }
 
                 return obj;

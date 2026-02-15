@@ -40,14 +40,23 @@ public class Map : EventEntityBase, IJsObjectRef, IAsyncDisposable
             JsInteropIdentifiers.CreateHereMap,
             mapDiv, opts);
 
-        var mapGuid = new Guid(result.MapGuid);
+        if (!Guid.TryParse(result.MapGuid, out var mapGuid))
+            throw new InvalidOperationException($"JS returned invalid map GUID: '{result.MapGuid}'");
         var jsObjectRef = new JsObjectRef(jsRuntime, mapGuid);
         var map = new Map(jsObjectRef);
 
         if (result.BehaviorGuid != null)
-            map.BehaviorGuid = new Guid(result.BehaviorGuid);
+        {
+            if (!Guid.TryParse(result.BehaviorGuid, out var behaviorGuid))
+                throw new InvalidOperationException($"JS returned invalid behavior GUID: '{result.BehaviorGuid}'");
+            map.BehaviorGuid = behaviorGuid;
+        }
         if (result.UIGuid != null)
-            map.UIGuid = new Guid(result.UIGuid);
+        {
+            if (!Guid.TryParse(result.UIGuid, out var uiGuid))
+                throw new InvalidOperationException($"JS returned invalid UI GUID: '{result.UIGuid}'");
+            map.UIGuid = uiGuid;
+        }
 
         JsObjectRefInstances.Add(map);
 
