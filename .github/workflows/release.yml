@@ -27,8 +27,8 @@ jobs:
         run: dotnet pack HerePlatformComponents/HerePlatformComponents.csproj -c Release --no-build -p:Version=$VERSION -o ./artifacts
       - name: Push to NuGet
         run: |
-          dotnet nuget push ./artifacts/*.nupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}
-          dotnet nuget push ./artifacts/*.snupkg -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}
+          dotnet nuget push ./artifacts/*.nupkg --skip-duplicate -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}
+          dotnet nuget push ./artifacts/*.snupkg --skip-duplicate -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
