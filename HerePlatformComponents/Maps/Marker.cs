@@ -1,4 +1,5 @@
 using Microsoft.JSInterop;
+using OneOf;
 using System;
 using System.Threading.Tasks;
 
@@ -32,7 +33,7 @@ public class Marker : ListableEntityBase<MarkerOptions>
         return _jsObjectRef.InvokeAsync("setGeometry", position);
     }
 
-    public Task SetIcon(object icon)
+    public Task SetIcon(OneOf<Icon, string> icon)
     {
         return _jsObjectRef.InvokeAsync("setIcon", icon);
     }
