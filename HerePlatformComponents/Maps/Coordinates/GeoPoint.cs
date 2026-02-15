@@ -1,3 +1,5 @@
+using System;
+
 namespace HerePlatformComponents.Maps.Coordinates;
 
 /// <summary>
@@ -5,8 +7,31 @@ namespace HerePlatformComponents.Maps.Coordinates;
 /// </summary>
 public class GeoPoint
 {
-    public double Lat { get; set; }
-    public double Lng { get; set; }
+    private double _lat;
+    private double _lng;
+
+    public double Lat
+    {
+        get => _lat;
+        set
+        {
+            if (value is < -90 or > 90)
+                throw new ArgumentOutOfRangeException(nameof(value), "Latitude values can only range from -90 to 90.");
+            _lat = value;
+        }
+    }
+
+    public double Lng
+    {
+        get => _lng;
+        set
+        {
+            if (value is < -180 or > 180)
+                throw new ArgumentOutOfRangeException(nameof(value), "Longitude values can only range from -180 to 180.");
+            _lng = value;
+        }
+    }
+
     public double? Alt { get; set; }
 
     public GeoPoint()
