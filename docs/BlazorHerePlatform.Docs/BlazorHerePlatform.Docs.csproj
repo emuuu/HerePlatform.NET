@@ -18,8 +18,12 @@
     <ProjectReference Include="../../HerePlatformComponents/HerePlatformComponents.csproj" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <BaseUrl Condition="'$(BaseUrl)' == ''">https://emuuu.github.io/BlazorHerePlatform</BaseUrl>
+  </PropertyGroup>
+
   <Target Name="GenerateDocsData" BeforeTargets="Build">
-    <Exec Command="dotnet run --project ../BlazorHerePlatform.Docs.Generator -- $(MSBuildProjectDirectory)/wwwroot" />
+    <Exec Command="dotnet run --project ../BlazorHerePlatform.Docs.Generator -- $(MSBuildProjectDirectory)/wwwroot --base-url $(BaseUrl)" />
   </Target>
 
 </Project>

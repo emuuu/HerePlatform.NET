@@ -369,3 +369,9 @@ nuget.config
 
 # Generated demo source copies (build artifact)
 docs/BlazorHerePlatform.Docs/wwwroot/demos/
+
+# Generated SEO files (build artifact)
+docs/BlazorHerePlatform.Docs/wwwroot/docs/
+docs/BlazorHerePlatform.Docs/wwwroot/demo/*/index.html
+docs/BlazorHerePlatform.Docs/wwwroot/sitemap.xml
+docs/BlazorHerePlatform.Docs/wwwroot/robots.txt

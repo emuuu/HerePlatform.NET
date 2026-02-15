@@ -16,7 +16,12 @@ public partial class ContentIndexGenerator
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
-    public async Task GenerateAsync(string contentDir, string outputPath)
+    private static readonly MarkdownPipeline Pipeline = new MarkdownPipelineBuilder()
+        .UseAdvancedExtensions()
+        .UseAutoIdentifiers()
+        .Build();
+
+    public async Task<List<ContentIndexEntry>> GenerateAsync(string contentDir, string outputPath)
     {
         var entries = new List<ContentIndexEntry>();
 
@@ -24,7 +29,7 @@ public partial class ContentIndexGenerator
         {
             Console.WriteLine($"  Content directory not found: {contentDir}. Creating empty index.");
             await File.WriteAllTextAsync(outputPath, "[]");
-            return;
+            return entries;
         }
 
         var mdFiles = Directory.GetFiles(contentDir, "*.md", SearchOption.AllDirectories);
@@ -39,7 +44,7 @@ public partial class ContentIndexGenerator
 
             if (frontMatter is null) continue;
 
-            var html = Markdown.ToHtml(body);
+            var html = Markdown.ToHtml(body, Pipeline);
             var headings = ExtractHeadings(html);
             var plainText = StripToPlainText(body);
 
@@ -53,7 +58,8 @@ public partial class ContentIndexGenerator
                 Demo = frontMatter.Demo,
                 ApiRef = frontMatter.ApiRef,
                 Headings = headings,
-                SearchText = plainText[..Math.Min(plainText.Length, 500)]
+                SearchText = plainText[..Math.Min(plainText.Length, 500)],
+                HtmlContent = html
             });
         }
 
@@ -62,6 +68,7 @@ public partial class ContentIndexGenerator
         var json = JsonSerializer.Serialize(entries, JsonOptions);
         await File.WriteAllTextAsync(outputPath, json);
         Console.WriteLine($"  Generated {entries.Count} content entries -> {Path.GetFileName(outputPath)}");
+        return entries;
     }
 
     private static (FrontMatter? FrontMatter, string Body) ParseFrontMatter(string markdown)
@@ -198,4 +205,7 @@ public class ContentIndexEntry
     public string? ApiRef { get; set; }
     public List<string> Headings { get; set; } = [];
     public string SearchText { get; set; } = "";
+
+    [JsonIgnore]
+    public string HtmlContent { get; set; } = "";
 }
