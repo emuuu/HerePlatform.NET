@@ -7,6 +7,8 @@
 A comprehensive Blazor component library for the [HERE Maps JS API](https://developer.here.com/develop/javascript-api). Declarative map rendering, markers, shapes, clustering, heatmaps, routing, geocoding, and more — all as Blazor components and services.
 
 [![NuGet](https://img.shields.io/nuget/v/BlazorHerePlatform.svg)](https://www.nuget.org/packages/BlazorHerePlatform)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/BlazorHerePlatform.svg)](https://www.nuget.org/packages/BlazorHerePlatform)
+[![CI](https://github.com/emuuu/BlazorHerePlatform/actions/workflows/ci.yml/badge.svg)](https://github.com/emuuu/BlazorHerePlatform/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Feature highlights:**
