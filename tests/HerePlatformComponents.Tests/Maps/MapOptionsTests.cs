@@ -67,4 +67,73 @@ public class MapOptionsTests
         Assert.That(opts.FixedCenter, Is.True);
         Assert.That(opts.ApiLoadOptions, Is.SameAs(apiOpts));
     }
+
+    [Test]
+    public void Validate_ValidDefaults_DoesNotThrow()
+    {
+        var opts = new MapOptions();
+        Assert.DoesNotThrow(() => opts.Validate());
+    }
+
+    [Test]
+    public void Validate_ZoomWithinBounds_DoesNotThrow()
+    {
+        var opts = new MapOptions { Zoom = 10, MinZoom = 2, MaxZoom = 20 };
+        Assert.DoesNotThrow(() => opts.Validate());
+    }
+
+    [Test]
+    public void Validate_ZoomBelowMinZoom_Throws()
+    {
+        var opts = new MapOptions { Zoom = 1, MinZoom = 5 };
+
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => opts.Validate());
+        Assert.That(ex!.ParamName, Is.EqualTo("Zoom"));
+    }
+
+    [Test]
+    public void Validate_ZoomAboveMaxZoom_Throws()
+    {
+        var opts = new MapOptions { Zoom = 25, MaxZoom = 20 };
+
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => opts.Validate());
+        Assert.That(ex!.ParamName, Is.EqualTo("Zoom"));
+    }
+
+    [Test]
+    public void Validate_MinZoomGreaterThanMaxZoom_Throws()
+    {
+        var opts = new MapOptions { Zoom = 10, MinZoom = 15, MaxZoom = 5 };
+
+        var ex = Assert.Throws<ArgumentOutOfRangeException>(() => opts.Validate());
+        Assert.That(ex!.ParamName, Is.EqualTo("MinZoom"));
+    }
+
+    [Test]
+    public void Validate_ZoomEqualsMinZoom_DoesNotThrow()
+    {
+        var opts = new MapOptions { Zoom = 5, MinZoom = 5 };
+        Assert.DoesNotThrow(() => opts.Validate());
+    }
+
+    [Test]
+    public void Validate_ZoomEqualsMaxZoom_DoesNotThrow()
+    {
+        var opts = new MapOptions { Zoom = 20, MaxZoom = 20 };
+        Assert.DoesNotThrow(() => opts.Validate());
+    }
+
+    [Test]
+    public void Validate_OnlyMinZoomSet_DoesNotThrow()
+    {
+        var opts = new MapOptions { Zoom = 10, MinZoom = 2 };
+        Assert.DoesNotThrow(() => opts.Validate());
+    }
+
+    [Test]
+    public void Validate_OnlyMaxZoomSet_DoesNotThrow()
+    {
+        var opts = new MapOptions { Zoom = 10, MaxZoom = 20 };
+        Assert.DoesNotThrow(() => opts.Validate());
+    }
 }

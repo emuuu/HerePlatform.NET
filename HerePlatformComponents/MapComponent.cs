@@ -60,6 +60,7 @@ public class MapComponent : ComponentBase, IAsyncDisposable
             options.ApiLoadOptions = await _keyService.GetApiOptions();
         }
 
+        options?.Validate();
         InteropObject = await Map.CreateAsync(JsRuntime, element, options);
         MapInitialized?.Invoke(this, EventArgs.Empty);
     }

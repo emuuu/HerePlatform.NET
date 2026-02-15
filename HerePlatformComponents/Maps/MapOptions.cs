@@ -1,4 +1,5 @@
 using HerePlatformComponents.Maps.Coordinates;
+using System;
 using System.Text.Json.Serialization;
 
 namespace HerePlatformComponents.Maps;
@@ -43,4 +44,20 @@ public class MapOptions
 
     [JsonIgnore]
     public HereApiLoadOptions? ApiLoadOptions { get; set; }
+
+    /// <summary>
+    /// Validates that Zoom is within MinZoom/MaxZoom bounds and that MinZoom &lt;= MaxZoom.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when constraints are violated.</exception>
+    public void Validate()
+    {
+        if (MinZoom.HasValue && MaxZoom.HasValue && MinZoom.Value > MaxZoom.Value)
+            throw new ArgumentOutOfRangeException(nameof(MinZoom), "MinZoom must be less than or equal to MaxZoom.");
+
+        if (MinZoom.HasValue && Zoom < MinZoom.Value)
+            throw new ArgumentOutOfRangeException(nameof(Zoom), $"Zoom ({Zoom}) must be greater than or equal to MinZoom ({MinZoom.Value}).");
+
+        if (MaxZoom.HasValue && Zoom > MaxZoom.Value)
+            throw new ArgumentOutOfRangeException(nameof(Zoom), $"Zoom ({Zoom}) must be less than or equal to MaxZoom ({MaxZoom.Value}).");
+    }
 }

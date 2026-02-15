@@ -3276,6 +3276,12 @@
         "kind": "Property",
         "type": "HereApiLoadOptions",
         "description": ""
+      },
+      {
+        "name": "Validate()",
+        "kind": "Method",
+        "type": "void",
+        "description": "Validates that Zoom is within MinZoom/MaxZoom bounds and that MinZoom \u003C= MaxZoom."
       }
     ]
   },
