@@ -4,8 +4,8 @@ Thank you for considering contributing to BlazorHerePlatform! Every contribution
 
 ## Reporting Issues
 
-- **Bug Reports:** Use the [Bug Report template](https://github.com/emuuu/BlazorHerePlatform/issues/new?template=bug_report.md) and include reproduction steps, expected/actual behavior, and your environment (.NET version, browser, OS).
-- **Feature Requests:** Use the [Feature Request template](https://github.com/emuuu/BlazorHerePlatform/issues/new?template=feature_request.md) and describe the use case you're trying to solve.
+- **Bug Reports:** Use the [Bug Report template](https://github.com/emuuu/BlazorHerePlatform/issues/new?template=bug_report.yml) and include reproduction steps, expected/actual behavior, and your environment (.NET version, browser, OS).
+- **Feature Requests:** Use the [Feature Request template](https://github.com/emuuu/BlazorHerePlatform/issues/new?template=feature_request.yml) and describe the use case you're trying to solve.
 
 ## Development Setup
 
