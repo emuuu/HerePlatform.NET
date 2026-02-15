@@ -1,0 +1,30 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: ['8.0.x', '9.0.x', '10.0.x']
+        include:
+          - dotnet-version: '8.0.x'
+            target-framework: net8.0
+          - dotnet-version: '9.0.x'
+            target-framework: net9.0
+          - dotnet-version: '10.0.x'
+            target-framework: net10.0
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+      - run: dotnet restore
+      - run: dotnet build -c Release -f ${{ matrix.target-framework }} --no-restore
+        working-directory: HerePlatformComponents
+      - run: dotnet test -c Release -f ${{ matrix.target-framework }} --no-build
+        working-directory: tests/HerePlatformComponents.Tests
