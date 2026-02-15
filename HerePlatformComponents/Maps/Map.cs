@@ -368,8 +368,8 @@ public class Map : EventEntityBase, IJsObjectRef, IAsyncDisposable
             await _jsObjectRef.JSRuntime.InvokeAsync<object>(
                 "blazorHerePlatform.objectManager.disposeMap", Guid.ToString());
         }
-        catch (JSDisconnectedException) { }
-        catch (InvalidOperationException) { }
+        catch (JSDisconnectedException) { /* Expected during circuit disconnect */ }
+        catch (InvalidOperationException) { /* Expected: JS runtime may be unavailable */ }
 
         JsObjectRefInstances.Remove(_jsObjectRef.Guid.ToString());
         await base.DisposeAsyncCore();

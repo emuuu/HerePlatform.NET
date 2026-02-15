@@ -61,7 +61,7 @@ window.blazorHerePlatform.objectManager = function () {
         if (mapId) {
             var map = mapObjects[mapId];
             if (map instanceof H.Map) {
-                try { map.removeObject(obj); } catch (e) { }
+                try { map.removeObject(obj); } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
                 return;
             }
         }
@@ -69,7 +69,7 @@ window.blazorHerePlatform.objectManager = function () {
         try {
             var parent = obj.getParentGroup && obj.getParentGroup();
             if (parent) parent.removeObject(obj);
-        } catch (e) { }
+        } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
     }
 
     function removeLayerFromMap(id) {
@@ -79,7 +79,7 @@ window.blazorHerePlatform.objectManager = function () {
         if (mapId) {
             var map = mapObjects[mapId];
             if (map && typeof map.removeLayer === 'function') {
-                try { map.removeLayer(wrapper.layer); } catch (e) { }
+                try { map.removeLayer(wrapper.layer); } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
             }
         }
     }
@@ -93,7 +93,7 @@ window.blazorHerePlatform.objectManager = function () {
             if (map) {
                 var uiGuid = map['_blzUiGuid'];
                 if (uiGuid && mapObjects[uiGuid]) {
-                    try { mapObjects[uiGuid].removeBubble(bubble); } catch (e) { }
+                    try { mapObjects[uiGuid].removeBubble(bubble); } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
                 }
             }
         }
@@ -224,7 +224,7 @@ window.blazorHerePlatform.objectManager = function () {
                     if (geo) {
                         data.position = { lat: geo.lat, lng: geo.lng };
                     }
-                } catch (e) { }
+                } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
             }
         }
         return data;
@@ -249,7 +249,7 @@ window.blazorHerePlatform.objectManager = function () {
                 if (geo && typeof geo.lat === 'number') {
                     data.position = { lat: geo.lat, lng: geo.lng };
                 }
-            } catch (e) { }
+            } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
         }
         // Fallback to screen-to-geo conversion
         if (!data.position && evt.currentPointer && map && typeof map.screenToGeo === 'function') {
@@ -258,7 +258,7 @@ window.blazorHerePlatform.objectManager = function () {
                 if (geo) {
                     data.position = { lat: geo.lat, lng: geo.lng };
                 }
-            } catch (e) { }
+            } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
         }
         return data;
     }
@@ -387,7 +387,7 @@ window.blazorHerePlatform.objectManager = function () {
             for (const guid of Object.keys(mapObjects)) {
                 const obj = mapObjects[guid];
                 if (obj && typeof obj.dispose === 'function') {
-                    try { obj.dispose(); } catch (e) { }
+                    try { obj.dispose(); } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
                 }
             }
             for (const key of Object.keys(mapObjects)) {
@@ -832,7 +832,7 @@ window.blazorHerePlatform.objectManager = function () {
                 const prevOverlays = map['_blzOverlays'];
                 if (prevOverlays && prevOverlays.length > 0) {
                     for (const ol of prevOverlays) {
-                        try { map.removeLayer(ol); } catch (e) { }
+                        try { map.removeLayer(ol); } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
                     }
                 }
                 map['_blzOverlays'] = [];
@@ -1013,7 +1013,7 @@ window.blazorHerePlatform.objectManager = function () {
         resizeMap: function (mapGuid) {
             const map = mapObjects[mapGuid];
             if (!map || map._blzPlaceholder) return;
-            try { map.getViewPort().resize(); } catch (e) { }
+            try { map.getViewPort().resize(); } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
         },
 
         invokeWithReturnedObjectRef: async function (args) {
@@ -1059,7 +1059,7 @@ window.blazorHerePlatform.objectManager = function () {
             if (objects.length > 0) {
                 try {
                     map.removeObjects(objects);
-                } catch (e) { }
+                } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
             }
         },
 
@@ -1121,7 +1121,7 @@ window.blazorHerePlatform.objectManager = function () {
             const obj = mapObjects[guid];
             if (obj) {
                 if (typeof obj.dispose === 'function') {
-                    try { obj.dispose(); } catch (e) { }
+                    try { obj.dispose(); } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
                 }
                 removeMapObject(guid);
             }
@@ -1145,7 +1145,7 @@ window.blazorHerePlatform.objectManager = function () {
                 const overlays = map['_blzOverlays'];
                 if (overlays) {
                     for (const ol of overlays) {
-                        try { map.removeLayer(ol); } catch (e) { }
+                        try { map.removeLayer(ol); } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
                     }
                 }
 
@@ -1156,7 +1156,7 @@ window.blazorHerePlatform.objectManager = function () {
                     if (objects && objects.length > 0) {
                         map.removeObjects(objects);
                     }
-                } catch (e) { }
+                } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
 
                 // Remove all child entries whose _blzMapId matches this map
                 for (const key in mapObjects) {
@@ -1171,7 +1171,7 @@ window.blazorHerePlatform.objectManager = function () {
                 // prevent orphaned behaviors from polluting future lookups.
                 const behGuid = map['_blzBehaviorGuid'];
                 if (behGuid && mapObjects[behGuid]) {
-                    try { mapObjects[behGuid].dispose(); } catch (e) { }
+                    try { mapObjects[behGuid].dispose(); } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
                     removeMapObject(behGuid);
                 }
                 // Clean up auto-InfoBubble if present
@@ -1179,7 +1179,7 @@ window.blazorHerePlatform.objectManager = function () {
                 if (autoBubble) {
                     const uiForBubble = map['_blzUiGuid'] ? mapObjects[map['_blzUiGuid']] : null;
                     if (uiForBubble) {
-                        try { uiForBubble.removeBubble(autoBubble); } catch (e) { }
+                        try { uiForBubble.removeBubble(autoBubble); } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
                     }
                     map['_blzAutoBubble'] = null;
                 }
@@ -1200,7 +1200,7 @@ window.blazorHerePlatform.objectManager = function () {
 
                 try {
                     map.dispose();
-                } catch (e) { }
+                } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
                 removeMapObject(mapGuid);
             }
         },
@@ -1356,7 +1356,7 @@ window.blazorHerePlatform.objectManager = function () {
                     var show = true;
                     if (minZoom != null && z < minZoom) show = false;
                     if (maxZoom != null && z > maxZoom) show = false;
-                    try { marker.setVisibility(show); } catch (e) { }
+                    try { marker.setVisibility(show); } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
                 };
                 marker['_blzZoomListener'] = checkZoomVisibility;
                 map.addEventListener('mapviewchangeend', checkZoomVisibility);
@@ -1383,7 +1383,7 @@ window.blazorHerePlatform.objectManager = function () {
 
                     const prev = map['_blzAutoBubble'];
                     if (prev) {
-                        try { ui.removeBubble(prev); } catch (e) { }
+                        try { ui.removeBubble(prev); } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
                     }
 
                     const bubble = new H.ui.InfoBubble(marker.getGeometry(), { content: html });
@@ -1848,7 +1848,7 @@ window.blazorHerePlatform.objectManager = function () {
                     try {
                         const parent = obj.getParentGroup && obj.getParentGroup();
                         if (parent) parent.removeObject(obj);
-                    } catch (e) { }
+                    } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
                     group.addObject(obj);
                 }
             }
@@ -1860,7 +1860,7 @@ window.blazorHerePlatform.objectManager = function () {
             for (const objId of objectIds) {
                 const obj = mapObjects[objId];
                 if (obj) {
-                    try { group.removeObject(obj); } catch (e) { }
+                    try { group.removeObject(obj); } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
                 }
             }
         },
@@ -2092,7 +2092,7 @@ window.blazorHerePlatform.objectManager = function () {
                             heading: lookAt.heading || 0,
                             type: eventName
                         });
-                    } catch (e) { }
+                    } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
                 });
             });
 
@@ -2379,7 +2379,7 @@ window.blazorHerePlatform.objectManager = function () {
             // Remove existing cluster layer
             const existing = mapObjects[id];
             if (existing) {
-                try { map.removeLayer(existing.layer); } catch (e) { }
+                try { map.removeLayer(existing.layer); } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
                 removeMapObject(id);
             }
 
@@ -2465,7 +2465,7 @@ window.blazorHerePlatform.objectManager = function () {
                         isCluster = true;
                         weight = data.getWeight();
                     }
-                } catch (e) { }
+                } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
 
                 var eventArgs = {
                     position: pos,
@@ -2501,7 +2501,7 @@ window.blazorHerePlatform.objectManager = function () {
             if (existing.mapId && existing.tapHandler) {
                 var map = mapObjects[existing.mapId];
                 if (map && map.removeEventListener) {
-                    try { map.removeEventListener('tap', existing.tapHandler); } catch (e) { }
+                    try { map.removeEventListener('tap', existing.tapHandler); } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
                 }
             }
 
@@ -2509,7 +2509,7 @@ window.blazorHerePlatform.objectManager = function () {
             if (existing.mapId && existing.layer) {
                 var map = mapObjects[existing.mapId];
                 if (map) {
-                    try { map.removeLayer(existing.layer); } catch (e) { }
+                    try { map.removeLayer(existing.layer); } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
                 }
             }
 
@@ -2536,7 +2536,7 @@ window.blazorHerePlatform.objectManager = function () {
             // Remove existing
             const existing = mapObjects[id];
             if (existing) {
-                try { map.removeLayer(existing.layer); } catch (e) { }
+                try { map.removeLayer(existing.layer); } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
                 removeMapObject(id);
             }
 
@@ -2569,7 +2569,7 @@ window.blazorHerePlatform.objectManager = function () {
                     var objectCount = 0;
                     try {
                         objectCount = reader.getParsedObjects().length;
-                    } catch (e) { }
+                    } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
                     callbackRef.invokeMethodAsync('OnGeoJsonLoaded', id, { objectCount: objectCount });
                 }
             });
@@ -2603,7 +2603,7 @@ window.blazorHerePlatform.objectManager = function () {
             // Remove existing
             const existing = mapObjects[id];
             if (existing) {
-                try { map.removeLayer(existing.layer); } catch (e) { }
+                try { map.removeLayer(existing.layer); } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
                 removeMapObject(id);
             }
 
@@ -2621,7 +2621,7 @@ window.blazorHerePlatform.objectManager = function () {
                     var objectCount = 0;
                     try {
                         objectCount = reader.getParsedObjects().length;
-                    } catch (e) { }
+                    } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
                     callbackRef.invokeMethodAsync('OnKmlLoaded', id, { objectCount: objectCount });
                 }
             });
@@ -2960,7 +2960,7 @@ window.blazorHerePlatform.objectManager = function () {
                 try {
                     var ui = map['_blzUI'];
                     if (ui) ui.removeControl(existing.controlName);
-                } catch (e) { }
+                } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
             }
 
             if (!options.active) {
@@ -2995,7 +2995,7 @@ window.blazorHerePlatform.objectManager = function () {
                     var map = existing.mapId ? mapObjects[existing.mapId] : null;
                     var ui = map && map['_blzUI'];
                     if (ui) ui.removeControl(existing.controlName);
-                } catch (e) { }
+                } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
             }
             removeMapObject(id);
         },
@@ -3011,7 +3011,7 @@ window.blazorHerePlatform.objectManager = function () {
                 try {
                     var ui = map['_blzUI'];
                     if (ui) ui.removeControl(existing.controlName);
-                } catch (e) { }
+                } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
             }
 
             var ui = map['_blzUI'];
@@ -3047,7 +3047,7 @@ window.blazorHerePlatform.objectManager = function () {
                     var map = existing.mapId ? mapObjects[existing.mapId] : null;
                     var ui = map && map['_blzUI'];
                     if (ui) ui.removeControl(existing.controlName);
-                } catch (e) { }
+                } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
             }
             removeMapObject(id);
         },
@@ -3063,7 +3063,7 @@ window.blazorHerePlatform.objectManager = function () {
                 try {
                     var ui = map['_blzUI'];
                     if (ui) ui.removeControl(existing.controlName);
-                } catch (e) { }
+                } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
             }
 
             if (!options.active) {
@@ -3093,7 +3093,7 @@ window.blazorHerePlatform.objectManager = function () {
                     var map = existing.mapId ? mapObjects[existing.mapId] : null;
                     var ui = map && map['_blzUI'];
                     if (ui) ui.removeControl(existing.controlName);
-                } catch (e) { }
+                } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
             }
             removeMapObject(id);
         },
@@ -3188,7 +3188,7 @@ window.blazorHerePlatform.objectManager = function () {
                             properties: { radius: obj.getRadius(), shape: 'circle' }
                         });
                     }
-                } catch (e) { }
+                } catch (e) { console.debug('[BlazorHerePlatform]', e.message || e); }
             });
 
             return JSON.stringify({ type: 'FeatureCollection', features: features });

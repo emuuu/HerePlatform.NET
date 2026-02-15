@@ -90,7 +90,7 @@ public class JsObjectRef : IJsObjectRef
         async Task DisposeGuarded()
         {
             try { await DisposeAsync(); }
-            catch { /* Best-effort: sync Dispose is fallback, prefer DisposeAsync */ }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[BlazorHerePlatform] Sync dispose fallback failed: {ex.Message}"); }
         }
     }
 

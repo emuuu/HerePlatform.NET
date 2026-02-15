@@ -1,6 +1,7 @@
 using HerePlatformComponents.Maps;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,9 @@ public class MapComponent : ComponentBase, IAsyncDisposable
 
     [Inject]
     protected IServiceProvider ServiceProvider { get; set; } = default!;
+
+    [Inject]
+    private ILogger<MapComponent> Logger { get; set; } = default!;
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object?>? UserAttributes { get; set; }
@@ -41,9 +45,9 @@ public class MapComponent : ComponentBase, IAsyncDisposable
             {
                 isHereReady = await JsRuntime.InvokeAsync<bool>("blazorHerePlatform.objectManager.canRenderMap");
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore JS exceptions; we'll try loading if needed.
+                Logger.LogDebug(ex, "canRenderMap check failed");
             }
 
             if (!_keyService.IsApiInitialized || !isHereReady)
@@ -68,7 +72,7 @@ public class MapComponent : ComponentBase, IAsyncDisposable
         if (InteropObject is not null)
         {
             try { await InteropObject.DisposeAsync(); }
-            catch { }
+            catch (Exception ex) { Logger.LogDebug(ex, "Map disposal failed"); }
             InteropObject = null;
         }
     }
