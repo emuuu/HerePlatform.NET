@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../../HerePlatformComponents/HerePlatformComponents.csproj" />
+    <ProjectReference Include="../../HerePlatform.Core/HerePlatform.Core.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
