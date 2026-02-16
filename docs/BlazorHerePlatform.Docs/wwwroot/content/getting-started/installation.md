@@ -87,6 +87,10 @@ For convenience, add these to your `_Imports.razor`:
 @using HerePlatformComponents.Maps.Coordinates
 ```
 
+## JavaScript
+
+All required JavaScript is loaded automatically via a [Blazor JavaScript initializer](https://learn.microsoft.com/aspnet/core/blazor/fundamentals/startup#javascript-initializers). No manual `<script>` tag is needed.
+
 ## What Gets Registered
 
 Calling `AddBlazorHerePlatform` registers the following scoped services automatically:

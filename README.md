@@ -60,6 +60,8 @@ builder.Services.AddBlazorHerePlatform(new HereApiLoadOptions("YOUR_HERE_API_KEY
 });
 ```
 
+All required JavaScript is loaded automatically — no manual `<script>` tag needed.
+
 ### 2. Add a map
 
 Place a map component in any Razor page:
