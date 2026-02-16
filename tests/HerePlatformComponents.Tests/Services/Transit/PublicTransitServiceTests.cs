@@ -1,7 +1,8 @@
 using HerePlatform.Core.Coordinates;
+using HerePlatform.Core.Services;
+using HerePlatform.Core.Transit;
 using HerePlatformComponents.Maps;
 using HerePlatformComponents.Maps.Services;
-using HerePlatform.Core.Transit;
 
 namespace HerePlatformComponents.Tests.Services.Transit;
 

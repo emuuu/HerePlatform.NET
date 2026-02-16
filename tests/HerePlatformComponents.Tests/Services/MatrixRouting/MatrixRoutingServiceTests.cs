@@ -1,7 +1,8 @@
 using HerePlatform.Core.Coordinates;
+using HerePlatform.Core.MatrixRouting;
+using HerePlatform.Core.Services;
 using HerePlatformComponents.Maps;
 using HerePlatformComponents.Maps.Services;
-using HerePlatform.Core.MatrixRouting;
 
 namespace HerePlatformComponents.Tests.Services.MatrixRouting;
 

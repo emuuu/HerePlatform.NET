@@ -1,4 +1,5 @@
 using HerePlatform.Core.Places;
+using HerePlatform.Core.Services;
 using Microsoft.JSInterop;
 using System;
 using System.Threading;

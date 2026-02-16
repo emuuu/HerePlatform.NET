@@ -3,7 +3,7 @@ using HerePlatform.Core.Geofencing;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace HerePlatformComponents.Maps.Services;
+namespace HerePlatform.Core.Services;
 
 /// <summary>
 /// Service for geofence checks (client-side point-in-polygon/circle).

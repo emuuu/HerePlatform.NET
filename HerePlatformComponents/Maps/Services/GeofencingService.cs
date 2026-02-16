@@ -1,5 +1,6 @@
 using HerePlatform.Core.Coordinates;
 using HerePlatform.Core.Geofencing;
+using HerePlatform.Core.Services;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

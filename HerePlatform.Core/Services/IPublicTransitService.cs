@@ -2,7 +2,7 @@ using HerePlatform.Core.Coordinates;
 using HerePlatform.Core.Transit;
 using System.Threading.Tasks;
 
-namespace HerePlatformComponents.Maps.Services;
+namespace HerePlatform.Core.Services;
 
 /// <summary>
 /// Service for HERE Public Transit data.

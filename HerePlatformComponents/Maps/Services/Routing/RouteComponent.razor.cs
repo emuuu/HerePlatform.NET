@@ -1,5 +1,6 @@
 using HerePlatform.Core.Coordinates;
 using HerePlatform.Core.Routing;
+using HerePlatform.Core.Services;
 using HerePlatformComponents.Maps.Extension;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;

@@ -1,7 +1,7 @@
 using HerePlatform.Core.Routing;
 using System.Threading.Tasks;
 
-namespace HerePlatformComponents.Maps.Services;
+namespace HerePlatform.Core.Services;
 
 /// <summary>
 /// Service for HERE Routing API v8.

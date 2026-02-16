@@ -1,7 +1,7 @@
 using HerePlatform.Core.MatrixRouting;
 using System.Threading.Tasks;
 
-namespace HerePlatformComponents.Maps.Services;
+namespace HerePlatform.Core.Services;
 
 /// <summary>
 /// Service for HERE Matrix Routing API v8.

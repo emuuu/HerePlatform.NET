@@ -2,7 +2,7 @@ using HerePlatform.Core.Coordinates;
 using HerePlatform.Core.Geocoding;
 using System.Threading.Tasks;
 
-namespace HerePlatformComponents.Maps.Services;
+namespace HerePlatform.Core.Services;
 
 /// <summary>
 /// Service for HERE Geocoding and Reverse Geocoding.

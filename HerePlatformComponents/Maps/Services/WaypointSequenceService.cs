@@ -1,3 +1,4 @@
+using HerePlatform.Core.Services;
 using HerePlatform.Core.WaypointSequence;
 using Microsoft.JSInterop;
 using System.Threading.Tasks;

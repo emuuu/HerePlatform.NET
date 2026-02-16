@@ -1,7 +1,7 @@
 using HerePlatform.Core.Places;
 using System.Threading.Tasks;
 
-namespace HerePlatformComponents.Maps.Services;
+namespace HerePlatform.Core.Services;
 
 /// <summary>
 /// Service for HERE Places API (discover, browse, lookup).

@@ -1,7 +1,7 @@
 using HerePlatform.Core.Isoline;
 using System.Threading.Tasks;
 
-namespace HerePlatformComponents.Maps.Services;
+namespace HerePlatform.Core.Services;
 
 /// <summary>
 /// Service for HERE Isoline Routing API v8 (isochrones/isodistances).

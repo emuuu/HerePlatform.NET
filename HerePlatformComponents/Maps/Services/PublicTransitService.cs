@@ -1,4 +1,5 @@
 using HerePlatform.Core.Coordinates;
+using HerePlatform.Core.Services;
 using HerePlatform.Core.Transit;
 using Microsoft.JSInterop;
 using System.Threading.Tasks;

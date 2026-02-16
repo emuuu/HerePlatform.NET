@@ -1,4 +1,5 @@
 using System;
+using HerePlatform.Core.Services;
 using HerePlatformComponents.Maps.Services;
 using Microsoft.Extensions.DependencyInjection;
 

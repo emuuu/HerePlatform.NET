@@ -1,7 +1,7 @@
 using HerePlatform.Core.WaypointSequence;
 using System.Threading.Tasks;
 
-namespace HerePlatformComponents.Maps.Services;
+namespace HerePlatform.Core.Services;
 
 /// <summary>
 /// Service for optimizing waypoint sequences using HERE API.

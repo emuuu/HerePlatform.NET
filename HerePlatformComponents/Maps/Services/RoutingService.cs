@@ -1,4 +1,5 @@
 using HerePlatform.Core.Routing;
+using HerePlatform.Core.Services;
 using HerePlatform.Core.Utilities;
 using Microsoft.JSInterop;
 using System;

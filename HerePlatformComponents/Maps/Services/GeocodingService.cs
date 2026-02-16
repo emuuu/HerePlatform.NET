@@ -1,5 +1,6 @@
 using HerePlatform.Core.Coordinates;
 using HerePlatform.Core.Geocoding;
+using HerePlatform.Core.Services;
 using Microsoft.JSInterop;
 using System.Threading.Tasks;
 
