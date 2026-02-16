@@ -39,6 +39,16 @@ window.blazorHerePlatform.objectManager = function () {
         return wrapper;
     }
 
+    // Detect HERE API authentication errors (401/403) from SDK error callbacks or HTTP responses.
+    function isAuthError(error) {
+        if (!error) return false;
+        var msg = (typeof error === 'string' ? error : (error.message || '')).toLowerCase();
+        if (msg.indexOf('401') !== -1 || msg.indexOf('403') !== -1) return true;
+        if (msg.indexOf('unauthorized') !== -1 || msg.indexOf('forbidden') !== -1) return true;
+        if (error.status === 401 || error.status === 403) return true;
+        return false;
+    }
+
     // Blazor IJSRuntime serializes C# enums as integers. Map them to API strings.
     var transportModes = { 0: 'car', 1: 'truck', 2: 'pedestrian', 3: 'bicycle', 4: 'scooter' };
     var routingModes = { 0: 'fast', 1: 'short' };
@@ -2161,6 +2171,24 @@ window.blazorHerePlatform.objectManager = function () {
                     }).observe(container);
                 }
             }
+
+            // Tile auth probe: HEAD request against tile endpoint to detect invalid API key.
+            // HERE SDK does not expose tile-load errors, so this is the only way to detect them.
+            if (hereApiKey) {
+                fetch('https://vector.hereapi.com/v2/vectortiles/base/mc/1/0/0/omv?apiKey='
+                      + encodeURIComponent(hereApiKey), { method: 'HEAD' })
+                    .then(function (resp) {
+                        if (resp.status === 401 || resp.status === 403) {
+                            console.error('[BlazorHerePlatform] HERE API auth failed. Tiles will not load. HTTP ' + resp.status);
+                            callbackRef.invokeMethodAsync('OnMapError', {
+                                source: 'tile',
+                                message: 'Authentication failed (HTTP ' + resp.status + '). Check your HERE API key.',
+                                statusCode: resp.status
+                            });
+                        }
+                    })
+                    .catch(function () { /* Network error, not an auth problem */ });
+            }
         },
 
         // Batch listener support
@@ -2329,8 +2357,13 @@ window.blazorHerePlatform.objectManager = function () {
                     }
                     resolve({ routes: routes });
                 }, function (error) {
-                    console.warn('[BlazorHerePlatform] Routing error:', error);
-                    resolve({ routes: [] });
+                    if (isAuthError(error)) {
+                        console.error('[BlazorHerePlatform] HERE API auth failed (401/403). Check API key. Service: routing');
+                        reject(new Error('HERE_AUTH_ERROR:routing:' + (error.message || error)));
+                    } else {
+                        console.warn('[BlazorHerePlatform] Routing error:', error);
+                        resolve({ routes: [] });
+                    }
                 });
             });
         },
@@ -2358,8 +2391,13 @@ window.blazorHerePlatform.objectManager = function () {
                     });
                     resolve({ items: items });
                 }, function (error) {
-                    console.warn('[BlazorHerePlatform] Geocode error:', error);
-                    resolve({ items: [] });
+                    if (isAuthError(error)) {
+                        console.error('[BlazorHerePlatform] HERE API auth failed (401/403). Check API key. Service: geocoding');
+                        reject(new Error('HERE_AUTH_ERROR:geocoding:' + (error.message || error)));
+                    } else {
+                        console.warn('[BlazorHerePlatform] Geocode error:', error);
+                        resolve({ items: [] });
+                    }
                 });
             });
         },
@@ -2389,8 +2427,13 @@ window.blazorHerePlatform.objectManager = function () {
                     });
                     resolve({ items: items });
                 }, function (error) {
-                    console.warn('[BlazorHerePlatform] Reverse geocode error:', error);
-                    resolve({ items: [] });
+                    if (isAuthError(error)) {
+                        console.error('[BlazorHerePlatform] HERE API auth failed (401/403). Check API key. Service: reverse-geocoding');
+                        reject(new Error('HERE_AUTH_ERROR:reverse-geocoding:' + (error.message || error)));
+                    } else {
+                        console.warn('[BlazorHerePlatform] Reverse geocode error:', error);
+                        resolve({ items: [] });
+                    }
                 });
             });
         },
@@ -2753,7 +2796,13 @@ window.blazorHerePlatform.objectManager = function () {
                 callbackRef.invokeMethodAsync('OnAutosuggestResults', items);
             }, function (error) {
                 if (mapObjects[guid] !== state || state.gen !== gen) return;
-                console.warn('[BlazorHerePlatform] Autosuggest error:', error);
+                if (isAuthError(error)) {
+                    console.error('[BlazorHerePlatform] HERE API auth failed (401/403). Check API key. Service: autosuggest');
+                    callbackRef.invokeMethodAsync('OnAutosuggestError',
+                        'HERE API authentication failed. Check your API key.');
+                } else {
+                    console.warn('[BlazorHerePlatform] Autosuggest error:', error);
+                }
                 callbackRef.invokeMethodAsync('OnAutosuggestResults', []);
             });
         },
@@ -2852,6 +2901,10 @@ window.blazorHerePlatform.objectManager = function () {
 
                 var resp = await fetch(url, { headers: { 'apiKey': hereApiKey } });
                 if (!resp.ok) {
+                    if (resp.status === 401 || resp.status === 403) {
+                        console.error('[BlazorHerePlatform] HERE API auth failed. Service: traffic-incidents. HTTP ' + resp.status);
+                        throw new Error('HERE_AUTH_ERROR:traffic-incidents:HTTP ' + resp.status);
+                    }
                     console.warn('[BlazorHerePlatform] Traffic API v7 incidents error:', resp.status);
                     return { incidents: [] };
                 }
@@ -2884,6 +2937,7 @@ window.blazorHerePlatform.objectManager = function () {
                 }
                 return { incidents: incidents };
             } catch (error) {
+                if (error && error.message && error.message.indexOf('HERE_AUTH_ERROR') !== -1) throw error;
                 console.warn('[BlazorHerePlatform] Traffic incidents error:', error);
                 return { incidents: [] };
             }
@@ -2898,10 +2952,17 @@ window.blazorHerePlatform.objectManager = function () {
                     '&locationReferencing=shape';
 
                 var resp = await fetch(url, { headers: { 'apiKey': hereApiKey } });
-                if (!resp.ok) return { items: [] };
+                if (!resp.ok) {
+                    if (resp.status === 401 || resp.status === 403) {
+                        console.error('[BlazorHerePlatform] HERE API auth failed. Service: traffic-flow. HTTP ' + resp.status);
+                        throw new Error('HERE_AUTH_ERROR:traffic-flow:HTTP ' + resp.status);
+                    }
+                    return { items: [] };
+                }
                 var data = await resp.json();
                 return { items: data.results || [] };
             } catch (error) {
+                if (error && error.message && error.message.indexOf('HERE_AUTH_ERROR') !== -1) throw error;
                 console.warn('[BlazorHerePlatform] Traffic flow error:', error);
                 return { items: [] };
             }
@@ -2939,8 +3000,13 @@ window.blazorHerePlatform.objectManager = function () {
                     }
                     resolve({ departures: departures });
                 }, function (error) {
-                    console.warn('[BlazorHerePlatform] Transit departures error:', error);
-                    resolve({ departures: [] });
+                    if (isAuthError(error)) {
+                        console.error('[BlazorHerePlatform] HERE API auth failed (401/403). Check API key. Service: transit-departures');
+                        reject(new Error('HERE_AUTH_ERROR:transit-departures:' + (error.message || error)));
+                    } else {
+                        console.warn('[BlazorHerePlatform] Transit departures error:', error);
+                        resolve({ departures: [] });
+                    }
                 });
             });
         },
@@ -2977,8 +3043,13 @@ window.blazorHerePlatform.objectManager = function () {
                     }
                     resolve({ stations: stations });
                 }, function (error) {
-                    console.warn('[BlazorHerePlatform] Transit stations error:', error);
-                    resolve({ stations: [] });
+                    if (isAuthError(error)) {
+                        console.error('[BlazorHerePlatform] HERE API auth failed (401/403). Check API key. Service: transit-stations');
+                        reject(new Error('HERE_AUTH_ERROR:transit-stations:' + (error.message || error)));
+                    } else {
+                        console.warn('[BlazorHerePlatform] Transit stations error:', error);
+                        resolve({ stations: [] });
+                    }
                 });
             });
         },
@@ -3286,13 +3357,18 @@ window.blazorHerePlatform.objectManager = function () {
                         totalDuration: totalDuration
                     });
                 }, function (error) {
-                    console.warn('[BlazorHerePlatform] Waypoint sequence error:', error);
-                    resolve({
-                        optimizedIndices: [],
-                        optimizedWaypoints: [],
-                        totalDistance: 0,
-                        totalDuration: 0
-                    });
+                    if (isAuthError(error)) {
+                        console.error('[BlazorHerePlatform] HERE API auth failed (401/403). Check API key. Service: waypoint-sequence');
+                        reject(new Error('HERE_AUTH_ERROR:waypoint-sequence:' + (error.message || error)));
+                    } else {
+                        console.warn('[BlazorHerePlatform] Waypoint sequence error:', error);
+                        resolve({
+                            optimizedIndices: [],
+                            optimizedWaypoints: [],
+                            totalDistance: 0,
+                            totalDuration: 0
+                        });
+                    }
                 });
             });
         },
@@ -3317,8 +3393,13 @@ window.blazorHerePlatform.objectManager = function () {
                 service.discover(params, function (result) {
                     resolve(blazorHerePlatform.objectManager._mapPlacesResult(result));
                 }, function (error) {
-                    console.warn('[BlazorHerePlatform] Discover places error:', error);
-                    resolve({ items: [] });
+                    if (isAuthError(error)) {
+                        console.error('[BlazorHerePlatform] HERE API auth failed (401/403). Check API key. Service: discover-places');
+                        reject(new Error('HERE_AUTH_ERROR:discover-places:' + (error.message || error)));
+                    } else {
+                        console.warn('[BlazorHerePlatform] Discover places error:', error);
+                        resolve({ items: [] });
+                    }
                 });
             });
         },
@@ -3342,8 +3423,13 @@ window.blazorHerePlatform.objectManager = function () {
                 service.browse(params, function (result) {
                     resolve(blazorHerePlatform.objectManager._mapPlacesResult(result));
                 }, function (error) {
-                    console.warn('[BlazorHerePlatform] Browse places error:', error);
-                    resolve({ items: [] });
+                    if (isAuthError(error)) {
+                        console.error('[BlazorHerePlatform] HERE API auth failed (401/403). Check API key. Service: browse-places');
+                        reject(new Error('HERE_AUTH_ERROR:browse-places:' + (error.message || error)));
+                    } else {
+                        console.warn('[BlazorHerePlatform] Browse places error:', error);
+                        resolve({ items: [] });
+                    }
                 });
             });
         },
@@ -3364,8 +3450,13 @@ window.blazorHerePlatform.objectManager = function () {
                     var item = blazorHerePlatform.objectManager._mapSinglePlaceItem(result);
                     resolve({ items: item ? [item] : [] });
                 }, function (error) {
-                    console.warn('[BlazorHerePlatform] Lookup place error:', error);
-                    resolve({ items: [] });
+                    if (isAuthError(error)) {
+                        console.error('[BlazorHerePlatform] HERE API auth failed (401/403). Check API key. Service: lookup-place');
+                        reject(new Error('HERE_AUTH_ERROR:lookup-place:' + (error.message || error)));
+                    } else {
+                        console.warn('[BlazorHerePlatform] Lookup place error:', error);
+                        resolve({ items: [] });
+                    }
                 });
             });
         },
@@ -3472,8 +3563,13 @@ window.blazorHerePlatform.objectManager = function () {
                     }
                     resolve({ isolines: isolines });
                 }, function (error) {
-                    console.warn('[BlazorHerePlatform] Isoline error:', error);
-                    resolve({ isolines: [] });
+                    if (isAuthError(error)) {
+                        console.error('[BlazorHerePlatform] HERE API auth failed (401/403). Check API key. Service: isoline');
+                        reject(new Error('HERE_AUTH_ERROR:isoline:' + (error.message || error)));
+                    } else {
+                        console.warn('[BlazorHerePlatform] Isoline error:', error);
+                        resolve({ isolines: [] });
+                    }
                 });
             });
         },
@@ -3522,6 +3618,10 @@ window.blazorHerePlatform.objectManager = function () {
                     headers: { 'Content-Type': 'application/json', 'apiKey': hereApiKey },
                     body: JSON.stringify(body)
                 });
+                if (resp.status === 401 || resp.status === 403) {
+                    console.error('[BlazorHerePlatform] HERE API auth failed. Service: matrix-routing. HTTP ' + resp.status);
+                    throw new Error('HERE_AUTH_ERROR:matrix-routing:HTTP ' + resp.status);
+                }
                 var data = await resp.json();
 
                 var numOrig = origins.length;
@@ -3547,6 +3647,7 @@ window.blazorHerePlatform.objectManager = function () {
 
                 return { numOrigins: numOrig, numDestinations: numDest, matrix: entries };
             } catch (e) {
+                if (e && e.message && e.message.indexOf('HERE_AUTH_ERROR') !== -1) throw e;
                 console.warn('[BlazorHerePlatform] Matrix routing error:', e);
                 return { numOrigins: 0, numDestinations: 0, matrix: [] };
             }
