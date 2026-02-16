@@ -1,3 +1,4 @@
+using HerePlatform.Core.Coordinates;
 using HerePlatformComponents.Maps.Coordinates;
 using HerePlatformComponents.Maps.Extension;
 using Microsoft.AspNetCore.Components;

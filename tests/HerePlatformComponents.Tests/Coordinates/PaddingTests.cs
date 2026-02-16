@@ -1,3 +1,4 @@
+using HerePlatform.Core.Coordinates;
 using HerePlatformComponents.Maps.Coordinates;
 
 namespace HerePlatformComponents.Tests.Coordinates;

@@ -1,10 +1,10 @@
-using HerePlatformComponents.Serialization;
+using HerePlatform.Core.Serialization;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 
-namespace HerePlatformComponents.Maps;
+namespace HerePlatform.Core.Coordinates;
 
 /// <summary>
 /// Represents a geographic coordinate with latitude and longitude.

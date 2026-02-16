@@ -1,3 +1,4 @@
+using HerePlatform.Core.Coordinates;
 using HerePlatformComponents.Maps.Services.Transit;
 using System.Threading.Tasks;
 

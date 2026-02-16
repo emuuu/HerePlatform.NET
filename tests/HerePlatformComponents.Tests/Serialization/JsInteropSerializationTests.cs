@@ -1,4 +1,5 @@
 using System.Text.Json;
+using HerePlatform.Core.Coordinates;
 using HerePlatformComponents.Maps.Services.Isoline;
 using HerePlatformComponents.Maps.Services.MatrixRouting;
 using HerePlatformComponents.Maps.Services.Routing;

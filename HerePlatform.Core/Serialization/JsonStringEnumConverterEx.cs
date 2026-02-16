@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace HerePlatformComponents.Serialization;
+namespace HerePlatform.Core.Serialization;
 
 public class JsonStringEnumConverterEx<TEnum> : JsonConverter<TEnum> where TEnum : struct, Enum
 {

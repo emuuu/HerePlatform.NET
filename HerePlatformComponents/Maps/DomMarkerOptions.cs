@@ -1,3 +1,4 @@
+using HerePlatform.Core.Coordinates;
 using System.Text.Json.Serialization;
 
 namespace HerePlatformComponents.Maps;

@@ -17,7 +17,6 @@ internal static partial class Helper
         {
             new OneOfConverterFactory(),
             new JsonStringEnumConverter(JsonNamingPolicy.CamelCase),
-            new LatLngLiteralConverter(),
         }
     };
 

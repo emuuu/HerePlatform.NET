@@ -1,4 +1,4 @@
-namespace HerePlatformComponents.Maps.Coordinates;
+namespace HerePlatform.Core.Coordinates;
 
 /// <summary>
 /// Represents a geographic bounding box (H.geo.Rect).

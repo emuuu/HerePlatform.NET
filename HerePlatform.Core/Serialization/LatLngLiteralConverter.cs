@@ -1,9 +1,9 @@
-using HerePlatformComponents.Maps;
+using HerePlatform.Core.Coordinates;
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace HerePlatformComponents.Serialization;
+namespace HerePlatform.Core.Serialization;
 
 internal sealed class LatLngLiteralConverter : JsonConverter<LatLngLiteral>
 {

@@ -1,3 +1,4 @@
+using HerePlatform.Core.Coordinates;
 using HerePlatformComponents.Maps.Services.Geocoding;
 using Microsoft.JSInterop;
 using System.Threading.Tasks;

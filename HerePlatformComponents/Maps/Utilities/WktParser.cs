@@ -1,3 +1,4 @@
+using HerePlatform.Core.Coordinates;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

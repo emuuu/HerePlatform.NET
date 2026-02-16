@@ -1,3 +1,5 @@
+using HerePlatform.Core.Coordinates;
+
 namespace HerePlatformComponents.Maps.Clustering;
 
 /// <summary>

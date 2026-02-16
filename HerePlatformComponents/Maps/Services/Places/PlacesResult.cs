@@ -1,3 +1,4 @@
+using HerePlatform.Core.Coordinates;
 using System.Collections.Generic;
 
 namespace HerePlatformComponents.Maps.Services.Places;

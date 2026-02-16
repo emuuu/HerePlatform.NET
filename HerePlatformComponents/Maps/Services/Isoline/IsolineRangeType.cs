@@ -1,6 +1,7 @@
+using HerePlatform.Core.Coordinates;
+using HerePlatform.Core.Serialization;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
-using HerePlatformComponents.Serialization;
 
 namespace HerePlatformComponents.Maps.Services.Isoline;
 
