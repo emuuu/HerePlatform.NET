@@ -3,14 +3,21 @@
 <PageTitle>Error Handling</PageTitle>
 
 <h3>Error Handling Demo</h3>
-<p>Demonstrates how to detect and handle HERE API authentication errors (invalid or missing API key). The map's <code>OnError</code> callback catches tile-loading failures, services throw <code>HereApiAuthenticationException</code>, and autosuggest reports errors via its own <code>OnError</code> callback.</p>
+<p>Demonstrates how to detect and handle HERE API authentication errors (invalid or missing API key). The map's <code>OnError</code> callback detects auth failures, services throw <code>HereApiAuthenticationException</code>, and autosuggest reports errors via its own <code>OnError</code> callback.</p>
+
+<div class="alert alert-info" style="font-size:.85em;">
+    <strong>Note:</strong> With an invalid API key, the browser console will show additional errors from the HERE Maps SDK itself
+    (e.g. <code>BaseTileLoader: failed to load tile</code> and <code>Failed to load resource: 401</code>).
+    These are internal to the HERE SDK and cannot be suppressed from application code.
+    The <code>OnError</code> callback provides the actionable notification for your application.
+</div>
 
 <details class="mb-3">
     <summary class="fw-bold" role="button">Usage</summary>
     <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>@@using HerePlatform.Core.Exceptions
 @@using HerePlatformComponents.Maps.Events
 
-&lt;!-- 1. Map: detect tile auth failures via OnError --&gt;
+&lt;!-- 1. Map: detect auth failures via OnError --&gt;
 &lt;AdvancedHereMap Options="@@_mapOptions" Height="400px"
     OnError="@@OnMapError" /&gt;
 
@@ -45,8 +52,8 @@
 }</code></pre>
 </details>
 
-<h5>Map (Tile Auth Probe)</h5>
-<p class="text-muted" style="font-size:.85em;">After map init, a HEAD request checks tile authentication. If it fails, <code>OnError</code> fires.</p>
+<h5>Map (API Key Probe)</h5>
+<p class="text-muted" style="font-size:.85em;">After map init, a lightweight API request checks authentication. If it fails, <code>OnError</code> fires.</p>
 
 <AdvancedHereMap @ref="_advMap" Options="@_mapOptions" Height="clamp(250px, 40vh, 400px)"
     OnError="@OnMapError" />
