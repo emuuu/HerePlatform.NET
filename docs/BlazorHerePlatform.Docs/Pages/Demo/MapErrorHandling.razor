@@ -1,0 +1,287 @@
+@page "/demo/map-error-handling"
+
+<PageTitle>Error Handling</PageTitle>
+
+<h3>Error Handling Demo</h3>
+<p>Demonstrates how to detect and handle HERE API authentication errors (invalid or missing API key). The map's <code>OnError</code> callback catches tile-loading failures, services throw <code>HereApiAuthenticationException</code>, and autosuggest reports errors via its own <code>OnError</code> callback.</p>
+
+<details class="mb-3">
+    <summary class="fw-bold" role="button">Usage</summary>
+    <pre class="bg-light border rounded p-3 mt-2 mb-0"><code>@@using HerePlatform.Core.Exceptions
+@@using HerePlatformComponents.Maps.Events
+
+&lt;!-- 1. Map: detect tile auth failures via OnError --&gt;
+&lt;AdvancedHereMap Options="@@_mapOptions" Height="400px"
+    OnError="@@OnMapError" /&gt;
+
+&lt;!-- 2. Autosuggest: detect auth failures --&gt;
+&lt;HereAutosuggest Placeholder="Search..." OnError="@@OnAutosuggestError" /&gt;
+
+@@code {
+    private List&lt;string&gt; _errors = new();
+
+    private void OnMapError(MapErrorEventArgs e)
+    {
+        _errors.Add($"[{e.Source}] {e.Message} (HTTP {e.StatusCode})");
+    }
+
+    private void OnAutosuggestError(string message)
+    {
+        _errors.Add($"[autosuggest] {message}");
+    }
+
+    // 3. Services: catch HereApiAuthenticationException
+    private async Task CallRouting()
+    {
+        try
+        {
+            var result = await RoutingService.CalculateRouteAsync(request);
+        }
+        catch (HereApiAuthenticationException ex)
+        {
+            _errors.Add($"[{ex.Service}] {ex.Message}");
+        }
+    }
+}</code></pre>
+</details>
+
+<h5>Map (Tile Auth Probe)</h5>
+<p class="text-muted" style="font-size:.85em;">After map init, a HEAD request checks tile authentication. If it fails, <code>OnError</code> fires.</p>
+
+<AdvancedHereMap @ref="_advMap" Options="@_mapOptions" Height="clamp(250px, 40vh, 400px)"
+    OnError="@OnMapError" />
+
+<h5 class="mt-4">Autosuggest</h5>
+<p class="text-muted" style="font-size:.85em;">Type at least 3 characters. With an invalid key, <code>OnError</code> fires on each search attempt.</p>
+
+<div style="max-width:400px;">
+    <HereAutosuggest Placeholder="Search an address..."
+        OnError="@OnAutosuggestError"
+        OnItemSelected="@OnItemSelected" />
+</div>
+
+<h5 class="mt-4">Service Calls</h5>
+<p class="text-muted" style="font-size:.85em;">These calls throw <code>HereApiAuthenticationException</code> on auth failure. The demo catches and displays it.</p>
+
+<div class="d-flex gap-2 flex-wrap">
+    <button class="btn btn-sm btn-outline-primary" @onclick="CallRouting" disabled="@_isCalling">
+        @(_isCalling ? "Calling..." : "Call Routing")
+    </button>
+    <button class="btn btn-sm btn-outline-primary" @onclick="CallGeocoding" disabled="@_isCalling">
+        Call Geocoding
+    </button>
+    <button class="btn btn-sm btn-outline-primary" @onclick="CallPlaces" disabled="@_isCalling">
+        Call Places
+    </button>
+</div>
+
+<h5 class="mt-4">Error Log</h5>
+
+@if (_errors.Count == 0)
+{
+    <div class="alert alert-success">
+        No errors detected. If your API key is valid, everything works as expected.
+    </div>
+}
+else
+{
+    <div class="alert alert-danger">
+        <strong>@_errors.Count error(s) detected:</strong>
+    </div>
+
+    <div style="max-height:300px;overflow-y:auto;">
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:120px;">Source</th>
+                    <th>Message</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < _errors.Count; i++)
+                {
+                    <tr>
+                        <td>@(i + 1)</td>
+                        <td><code>@_errorDetails[i].Source</code></td>
+                        <td>@_errorDetails[i].Message</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<div class="mt-2">
+    <button class="btn btn-sm btn-outline-secondary" @onclick="ClearErrors">Clear Log</button>
+</div>
+
+@code {
+    private AdvancedHereMap? _advMap;
+    private bool _isCalling;
+    private readonly List<string> _errors = new();
+    private readonly List<(string Source, string Message)> _errorDetails = new();
+
+    [Inject]
+    private IRoutingService RoutingService { get; set; } = default!;
+
+    [Inject]
+    private IGeocodingService GeocodingService { get; set; } = default!;
+
+    [Inject]
+    private IPlacesService PlacesService { get; set; } = default!;
+
+    private MapOptions _mapOptions = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 12,
+        EnableUI = true,
+        EnableInteraction = true
+    };
+
+    private void OnMapError(MapErrorEventArgs e)
+    {
+        var msg = e.Message ?? "Unknown error";
+        _errors.Add(msg);
+        _errorDetails.Add((e.Source ?? "map", msg));
+        StateHasChanged();
+    }
+
+    private void OnAutosuggestError(string message)
+    {
+        _errors.Add(message);
+        _errorDetails.Add(("autosuggest", message));
+        StateHasChanged();
+    }
+
+    private void OnItemSelected(AutosuggestItem item)
+    {
+        // Normal flow — item selected successfully
+    }
+
+    private async Task CallRouting()
+    {
+        _isCalling = true;
+        StateHasChanged();
+
+        try
+        {
+            var result = await RoutingService.CalculateRouteAsync(new RoutingRequest
+            {
+                Origin = new LatLngLiteral(52.52, 13.405),
+                Destination = new LatLngLiteral(48.8566, 2.3522),
+                TransportMode = TransportMode.Car,
+                ReturnPolyline = true
+            });
+
+            if (result.Routes is { Count: > 0 })
+            {
+                AddSuccess("routing", $"Route calculated: {result.Routes[0].Sections?.Count ?? 0} section(s)");
+            }
+            else
+            {
+                AddSuccess("routing", "No route returned (empty result).");
+            }
+        }
+        catch (HereApiAuthenticationException ex)
+        {
+            _errors.Add(ex.Message);
+            _errorDetails.Add((ex.Service ?? "routing", ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _errors.Add(ex.Message);
+            _errorDetails.Add(("routing", ex.Message));
+        }
+        finally
+        {
+            _isCalling = false;
+        }
+    }
+
+    private async Task CallGeocoding()
+    {
+        _isCalling = true;
+        StateHasChanged();
+
+        try
+        {
+            var result = await GeocodingService.GeocodeAsync("Berlin Hauptbahnhof");
+
+            if (result.Items is { Count: > 0 })
+            {
+                AddSuccess("geocoding", $"Found {result.Items.Count} result(s): {result.Items[0].Title}");
+            }
+            else
+            {
+                AddSuccess("geocoding", "No results returned.");
+            }
+        }
+        catch (HereApiAuthenticationException ex)
+        {
+            _errors.Add(ex.Message);
+            _errorDetails.Add((ex.Service ?? "geocoding", ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _errors.Add(ex.Message);
+            _errorDetails.Add(("geocoding", ex.Message));
+        }
+        finally
+        {
+            _isCalling = false;
+        }
+    }
+
+    private async Task CallPlaces()
+    {
+        _isCalling = true;
+        StateHasChanged();
+
+        try
+        {
+            var result = await PlacesService.DiscoverAsync(new PlacesRequest
+            {
+                Query = "restaurant",
+                At = new LatLngLiteral(52.52, 13.405),
+                Limit = 5
+            });
+
+            if (result.Items is { Count: > 0 })
+            {
+                AddSuccess("places", $"Found {result.Items.Count} place(s): {result.Items[0].Title}");
+            }
+            else
+            {
+                AddSuccess("places", "No places returned.");
+            }
+        }
+        catch (HereApiAuthenticationException ex)
+        {
+            _errors.Add(ex.Message);
+            _errorDetails.Add((ex.Service ?? "places", ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _errors.Add(ex.Message);
+            _errorDetails.Add(("places", ex.Message));
+        }
+        finally
+        {
+            _isCalling = false;
+        }
+    }
+
+    private void AddSuccess(string source, string message)
+    {
+        // Show success in the log too, so user can see what works
+        _errors.Add(message);
+        _errorDetails.Add((source, message));
+    }
+
+    private void ClearErrors()
+    {
+        _errors.Clear();
+        _errorDetails.Clear();
+    }
+}

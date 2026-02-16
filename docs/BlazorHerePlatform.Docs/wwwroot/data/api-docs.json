@@ -179,6 +179,12 @@
         "description": "Fired when the render engine state changes."
       },
       {
+        "name": "OnError",
+        "kind": "Event",
+        "type": "EventCallback\u003CMapErrorEventArgs\u003E",
+        "description": "Fired when an error is detected, such as an API key authentication failure."
+      },
+      {
         "name": "OnLongPress",
         "kind": "Event",
         "type": "EventCallback\u003CMapPointerEventArgs\u003E",
@@ -1439,7 +1445,7 @@
         "name": "Opacity",
         "kind": "Property",
         "type": "double",
-        "default": "0,6",
+        "default": "0.6",
         "description": "Opacity of the heatmap layer (0-1)."
       },
       {
@@ -1635,6 +1641,12 @@
         "kind": "Event",
         "type": "EventCallback",
         "description": "Fires when the input is cleared."
+      },
+      {
+        "name": "OnError",
+        "kind": "Event",
+        "type": "EventCallback\u003Cstring\u003E",
+        "description": "Fires when an authentication error is detected during autosuggest."
       },
       {
         "name": "OnItemSelected",
@@ -2448,6 +2460,30 @@
         "kind": "Property",
         "type": "string",
         "description": "The HERE event type string (e.g. \u0022dragstart\u0022, \u0022drag\u0022, \u0022dragend\u0022)."
+      }
+    ]
+  },
+  {
+    "typeName": "MapErrorEventArgs",
+    "fullName": "HerePlatformComponents.Maps.Events.MapErrorEventArgs",
+    "members": [
+      {
+        "name": "Source",
+        "kind": "Property",
+        "type": "string",
+        "description": "The error source (e.g. \u0022tile\u0022, \u0022service\u0022)."
+      },
+      {
+        "name": "Message",
+        "kind": "Property",
+        "type": "string",
+        "description": "Human-readable error message."
+      },
+      {
+        "name": "StatusCode",
+        "kind": "Property",
+        "type": "int?",
+        "description": "HTTP status code when available (e.g. 401, 403)."
       }
     ]
   },
