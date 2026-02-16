@@ -1,4 +1,4 @@
-using HerePlatformComponents.Maps.Services.Routing;
+using HerePlatform.Core.Routing;
 using System.Threading.Tasks;
 
 namespace HerePlatformComponents.Maps.Services;

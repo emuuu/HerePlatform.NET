@@ -1,4 +1,4 @@
-namespace HerePlatformComponents.Maps.Services.Routing;
+namespace HerePlatform.Core.Routing;
 
 /// <summary>
 /// Electric vehicle routing parameters.

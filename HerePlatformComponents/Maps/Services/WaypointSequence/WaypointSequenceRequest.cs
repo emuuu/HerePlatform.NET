@@ -1,5 +1,5 @@
 using HerePlatform.Core.Coordinates;
-using HerePlatformComponents.Maps.Services.Routing;
+using HerePlatform.Core.Routing;
 using System.Collections.Generic;
 
 namespace HerePlatformComponents.Maps.Services.WaypointSequence;

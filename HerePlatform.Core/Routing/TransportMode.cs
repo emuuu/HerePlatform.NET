@@ -1,9 +1,8 @@
-using HerePlatform.Core.Coordinates;
 using HerePlatform.Core.Serialization;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
-namespace HerePlatformComponents.Maps.Services.Routing;
+namespace HerePlatform.Core.Routing;
 
 /// <summary>
 /// Transport mode for routing.

@@ -1,7 +1,7 @@
 using HerePlatform.Core.Coordinates;
 using System.Collections.Generic;
 
-namespace HerePlatformComponents.Maps.Services.Routing;
+namespace HerePlatform.Core.Routing;
 
 /// <summary>
 /// Request parameters for route calculation.

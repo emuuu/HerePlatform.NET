@@ -1,6 +1,6 @@
 using HerePlatform.Core.Coordinates;
 
-namespace HerePlatformComponents.Maps.Services.Routing;
+namespace HerePlatform.Core.Routing;
 
 /// <summary>
 /// A single turn-by-turn instruction in a route section.

@@ -1,8 +1,8 @@
 using System.Text.Json;
 using HerePlatform.Core.Coordinates;
+using HerePlatform.Core.Routing;
 using HerePlatformComponents.Maps.Services.Isoline;
 using HerePlatformComponents.Maps.Services.MatrixRouting;
-using HerePlatformComponents.Maps.Services.Routing;
 using HerePlatformComponents.Maps;
 
 namespace HerePlatformComponents.Tests.Serialization;

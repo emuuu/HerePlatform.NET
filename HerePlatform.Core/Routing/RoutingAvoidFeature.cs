@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace HerePlatformComponents.Maps.Services.Routing;
+namespace HerePlatform.Core.Routing;
 
 /// <summary>
 /// Features to avoid in route calculation.

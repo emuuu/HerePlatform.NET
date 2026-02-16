@@ -1,4 +1,4 @@
-using HerePlatformComponents.Maps.Services.Routing;
+using HerePlatform.Core.Routing;
 using HerePlatformComponents.Maps.Utilities;
 using Microsoft.JSInterop;
 using System;
