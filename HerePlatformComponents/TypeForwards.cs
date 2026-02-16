@@ -11,6 +11,7 @@ using HerePlatform.Core.Serialization;
 using HerePlatform.Core.Services;
 using HerePlatform.Core.Traffic;
 using HerePlatform.Core.Transit;
+using HerePlatform.Core.Exceptions;
 using HerePlatform.Core.Utilities;
 using HerePlatform.Core.WaypointSequence;
 
@@ -90,6 +91,9 @@ using HerePlatform.Core.WaypointSequence;
 [assembly: TypeForwardedTo(typeof(FlexiblePolyline))]
 [assembly: TypeForwardedTo(typeof(GeoJsonExporter))]
 [assembly: TypeForwardedTo(typeof(WktParser))]
+
+// Exceptions
+[assembly: TypeForwardedTo(typeof(HereApiAuthenticationException))]
 
 // Service interfaces
 [assembly: TypeForwardedTo(typeof(IRoutingService))]

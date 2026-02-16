@@ -73,8 +73,8 @@ public class TypeForwardsTests
     {
         // 3 Coordinates + 1 Serialization + 13 Routing + 3 Geocoding + 5 Search
         // + 3 MatrixRouting + 4 Isoline + 4 Traffic + 4 Transit + 4 Places
-        // + 2 Geofencing + 2 WaypointSequence + 3 Utilities + 9 Services = 60
-        Assert.That(ForwardedTypes, Has.Length.EqualTo(60),
+        // + 2 Geofencing + 2 WaypointSequence + 3 Utilities + 1 Exceptions + 9 Services = 61
+        Assert.That(ForwardedTypes, Has.Length.EqualTo(61),
             "TypeForwardedTo count changed — update this test if types were added/removed");
     }
 }
