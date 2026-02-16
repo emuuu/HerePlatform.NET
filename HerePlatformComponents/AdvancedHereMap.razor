@@ -304,6 +304,12 @@
     [Parameter]
     public EventCallback<MapViewChangeEventArgs> OnMapViewChangeEnd { get; set; }
 
+    /// <summary>
+    /// Fired when an error is detected, such as an API key authentication failure.
+    /// </summary>
+    [Parameter]
+    public EventCallback<MapErrorEventArgs> OnError { get; set; }
+
     protected override void OnInitialized()
     {
         CallbackRef = DotNetObjectReference.Create(this);
@@ -621,6 +627,13 @@
     {
         if (OnResize.HasDelegate)
             await OnResize.InvokeAsync(args);
+    }
+
+    [JSInvokable]
+    public async Task OnMapError(MapErrorEventArgs args)
+    {
+        if (OnError.HasDelegate)
+            await OnError.InvokeAsync(args);
     }
 
     private Func<MapPointerEventArgs, Task>? _contextMenuHandler;

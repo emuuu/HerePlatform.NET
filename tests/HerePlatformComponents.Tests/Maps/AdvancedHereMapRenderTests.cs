@@ -1,4 +1,5 @@
 using Bunit;
+using HerePlatformComponents.Maps.Events;
 using NUnit.Framework;
 
 namespace HerePlatformComponents.Tests.Maps;
@@ -47,5 +48,37 @@ public class AdvancedHereMapRenderTests : BunitTestBase
 
         var div = cut.Find("div");
         Assert.That(div.GetAttribute("style"), Is.EqualTo("height: 200px;"));
+    }
+
+    [Test]
+    public void OnError_Parameter_DoesNotBreakRendering()
+    {
+        MapErrorEventArgs? received = null;
+        var cut = Render<AdvancedHereMap>(p => p
+            .Add(x => x.Id, "err-map")
+            .Add(x => x.OnError, args => { received = args; }));
+
+        var div = cut.Find("div");
+        Assert.That(div.GetAttribute("id"), Is.EqualTo("err-map"));
+    }
+
+    [Test]
+    public async Task OnMapError_InvokesOnErrorCallback()
+    {
+        MapErrorEventArgs? received = null;
+        var cut = Render<AdvancedHereMap>(p => p
+            .Add(x => x.OnError, args => { received = args; }));
+
+        var instance = cut.Instance;
+        await instance.OnMapError(new MapErrorEventArgs
+        {
+            Source = "tile",
+            Message = "Authentication failed (HTTP 401).",
+            StatusCode = 401
+        });
+
+        Assert.That(received, Is.Not.Null);
+        Assert.That(received!.Source, Is.EqualTo("tile"));
+        Assert.That(received.StatusCode, Is.EqualTo(401));
     }
 }

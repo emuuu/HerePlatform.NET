@@ -80,6 +80,12 @@ public partial class HereAutosuggest : IAsyncDisposable
     public EventCallback OnCleared { get; set; }
 
     /// <summary>
+    /// Fires when an authentication error is detected during autosuggest.
+    /// </summary>
+    [Parameter]
+    public EventCallback<string> OnError { get; set; }
+
+    /// <summary>
     /// Minimum number of characters before triggering a search. Default: 3.
     /// </summary>
     [Parameter]
@@ -276,6 +282,13 @@ public partial class HereAutosuggest : IAsyncDisposable
         _activeIndex = -1;
         _isOpen = _items.Count > 0;
         StateHasChanged();
+    }
+
+    [JSInvokable]
+    public async Task OnAutosuggestError(string message)
+    {
+        if (OnError.HasDelegate)
+            await OnError.InvokeAsync(message);
     }
 
     private async Task OnKeyDown(KeyboardEventArgs e)

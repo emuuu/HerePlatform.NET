@@ -198,4 +198,17 @@ public class HereAutosuggestInteractionTests : BunitTestBase
         // Value should be updated via ValueChanged
         Assert.That(value, Is.EqualTo("Berlin, Germany"));
     }
+
+    [Test]
+    public async Task OnAutosuggestError_Fires_OnError_Callback()
+    {
+        string? errorMessage = null;
+        var cut = Render<HereAutosuggest>(p => p
+            .Add(x => x.OnError, msg => { errorMessage = msg; }));
+
+        await cut.InvokeAsync(() =>
+            cut.Instance.OnAutosuggestError("HERE API authentication failed. Check your API key."));
+
+        Assert.That(errorMessage, Is.EqualTo("HERE API authentication failed. Check your API key."));
+    }
 }
