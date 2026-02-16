@@ -50,11 +50,9 @@
 	</ItemGroup>
 
 	<!-- Embed HerePlatform.Core DLL into the NuGet package so consumers don't need a separate package -->
-	<Target Name="_IncludeHerePlatformCoreInPackage" BeforeTargets="BuildOnlySettings;_GetPackageFiles">
-		<ItemGroup>
-			<BuildOutputInPackage Include="$(OutputPath)HerePlatform.Core.dll" />
-		</ItemGroup>
-	</Target>
+	<ItemGroup>
+		<BuildOutputInPackage Include="$(OutputPath)HerePlatform.Core.dll" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Components" Version="8.0.24" Condition="'$(TargetFramework)' == 'net8.0'" />
