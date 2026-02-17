@@ -23,13 +23,13 @@ internal sealed class RestPlacesService : IPlacesService
     {
         var qs = HereApiHelper.BuildQueryString(
             ("q", request.Query),
-            ("at", request.At.HasValue ? $"{request.At.Value.Lat},{request.At.Value.Lng}" : null),
+            ("at", request.At.HasValue ? HereApiHelper.FormatCoord(request.At.Value) : null),
             ("in", request.BoundingBox is not null ? $"bbox:{request.BoundingBox}" : null),
             ("limit", request.Limit.ToString()),
             ("lang", request.Lang));
 
         var url = $"{DiscoverBaseUrl}?{qs}";
-        return await ExecuteRequest(url);
+        return await ExecuteRequest(url).ConfigureAwait(false);
     }
 
     public async Task<PlacesResult> BrowseAsync(PlacesRequest request)
@@ -39,14 +39,14 @@ internal sealed class RestPlacesService : IPlacesService
             : null;
 
         var qs = HereApiHelper.BuildQueryString(
-            ("at", request.At.HasValue ? $"{request.At.Value.Lat},{request.At.Value.Lng}" : null),
+            ("at", request.At.HasValue ? HereApiHelper.FormatCoord(request.At.Value) : null),
             ("in", request.BoundingBox is not null ? $"bbox:{request.BoundingBox}" : null),
             ("categories", categories),
             ("limit", request.Limit.ToString()),
             ("lang", request.Lang));
 
         var url = $"{BrowseBaseUrl}?{qs}";
-        return await ExecuteRequest(url);
+        return await ExecuteRequest(url).ConfigureAwait(false);
     }
 
     public async Task<PlacesResult> LookupAsync(PlacesRequest request)
@@ -58,12 +58,12 @@ internal sealed class RestPlacesService : IPlacesService
         var url = $"{LookupBaseUrl}?{qs}";
 
         var client = _httpClientFactory.CreateClient("HereApi");
-        var response = await client.GetAsync(url);
+        using var response = await client.GetAsync(url).ConfigureAwait(false);
 
         HereApiHelper.EnsureAuthSuccess(response, "places");
         response.EnsureSuccessStatusCode();
 
-        var json = await response.Content.ReadAsStringAsync();
+        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
         // Lookup returns a single item, not a list
         var hereItem = JsonSerializer.Deserialize<HerePlaceItem>(json, HereJsonDefaults.Options);
@@ -76,12 +76,12 @@ internal sealed class RestPlacesService : IPlacesService
     private async Task<PlacesResult> ExecuteRequest(string url)
     {
         var client = _httpClientFactory.CreateClient("HereApi");
-        var response = await client.GetAsync(url);
+        using var response = await client.GetAsync(url).ConfigureAwait(false);
 
         HereApiHelper.EnsureAuthSuccess(response, "places");
         response.EnsureSuccessStatusCode();
 
-        var json = await response.Content.ReadAsStringAsync();
+        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         var hereResponse = JsonSerializer.Deserialize<HerePlacesResponse>(json, HereJsonDefaults.Options);
 
         return MapToResult(hereResponse);

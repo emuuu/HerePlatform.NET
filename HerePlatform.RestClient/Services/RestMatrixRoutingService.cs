@@ -1,4 +1,3 @@
-using System.Runtime.Serialization;
 using System.Text;
 using System.Text.Json;
 using HerePlatform.Core.Coordinates;
@@ -30,19 +29,19 @@ internal sealed class RestMatrixRoutingService : IMatrixRoutingService
             {
                 type = "world"
             },
-            profile = GetEnumMemberValue(request.TransportMode)
+            profile = HereApiHelper.GetEnumMemberValue(request.TransportMode)
         };
 
         var jsonBody = JsonSerializer.Serialize(body, HereJsonDefaults.Options);
         var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
 
         var client = _httpClientFactory.CreateClient("HereApi");
-        var response = await client.PostAsync(BaseUrl, content);
+        using var response = await client.PostAsync(BaseUrl, content).ConfigureAwait(false);
 
         HereApiHelper.EnsureAuthSuccess(response, "matrix");
         response.EnsureSuccessStatusCode();
 
-        var json = await response.Content.ReadAsStringAsync();
+        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         var hereResponse = JsonSerializer.Deserialize<HereMatrixResponse>(json, HereJsonDefaults.Options);
 
         return MapToResult(hereResponse, request.Origins.Count, request.Destinations.Count);
@@ -72,14 +71,5 @@ internal sealed class RestMatrixRoutingService : IMatrixRoutingService
                 Length = e.Distance ?? 0
             }).ToList() ?? []
         };
-    }
-
-    private static string GetEnumMemberValue<T>(T value) where T : struct, Enum
-    {
-        var member = typeof(T).GetMember(value.ToString()!)[0];
-        var attr = member.GetCustomAttributes(typeof(EnumMemberAttribute), false)
-            .Cast<EnumMemberAttribute>()
-            .FirstOrDefault();
-        return attr?.Value ?? value.ToString()!.ToLowerInvariant();
     }
 }

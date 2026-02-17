@@ -1,4 +1,3 @@
-using System.Runtime.Serialization;
 using System.Text.Json;
 using HerePlatform.Core.Coordinates;
 using HerePlatform.Core.Isoline;
@@ -28,17 +27,17 @@ internal sealed class RestIsolineService : IIsolineService
 
         var parameters = new List<(string key, string? value)>
         {
-            ("origin", $"{request.Center.Lat},{request.Center.Lng}"),
+            ("origin", HereApiHelper.FormatCoord(request.Center)),
             ("range[values]", rangeValues),
-            ("range[type]", GetEnumMemberValue(request.RangeType)),
-            ("transportMode", GetEnumMemberValue(request.TransportMode)),
-            ("routingMode", GetEnumMemberValue(request.RoutingMode)),
+            ("range[type]", HereApiHelper.GetEnumMemberValue(request.RangeType)),
+            ("transportMode", HereApiHelper.GetEnumMemberValue(request.TransportMode)),
+            ("routingMode", HereApiHelper.GetEnumMemberValue(request.RoutingMode)),
             ("departureTime", request.DepartureTime)
         };
 
         if (request.Avoid != RoutingAvoidFeature.None)
         {
-            var avoidFeatures = GetAvoidFeatures(request.Avoid);
+            var avoidFeatures = HereApiHelper.GetAvoidFeatures(request.Avoid);
             if (avoidFeatures.Length > 0)
                 parameters.Add(("avoid[features]", string.Join(",", avoidFeatures)));
         }
@@ -47,12 +46,12 @@ internal sealed class RestIsolineService : IIsolineService
         var url = $"{BaseUrl}?{qs}";
 
         var client = _httpClientFactory.CreateClient("HereApi");
-        var response = await client.GetAsync(url);
+        using var response = await client.GetAsync(url).ConfigureAwait(false);
 
         HereApiHelper.EnsureAuthSuccess(response, "isoline");
         response.EnsureSuccessStatusCode();
 
-        var json = await response.Content.ReadAsStringAsync();
+        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         var hereResponse = JsonSerializer.Deserialize<HereIsolineResponse>(json, HereJsonDefaults.Options);
 
         return MapToResult(hereResponse);
@@ -81,7 +80,7 @@ internal sealed class RestIsolineService : IIsolineService
                     {
                         polygon.Polygon = FlexiblePolyline.Decode(encoded);
                     }
-                    catch
+                    catch (Exception)
                     {
                         // Leave Polygon null if decoding fails
                     }
@@ -90,24 +89,5 @@ internal sealed class RestIsolineService : IIsolineService
                 return polygon;
             }).ToList()
         };
-    }
-
-    private static string[] GetAvoidFeatures(RoutingAvoidFeature avoid)
-    {
-        var features = new List<string>();
-        if (avoid.HasFlag(RoutingAvoidFeature.Tolls)) features.Add("tollRoad");
-        if (avoid.HasFlag(RoutingAvoidFeature.Highways)) features.Add("controlledAccessHighway");
-        if (avoid.HasFlag(RoutingAvoidFeature.Ferries)) features.Add("ferry");
-        if (avoid.HasFlag(RoutingAvoidFeature.Tunnels)) features.Add("tunnel");
-        return features.ToArray();
-    }
-
-    private static string GetEnumMemberValue<T>(T value) where T : struct, Enum
-    {
-        var member = typeof(T).GetMember(value.ToString()!)[0];
-        var attr = member.GetCustomAttributes(typeof(EnumMemberAttribute), false)
-            .Cast<EnumMemberAttribute>()
-            .FirstOrDefault();
-        return attr?.Value ?? value.ToString()!.ToLowerInvariant();
     }
 }

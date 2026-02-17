@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using HerePlatform.Core.Coordinates;
 using HerePlatform.Core.Services;
@@ -22,18 +23,18 @@ internal sealed class RestTrafficService : ITrafficService
         double north, double south, double east, double west)
     {
         var qs = HereApiHelper.BuildQueryString(
-            ("in", $"bbox:{west},{south},{east},{north}"),
+            ("in", string.Create(CultureInfo.InvariantCulture, $"bbox:{west},{south},{east},{north}")),
             ("locationReferencing", "shape"));
 
         var url = $"{IncidentsBaseUrl}?{qs}";
 
         var client = _httpClientFactory.CreateClient("HereApi");
-        var response = await client.GetAsync(url);
+        using var response = await client.GetAsync(url).ConfigureAwait(false);
 
         HereApiHelper.EnsureAuthSuccess(response, "traffic");
         response.EnsureSuccessStatusCode();
 
-        var json = await response.Content.ReadAsStringAsync();
+        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         var hereResponse = JsonSerializer.Deserialize<HereTrafficIncidentsResponse>(json, HereJsonDefaults.Options);
 
         return MapIncidents(hereResponse);
@@ -43,18 +44,18 @@ internal sealed class RestTrafficService : ITrafficService
         double north, double south, double east, double west)
     {
         var qs = HereApiHelper.BuildQueryString(
-            ("in", $"bbox:{west},{south},{east},{north}"),
+            ("in", string.Create(CultureInfo.InvariantCulture, $"bbox:{west},{south},{east},{north}")),
             ("locationReferencing", "shape"));
 
         var url = $"{FlowBaseUrl}?{qs}";
 
         var client = _httpClientFactory.CreateClient("HereApi");
-        var response = await client.GetAsync(url);
+        using var response = await client.GetAsync(url).ConfigureAwait(false);
 
         HereApiHelper.EnsureAuthSuccess(response, "traffic");
         response.EnsureSuccessStatusCode();
 
-        var json = await response.Content.ReadAsStringAsync();
+        var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
         var hereResponse = JsonSerializer.Deserialize<HereTrafficFlowResponse>(json, HereJsonDefaults.Options);
 
         return MapFlow(hereResponse);
