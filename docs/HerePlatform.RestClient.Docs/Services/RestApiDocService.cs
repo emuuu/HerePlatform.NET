@@ -69,27 +69,12 @@ public class RestApiDocService : IRestApiDocService
     {
         foreach (var prop in properties)
         {
-            var name = $"{prefix}{prop.Name}";
-
-            if (prop.Properties is { Count: > 0 })
-            {
-                // Nested complex type (e.g., TruckOptions) — add the parent as a single entry
-                result.Add(new ParamDoc(
-                    name,
-                    prop.Type,
-                    prop.Required,
-                    prop.Description,
-                    prop.Default));
-            }
-            else
-            {
-                result.Add(new ParamDoc(
-                    name,
-                    prop.Type,
-                    prop.Required,
-                    prop.Description,
-                    prop.Default));
-            }
+            result.Add(new ParamDoc(
+                $"{prefix}{prop.Name}",
+                prop.Type,
+                prop.Required,
+                prop.Description,
+                prop.Default));
         }
     }
 }
