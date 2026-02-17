@@ -1,0 +1,122 @@
+@page "/services/matrix-routing"
+@inject IMatrixRoutingService MatrixRoutingService
+@inject IRestApiDocService DocService
+
+<PageTitle>Matrix Routing — HerePlatform.RestClient Docs</PageTitle>
+
+<div class="doc-content">
+    <h1>IMatrixRoutingService</h1>
+    <p class="lead">@_serviceDescription</p>
+    <ApiKeyWarning />
+
+    <h2>CalculateMatrixAsync</h2>
+    <p>@_methodDescription</p>
+    <ParamTable Parameters="@_params" />
+
+    <h5>Example Response (Success)</h5>
+    <CodeBlock Language="json" Code="@_successExample" />
+
+    <TryItPanel TResult="MatrixRoutingResult" OnExecute="ExecuteMatrix">
+        <FormContent>
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <label class="form-label">Transport Mode</label>
+                    <select class="form-select form-select-sm" @bind="_transportMode">
+                        <option value="@TransportMode.Car">Car</option>
+                        <option value="@TransportMode.Truck">Truck</option>
+                        <option value="@TransportMode.Pedestrian">Pedestrian</option>
+                        <option value="@TransportMode.Bicycle">Bicycle</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mt-2">
+                <label class="form-label fw-semibold">Origins</label>
+                @for (int i = 0; i < _origins.Count; i++)
+                {
+                    var idx = i;
+                    <div class="row g-1 mb-1">
+                        <div class="col-5">
+                            <input type="number" step="any" class="form-control form-control-sm" placeholder="Lat"
+                                   value="@_origins[idx].lat"
+                                   @onchange="e => { var v = _origins[idx]; _origins[idx] = (double.Parse(e.Value?.ToString()!, CultureInfo.InvariantCulture), v.lng); }" />
+                        </div>
+                        <div class="col-5">
+                            <input type="number" step="any" class="form-control form-control-sm" placeholder="Lng"
+                                   value="@_origins[idx].lng"
+                                   @onchange="e => { var v = _origins[idx]; _origins[idx] = (v.lat, double.Parse(e.Value?.ToString()!, CultureInfo.InvariantCulture)); }" />
+                        </div>
+                        <div class="col-2">
+                            <button class="btn btn-sm btn-outline-danger w-100" @onclick="() => _origins.RemoveAt(idx)"
+                                    disabled="@(_origins.Count <= 1)">Remove</button>
+                        </div>
+                    </div>
+                }
+                <button class="btn btn-sm btn-outline-secondary" @onclick="() => _origins.Add((52.5200, 13.4050))">+ Add Origin</button>
+            </div>
+
+            <div class="mt-2">
+                <label class="form-label fw-semibold">Destinations</label>
+                @for (int i = 0; i < _destinations.Count; i++)
+                {
+                    var idx = i;
+                    <div class="row g-1 mb-1">
+                        <div class="col-5">
+                            <input type="number" step="any" class="form-control form-control-sm" placeholder="Lat"
+                                   value="@_destinations[idx].lat"
+                                   @onchange="e => { var v = _destinations[idx]; _destinations[idx] = (double.Parse(e.Value?.ToString()!, CultureInfo.InvariantCulture), v.lng); }" />
+                        </div>
+                        <div class="col-5">
+                            <input type="number" step="any" class="form-control form-control-sm" placeholder="Lng"
+                                   value="@_destinations[idx].lng"
+                                   @onchange="e => { var v = _destinations[idx]; _destinations[idx] = (v.lat, double.Parse(e.Value?.ToString()!, CultureInfo.InvariantCulture)); }" />
+                        </div>
+                        <div class="col-2">
+                            <button class="btn btn-sm btn-outline-danger w-100" @onclick="() => _destinations.RemoveAt(idx)"
+                                    disabled="@(_destinations.Count <= 1)">Remove</button>
+                        </div>
+                    </div>
+                }
+                <button class="btn btn-sm btn-outline-secondary" @onclick="() => _destinations.Add((52.5100, 13.3900))">+ Add Destination</button>
+            </div>
+        </FormContent>
+    </TryItPanel>
+</div>
+
+@code {
+    private TransportMode _transportMode = TransportMode.Car;
+    private List<(double lat, double lng)> _origins = [(52.5308, 13.3847), (52.5163, 13.3777)];
+    private List<(double lat, double lng)> _destinations = [(52.5200, 13.4050), (52.4900, 13.3600)];
+
+    private Task<MatrixRoutingResult> ExecuteMatrix() =>
+        MatrixRoutingService.CalculateMatrixAsync(new MatrixRoutingRequest
+        {
+            Origins = _origins.Select(o => new LatLngLiteral(o.lat, o.lng)).ToList(),
+            Destinations = _destinations.Select(d => new LatLngLiteral(d.lat, d.lng)).ToList(),
+            TransportMode = _transportMode
+        });
+
+    private string _serviceDescription = "";
+    private string _methodDescription = "";
+    private List<ParamDoc> _params = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await DocService.InitializeAsync();
+        var svc = DocService.GetService("IMatrixRoutingService");
+        _serviceDescription = svc?.Description ?? "";
+        _methodDescription = DocService.GetMethod("IMatrixRoutingService", "CalculateMatrixAsync")?.Description ?? "";
+        _params = DocService.GetMethodParams("IMatrixRoutingService", "CalculateMatrixAsync");
+    }
+
+    private const string _successExample = @"{
+  ""numOrigins"": 2,
+  ""numDestinations"": 2,
+  ""matrix"": [
+    { ""originIndex"": 0, ""destinationIndex"": 0, ""duration"": 540, ""length"": 3200 },
+    { ""originIndex"": 0, ""destinationIndex"": 1, ""duration"": 780, ""length"": 5100 },
+    { ""originIndex"": 1, ""destinationIndex"": 0, ""duration"": 420, ""length"": 2800 },
+    { ""originIndex"": 1, ""destinationIndex"": 1, ""duration"": 660, ""length"": 4500 }
+  ]
+}";
+}

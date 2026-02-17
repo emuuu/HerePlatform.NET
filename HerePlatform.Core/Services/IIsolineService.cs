@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 namespace HerePlatform.Core.Services;
 
 /// <summary>
-/// Service for HERE Isoline Routing API v8 (isochrones/isodistances).
+/// Calculate reachable areas (isochrones and isodistances) via the HERE Isoline Routing API v8.
 /// </summary>
 public interface IIsolineService
 {
     /// <summary>
-    /// Calculate isoline (reachable area from a center point within given range).
+    /// Compute one or more isolines from a center point within given range values.
     /// </summary>
     Task<IsolineResult> CalculateIsolineAsync(IsolineRequest request);
 }

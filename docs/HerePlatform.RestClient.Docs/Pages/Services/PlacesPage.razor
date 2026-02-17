@@ -1,0 +1,176 @@
+@page "/services/places"
+@inject IPlacesService PlacesService
+@inject IRestApiDocService DocService
+
+<PageTitle>Places — HerePlatform.RestClient Docs</PageTitle>
+
+<div class="doc-content">
+    <h1>IPlacesService</h1>
+    <p class="lead">@_serviceDescription</p>
+    <ApiKeyWarning />
+
+    @* ── DiscoverAsync ── *@
+    <h2>DiscoverAsync</h2>
+    <p>@_discoverMethodDescription</p>
+    <ParamTable Parameters="@_discoverParams" />
+
+    <h5>Example Response (Success)</h5>
+    <CodeBlock Language="json" Code="@_discoverSuccessExample" />
+
+    <TryItPanel TResult="PlacesResult" OnExecute="ExecuteDiscover">
+        <FormContent>
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <label class="form-label">Query</label>
+                    <input class="form-control form-control-sm" @bind="_discoverQuery" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">At Lat</label>
+                    <input type="number" step="any" class="form-control form-control-sm" @bind="_discoverLat" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">At Lng</label>
+                    <input type="number" step="any" class="form-control form-control-sm" @bind="_discoverLng" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Limit</label>
+                    <input type="number" class="form-control form-control-sm" @bind="_discoverLimit" min="1" max="100" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Lang</label>
+                    <input class="form-control form-control-sm" @bind="_discoverLang" placeholder="en" />
+                </div>
+            </div>
+        </FormContent>
+    </TryItPanel>
+
+    @* ── BrowseAsync ── *@
+    <h2>BrowseAsync</h2>
+    <p>@_browseMethodDescription</p>
+    <ParamTable Parameters="@_browseParams" />
+
+    <TryItPanel TResult="PlacesResult" OnExecute="ExecuteBrowse">
+        <FormContent>
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <label class="form-label">At Lat</label>
+                    <input type="number" step="any" class="form-control form-control-sm" @bind="_browseLat" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">At Lng</label>
+                    <input type="number" step="any" class="form-control form-control-sm" @bind="_browseLng" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Categories</label>
+                    <input class="form-control form-control-sm" @bind="_browseCategories" placeholder="100-1000,200-2000" />
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label">Limit</label>
+                    <input type="number" class="form-control form-control-sm" @bind="_browseLimit" min="1" max="100" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Lang</label>
+                    <input class="form-control form-control-sm" @bind="_browseLang" placeholder="en" />
+                </div>
+            </div>
+        </FormContent>
+    </TryItPanel>
+
+    @* ── LookupAsync ── *@
+    <h2>LookupAsync</h2>
+    <p>@_lookupMethodDescription</p>
+    <ParamTable Parameters="@_lookupParams" />
+
+    <TryItPanel TResult="PlacesResult" OnExecute="ExecuteLookup">
+        <FormContent>
+            <div class="row g-2">
+                <div class="col-md-8">
+                    <label class="form-label">Place ID</label>
+                    <input class="form-control form-control-sm" @bind="_lookupId" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Lang</label>
+                    <input class="form-control form-control-sm" @bind="_lookupLang" placeholder="en" />
+                </div>
+            </div>
+        </FormContent>
+    </TryItPanel>
+</div>
+
+@code {
+    // ── Discover ──
+    private string _discoverQuery = "restaurant";
+    private double _discoverLat = 52.5308, _discoverLng = 13.3847;
+    private int _discoverLimit = 5;
+    private string? _discoverLang;
+
+    // ── Browse ──
+    private double _browseLat = 52.5308, _browseLng = 13.3847;
+    private string _browseCategories = "100-1000";
+    private int _browseLimit = 5;
+    private string? _browseLang;
+
+    // ── Lookup ──
+    private string _lookupId = "here:pds:place:276u33db-8097f3194e4b411081b761ea9a366776";
+    private string? _lookupLang;
+
+    private Task<PlacesResult> ExecuteDiscover() =>
+        PlacesService.DiscoverAsync(new PlacesRequest
+        {
+            Query = _discoverQuery,
+            At = new LatLngLiteral(_discoverLat, _discoverLng),
+            Limit = _discoverLimit,
+            Lang = string.IsNullOrWhiteSpace(_discoverLang) ? null : _discoverLang
+        });
+
+    private Task<PlacesResult> ExecuteBrowse() =>
+        PlacesService.BrowseAsync(new PlacesRequest
+        {
+            At = new LatLngLiteral(_browseLat, _browseLng),
+            Categories = string.IsNullOrWhiteSpace(_browseCategories) ? null
+                : _browseCategories.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList(),
+            Limit = _browseLimit,
+            Lang = string.IsNullOrWhiteSpace(_browseLang) ? null : _browseLang
+        });
+
+    private Task<PlacesResult> ExecuteLookup() =>
+        PlacesService.LookupAsync(new PlacesRequest
+        {
+            Id = _lookupId,
+            Lang = string.IsNullOrWhiteSpace(_lookupLang) ? null : _lookupLang
+        });
+
+    private string _serviceDescription = "";
+    private string _discoverMethodDescription = "";
+    private string _browseMethodDescription = "";
+    private string _lookupMethodDescription = "";
+    private List<ParamDoc> _discoverParams = [];
+    private List<ParamDoc> _browseParams = [];
+    private List<ParamDoc> _lookupParams = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await DocService.InitializeAsync();
+        var svc = DocService.GetService("IPlacesService");
+        _serviceDescription = svc?.Description ?? "";
+        _discoverMethodDescription = DocService.GetMethod("IPlacesService", "DiscoverAsync")?.Description ?? "";
+        _browseMethodDescription = DocService.GetMethod("IPlacesService", "BrowseAsync")?.Description ?? "";
+        _lookupMethodDescription = DocService.GetMethod("IPlacesService", "LookupAsync")?.Description ?? "";
+        _discoverParams = DocService.GetMethodParams("IPlacesService", "DiscoverAsync");
+        _browseParams = DocService.GetMethodParams("IPlacesService", "BrowseAsync");
+        _lookupParams = DocService.GetMethodParams("IPlacesService", "LookupAsync");
+    }
+
+    private const string _discoverSuccessExample = @"{
+  ""items"": [
+    {
+      ""placeId"": ""here:pds:place:276u33db-...'',
+      ""title"": ""Restaurant Example"",
+      ""address"": ""Friedrichstr. 100, 10117 Berlin"",
+      ""position"": { ""lat"": 52.5200, ""lng"": 13.3880 },
+      ""categories"": [""Restaurant""],
+      ""distance"": 450
+    }
+  ]
+}";
+}

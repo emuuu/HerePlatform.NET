@@ -5,17 +5,20 @@ using System.Threading.Tasks;
 namespace HerePlatform.Core.Services;
 
 /// <summary>
-/// Service for HERE Public Transit data.
+/// Transit departures and station search via the HERE Public Transit API v8.
 /// </summary>
 public interface IPublicTransitService
 {
     /// <summary>
-    /// Get departures from the nearest transit station.
+    /// Get live departures from the nearest transit station to a given position.
     /// </summary>
+    /// <param name="position">Position to find nearest station departures.</param>
     Task<TransitDeparturesResult> GetDeparturesAsync(LatLngLiteral position);
 
     /// <summary>
-    /// Search for transit stations near a position.
+    /// Search for transit stations within a given radius around a position.
     /// </summary>
+    /// <param name="position">Center of search area.</param>
+    /// <param name="radiusMeters">Search radius in meters (default: 500).</param>
     Task<TransitStationsResult> SearchStationsAsync(LatLngLiteral position, double radiusMeters = 500);
 }

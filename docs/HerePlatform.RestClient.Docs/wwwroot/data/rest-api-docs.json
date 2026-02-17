@@ -1,0 +1,1536 @@
+{
+  "services": [
+    {
+      "interfaceName": "IGeocodingService",
+      "description": "Forward and reverse geocoding via the HERE Geocoding \u0026 Search API v1.",
+      "methods": [
+        {
+          "name": "GeocodeAsync",
+          "description": "Convert a free-text address or place name into geographic coordinates.",
+          "returnType": "GeocodeResult",
+          "parameters": [
+            {
+              "name": "query",
+              "type": "string",
+              "required": true,
+              "description": "Free-text address or place name."
+            },
+            {
+              "name": "options",
+              "type": "GeocodeOptions?",
+              "required": false,
+              "description": "Optional geocoding parameters.",
+              "properties": [
+                {
+                  "name": "Lang",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Language for results (e.g. \u0022en\u0022, \u0022de\u0022).",
+                  "default": "null"
+                },
+                {
+                  "name": "Limit",
+                  "type": "int",
+                  "required": false,
+                  "description": "Maximum number of results.",
+                  "default": "5"
+                },
+                {
+                  "name": "BoundingBox",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Optional bounding box to narrow results (format: \u0022south,west,north,east\u0022).",
+                  "default": "null"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "ReverseGeocodeAsync",
+          "description": "Convert geographic coordinates into an address.",
+          "returnType": "GeocodeResult",
+          "parameters": [
+            {
+              "name": "position",
+              "type": "LatLngLiteral",
+              "required": true,
+              "description": "Geographic coordinates (lat, lng).",
+              "properties": []
+            },
+            {
+              "name": "options",
+              "type": "GeocodeOptions?",
+              "required": false,
+              "description": "Optional geocoding parameters.",
+              "properties": [
+                {
+                  "name": "Lang",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Language for results (e.g. \u0022en\u0022, \u0022de\u0022).",
+                  "default": "null"
+                },
+                {
+                  "name": "Limit",
+                  "type": "int",
+                  "required": false,
+                  "description": "Maximum number of results.",
+                  "default": "5"
+                },
+                {
+                  "name": "BoundingBox",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Optional bounding box to narrow results (format: \u0022south,west,north,east\u0022).",
+                  "default": "null"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "interfaceName": "IGeofencingService",
+      "description": "Client-side geofence checks \u2014 point-in-polygon and point-in-circle without any HTTP call.",
+      "methods": [
+        {
+          "name": "CheckPositionAsync",
+          "description": "Check whether a position falls inside any of the given geofence zones (polygon or circle).",
+          "returnType": "GeofenceCheckResult",
+          "parameters": [
+            {
+              "name": "position",
+              "type": "LatLngLiteral",
+              "required": true,
+              "description": "Position to check.",
+              "properties": []
+            },
+            {
+              "name": "zones",
+              "type": "List\u003CGeofenceZone\u003E",
+              "required": true,
+              "description": "Geofence zones (polygon or circle)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "interfaceName": "IIsolineService",
+      "description": "Calculate reachable areas (isochrones and isodistances) via the HERE Isoline Routing API v8.",
+      "methods": [
+        {
+          "name": "CalculateIsolineAsync",
+          "description": "Compute one or more isolines from a center point within given range values.",
+          "returnType": "IsolineResult",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "IsolineRequest",
+              "required": true,
+              "description": "Request parameters for isoline (isochrone/isodistance) calculation.",
+              "properties": [
+                {
+                  "name": "Center",
+                  "type": "LatLngLiteral",
+                  "required": true,
+                  "description": "Center position for the isoline calculation.",
+                  "properties": []
+                },
+                {
+                  "name": "Ranges",
+                  "type": "List\u003Cint\u003E?",
+                  "required": false,
+                  "description": "Range values (seconds for time, meters for distance).",
+                  "default": "null"
+                },
+                {
+                  "name": "RangeType",
+                  "type": "IsolineRangeType",
+                  "required": false,
+                  "description": "Type of range calculation.",
+                  "default": "Time"
+                },
+                {
+                  "name": "TransportMode",
+                  "type": "TransportMode",
+                  "required": false,
+                  "description": "Transport mode (default: Car).",
+                  "default": "Car"
+                },
+                {
+                  "name": "RoutingMode",
+                  "type": "RoutingMode",
+                  "required": false,
+                  "description": "Routing optimization mode (default: Fast).",
+                  "default": "Fast"
+                },
+                {
+                  "name": "Avoid",
+                  "type": "RoutingAvoidFeature",
+                  "required": false,
+                  "description": "Features to avoid.",
+                  "default": "None"
+                },
+                {
+                  "name": "DepartureTime",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Optional departure time (ISO 8601 format).",
+                  "default": "null"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "interfaceName": "IMatrixRoutingService",
+      "description": "Compute travel time and distance matrices via the HERE Matrix Routing API v8.",
+      "methods": [
+        {
+          "name": "CalculateMatrixAsync",
+          "description": "Calculate a routing matrix between multiple origins and destinations. Returns duration and distance for each origin-destination pair.",
+          "returnType": "MatrixRoutingResult",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "MatrixRoutingRequest",
+              "required": true,
+              "description": "Request parameters for matrix routing calculation.",
+              "properties": [
+                {
+                  "name": "Origins",
+                  "type": "List\u003CLatLngLiteral\u003E",
+                  "required": true,
+                  "description": "Origin positions."
+                },
+                {
+                  "name": "Destinations",
+                  "type": "List\u003CLatLngLiteral\u003E",
+                  "required": true,
+                  "description": "Destination positions."
+                },
+                {
+                  "name": "TransportMode",
+                  "type": "TransportMode",
+                  "required": false,
+                  "description": "Transport mode (default: Car).",
+                  "default": "Car"
+                },
+                {
+                  "name": "RoutingMode",
+                  "type": "RoutingMode",
+                  "required": false,
+                  "description": "Routing optimization mode (default: Fast).",
+                  "default": "Fast"
+                },
+                {
+                  "name": "DepartureTime",
+                  "type": "DateTime?",
+                  "required": false,
+                  "description": "Optional departure time for time-aware routing.",
+                  "default": "null"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "interfaceName": "IPlacesService",
+      "description": "Discover, browse, and look up places via the HERE Places API v1.",
+      "methods": [
+        {
+          "name": "DiscoverAsync",
+          "description": "Free-text search for places near a given position.",
+          "returnType": "PlacesResult",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "PlacesRequest",
+              "required": true,
+              "description": "Request parameters for Places API (discover, browse, lookup).",
+              "properties": [
+                {
+                  "name": "Query",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Free-text search query (used by discover).",
+                  "default": "null"
+                },
+                {
+                  "name": "At",
+                  "type": "LatLngLiteral?",
+                  "required": false,
+                  "description": "Center position for proximity search.",
+                  "default": "null",
+                  "properties": []
+                },
+                {
+                  "name": "BoundingBox",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Bounding box to limit results (format: \u0022south,west,north,east\u0022).",
+                  "default": "null"
+                },
+                {
+                  "name": "Categories",
+                  "type": "List\u003Cstring\u003E?",
+                  "required": false,
+                  "description": "Category filter IDs (e.g. \u0022100-1000-0000\u0022 for restaurants).",
+                  "default": "null"
+                },
+                {
+                  "name": "Limit",
+                  "type": "int",
+                  "required": false,
+                  "description": "Maximum number of results.",
+                  "default": "20"
+                },
+                {
+                  "name": "Lang",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Language for results (e.g. \u0022en\u0022, \u0022de\u0022).",
+                  "default": "null"
+                },
+                {
+                  "name": "Id",
+                  "type": "string?",
+                  "required": false,
+                  "description": "HERE Place ID for lookup requests.",
+                  "default": "null"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "BrowseAsync",
+          "description": "Browse places by category near a given position.",
+          "returnType": "PlacesResult",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "PlacesRequest",
+              "required": true,
+              "description": "Request parameters for Places API (discover, browse, lookup).",
+              "properties": [
+                {
+                  "name": "Query",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Free-text search query (used by discover).",
+                  "default": "null"
+                },
+                {
+                  "name": "At",
+                  "type": "LatLngLiteral?",
+                  "required": false,
+                  "description": "Center position for proximity search.",
+                  "default": "null",
+                  "properties": []
+                },
+                {
+                  "name": "BoundingBox",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Bounding box to limit results (format: \u0022south,west,north,east\u0022).",
+                  "default": "null"
+                },
+                {
+                  "name": "Categories",
+                  "type": "List\u003Cstring\u003E?",
+                  "required": false,
+                  "description": "Category filter IDs (e.g. \u0022100-1000-0000\u0022 for restaurants).",
+                  "default": "null"
+                },
+                {
+                  "name": "Limit",
+                  "type": "int",
+                  "required": false,
+                  "description": "Maximum number of results.",
+                  "default": "20"
+                },
+                {
+                  "name": "Lang",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Language for results (e.g. \u0022en\u0022, \u0022de\u0022).",
+                  "default": "null"
+                },
+                {
+                  "name": "Id",
+                  "type": "string?",
+                  "required": false,
+                  "description": "HERE Place ID for lookup requests.",
+                  "default": "null"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "LookupAsync",
+          "description": "Look up a single place by its HERE Place ID.",
+          "returnType": "PlacesResult",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "PlacesRequest",
+              "required": true,
+              "description": "Request parameters for Places API (discover, browse, lookup).",
+              "properties": [
+                {
+                  "name": "Query",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Free-text search query (used by discover).",
+                  "default": "null"
+                },
+                {
+                  "name": "At",
+                  "type": "LatLngLiteral?",
+                  "required": false,
+                  "description": "Center position for proximity search.",
+                  "default": "null",
+                  "properties": []
+                },
+                {
+                  "name": "BoundingBox",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Bounding box to limit results (format: \u0022south,west,north,east\u0022).",
+                  "default": "null"
+                },
+                {
+                  "name": "Categories",
+                  "type": "List\u003Cstring\u003E?",
+                  "required": false,
+                  "description": "Category filter IDs (e.g. \u0022100-1000-0000\u0022 for restaurants).",
+                  "default": "null"
+                },
+                {
+                  "name": "Limit",
+                  "type": "int",
+                  "required": false,
+                  "description": "Maximum number of results.",
+                  "default": "20"
+                },
+                {
+                  "name": "Lang",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Language for results (e.g. \u0022en\u0022, \u0022de\u0022).",
+                  "default": "null"
+                },
+                {
+                  "name": "Id",
+                  "type": "string?",
+                  "required": false,
+                  "description": "HERE Place ID for lookup requests.",
+                  "default": "null"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "interfaceName": "IPublicTransitService",
+      "description": "Transit departures and station search via the HERE Public Transit API v8.",
+      "methods": [
+        {
+          "name": "GetDeparturesAsync",
+          "description": "Get live departures from the nearest transit station to a given position.",
+          "returnType": "TransitDeparturesResult",
+          "parameters": [
+            {
+              "name": "position",
+              "type": "LatLngLiteral",
+              "required": true,
+              "description": "Position to find nearest station departures.",
+              "properties": []
+            }
+          ]
+        },
+        {
+          "name": "SearchStationsAsync",
+          "description": "Search for transit stations within a given radius around a position.",
+          "returnType": "TransitStationsResult",
+          "parameters": [
+            {
+              "name": "position",
+              "type": "LatLngLiteral",
+              "required": true,
+              "description": "Center of search area.",
+              "properties": []
+            },
+            {
+              "name": "radiusMeters",
+              "type": "double",
+              "required": false,
+              "description": "Search radius in meters (default: 500).",
+              "default": "500"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "interfaceName": "IRoutingService",
+      "description": "Route calculation via the HERE Routing API v8. Supports car, truck, pedestrian, bicycle, scooter, and EV routing.",
+      "methods": [
+        {
+          "name": "CalculateRouteAsync",
+          "description": "Calculate a route between an origin and destination, with optional via waypoints, avoidance features, truck, and EV parameters.",
+          "returnType": "RoutingResult",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "RoutingRequest",
+              "required": true,
+              "description": "Request parameters for route calculation.",
+              "properties": [
+                {
+                  "name": "Origin",
+                  "type": "LatLngLiteral",
+                  "required": true,
+                  "description": "Origin position.",
+                  "properties": []
+                },
+                {
+                  "name": "Destination",
+                  "type": "LatLngLiteral",
+                  "required": true,
+                  "description": "Destination position.",
+                  "properties": []
+                },
+                {
+                  "name": "Via",
+                  "type": "List\u003CLatLngLiteral\u003E?",
+                  "required": false,
+                  "description": "Optional via waypoints.",
+                  "default": "null"
+                },
+                {
+                  "name": "TransportMode",
+                  "type": "TransportMode",
+                  "required": false,
+                  "description": "Transport mode (default: Car).",
+                  "default": "Car"
+                },
+                {
+                  "name": "RoutingMode",
+                  "type": "RoutingMode",
+                  "required": false,
+                  "description": "Routing optimization mode (default: Fast).",
+                  "default": "Fast"
+                },
+                {
+                  "name": "ReturnPolyline",
+                  "type": "bool",
+                  "required": false,
+                  "description": "Whether to return the route polyline.",
+                  "default": "true"
+                },
+                {
+                  "name": "Alternatives",
+                  "type": "int",
+                  "required": false,
+                  "description": "Number of alternative routes to calculate.",
+                  "default": "0"
+                },
+                {
+                  "name": "Avoid",
+                  "type": "RoutingAvoidFeature",
+                  "required": false,
+                  "description": "Features to avoid.",
+                  "default": "None"
+                },
+                {
+                  "name": "ReturnInstructions",
+                  "type": "bool",
+                  "required": false,
+                  "description": "When true, the response includes turn-by-turn instructions.",
+                  "default": "false"
+                },
+                {
+                  "name": "Truck",
+                  "type": "TruckOptions?",
+                  "required": false,
+                  "description": "Truck-specific parameters (only used when TransportMode is Truck).",
+                  "default": "null",
+                  "properties": [
+                    {
+                      "name": "Height",
+                      "type": "double?",
+                      "required": false,
+                      "description": "Vehicle height in meters (converted to cm for the API).",
+                      "default": "null"
+                    },
+                    {
+                      "name": "Width",
+                      "type": "double?",
+                      "required": false,
+                      "description": "Vehicle width in meters (converted to cm for the API).",
+                      "default": "null"
+                    },
+                    {
+                      "name": "Length",
+                      "type": "double?",
+                      "required": false,
+                      "description": "Vehicle length in meters (converted to cm for the API).",
+                      "default": "null"
+                    },
+                    {
+                      "name": "GrossWeight",
+                      "type": "int?",
+                      "required": false,
+                      "description": "Gross weight in kilograms.",
+                      "default": "null"
+                    },
+                    {
+                      "name": "WeightPerAxle",
+                      "type": "int?",
+                      "required": false,
+                      "description": "Weight per axle in kilograms.",
+                      "default": "null"
+                    },
+                    {
+                      "name": "AxleCount",
+                      "type": "int?",
+                      "required": false,
+                      "description": "Number of axles.",
+                      "default": "null"
+                    },
+                    {
+                      "name": "TrailerCount",
+                      "type": "int?",
+                      "required": false,
+                      "description": "Number of trailers.",
+                      "default": "null"
+                    },
+                    {
+                      "name": "TunnelCategory",
+                      "type": "TunnelCategory?",
+                      "required": false,
+                      "description": "Tunnel category restriction.",
+                      "default": "null"
+                    },
+                    {
+                      "name": "HazardousGoods",
+                      "type": "HazardousGoods",
+                      "required": false,
+                      "description": "Hazardous goods flags.",
+                      "default": "None"
+                    }
+                  ]
+                },
+                {
+                  "name": "Ev",
+                  "type": "EvOptions?",
+                  "required": false,
+                  "description": "Electric vehicle parameters.",
+                  "default": "null",
+                  "properties": [
+                    {
+                      "name": "InitialCharge",
+                      "type": "double?",
+                      "required": false,
+                      "description": "Initial battery charge in kWh.",
+                      "default": "null"
+                    },
+                    {
+                      "name": "MaxCharge",
+                      "type": "double?",
+                      "required": false,
+                      "description": "Maximum battery capacity in kWh (max 1200).",
+                      "default": "null"
+                    },
+                    {
+                      "name": "MaxChargeAfterChargingStation",
+                      "type": "double?",
+                      "required": false,
+                      "description": "Maximum charge after a charging station stop in kWh.",
+                      "default": "null"
+                    },
+                    {
+                      "name": "MinChargeAtChargingStation",
+                      "type": "double?",
+                      "required": false,
+                      "description": "Minimum charge required at a charging station in kWh.",
+                      "default": "null"
+                    },
+                    {
+                      "name": "MinChargeAtDestination",
+                      "type": "double?",
+                      "required": false,
+                      "description": "Minimum charge required at destination in kWh.",
+                      "default": "null"
+                    },
+                    {
+                      "name": "ChargingCurve",
+                      "type": "string?",
+                      "required": false,
+                      "description": "Charging curve as comma-separated pairs (charge_level_kWh,charging_speed_kW,...).",
+                      "default": "null"
+                    },
+                    {
+                      "name": "FreeFlowSpeedTable",
+                      "type": "string?",
+                      "required": false,
+                      "description": "Free-flow speed consumption table: speed(km/h),consumption(kWh/km) pairs.",
+                      "default": "null"
+                    },
+                    {
+                      "name": "AuxiliaryConsumption",
+                      "type": "double?",
+                      "required": false,
+                      "description": "Auxiliary power consumption in kW.",
+                      "default": "null"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "interfaceName": "ITrafficService",
+      "description": "Real-time traffic incidents and flow data via the HERE Traffic API v7.",
+      "methods": [
+        {
+          "name": "GetTrafficIncidentsAsync",
+          "description": "Get traffic incidents (accidents, construction, congestion, etc.) within a bounding box.",
+          "returnType": "TrafficIncidentsResult",
+          "parameters": [
+            {
+              "name": "north",
+              "type": "double",
+              "required": true,
+              "description": "Northern latitude of bounding box."
+            },
+            {
+              "name": "south",
+              "type": "double",
+              "required": true,
+              "description": "Southern latitude of bounding box."
+            },
+            {
+              "name": "east",
+              "type": "double",
+              "required": true,
+              "description": "Eastern longitude of bounding box."
+            },
+            {
+              "name": "west",
+              "type": "double",
+              "required": true,
+              "description": "Western longitude of bounding box."
+            }
+          ]
+        },
+        {
+          "name": "GetTrafficFlowAsync",
+          "description": "Get real-time traffic flow data (speed, jam factor) within a bounding box.",
+          "returnType": "TrafficFlowResult",
+          "parameters": [
+            {
+              "name": "north",
+              "type": "double",
+              "required": true,
+              "description": "Northern latitude of bounding box."
+            },
+            {
+              "name": "south",
+              "type": "double",
+              "required": true,
+              "description": "Southern latitude of bounding box."
+            },
+            {
+              "name": "east",
+              "type": "double",
+              "required": true,
+              "description": "Eastern longitude of bounding box."
+            },
+            {
+              "name": "west",
+              "type": "double",
+              "required": true,
+              "description": "Western longitude of bounding box."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "interfaceName": "IWaypointSequenceService",
+      "description": "Optimize waypoint order for minimum travel time or distance via the HERE Waypoint Sequence API v8.",
+      "methods": [
+        {
+          "name": "OptimizeSequenceAsync",
+          "description": "Given a start, end, and intermediate waypoints, find the optimal visiting order.",
+          "returnType": "WaypointSequenceResult",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "WaypointSequenceRequest",
+              "required": true,
+              "description": "Request for optimizing waypoint sequence.",
+              "properties": [
+                {
+                  "name": "Start",
+                  "type": "LatLngLiteral",
+                  "required": true,
+                  "description": "Start position.",
+                  "properties": []
+                },
+                {
+                  "name": "End",
+                  "type": "LatLngLiteral",
+                  "required": true,
+                  "description": "End position (can be same as Start for round-trip).",
+                  "properties": []
+                },
+                {
+                  "name": "Waypoints",
+                  "type": "List\u003CLatLngLiteral\u003E?",
+                  "required": false,
+                  "description": "Waypoints to optimize the sequence for.",
+                  "default": "null"
+                },
+                {
+                  "name": "TransportMode",
+                  "type": "TransportMode",
+                  "required": false,
+                  "description": "Transport mode for optimization.",
+                  "default": "Car"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "enums": [
+    {
+      "name": "HazardousGoods",
+      "description": "Hazardous goods categories (flags enum for multi-select).",
+      "isFlags": true,
+      "values": [
+        {
+          "name": "None",
+          "serializedValue": "None"
+        },
+        {
+          "name": "Explosive",
+          "serializedValue": "explosive"
+        },
+        {
+          "name": "Gas",
+          "serializedValue": "gas"
+        },
+        {
+          "name": "Flammable",
+          "serializedValue": "flammable"
+        },
+        {
+          "name": "Combustible",
+          "serializedValue": "combustible"
+        },
+        {
+          "name": "Organic",
+          "serializedValue": "organic"
+        },
+        {
+          "name": "Poison",
+          "serializedValue": "poison"
+        },
+        {
+          "name": "RadioActive",
+          "serializedValue": "radioActive"
+        },
+        {
+          "name": "Corrosive",
+          "serializedValue": "corrosive"
+        },
+        {
+          "name": "PoisonousInhalation",
+          "serializedValue": "poisonousInhalation"
+        },
+        {
+          "name": "HarmfulToWater",
+          "serializedValue": "harmfulToWater"
+        },
+        {
+          "name": "Other",
+          "serializedValue": "other"
+        }
+      ]
+    },
+    {
+      "name": "IsolineRangeType",
+      "description": "Range type for isoline calculation.",
+      "isFlags": false,
+      "values": [
+        {
+          "name": "Time",
+          "serializedValue": "time"
+        },
+        {
+          "name": "Distance",
+          "serializedValue": "distance"
+        },
+        {
+          "name": "Consumption",
+          "serializedValue": "consumption"
+        }
+      ]
+    },
+    {
+      "name": "RoutingAvoidFeature",
+      "description": "Features to avoid in route calculation.",
+      "isFlags": true,
+      "values": [
+        {
+          "name": "None",
+          "serializedValue": "None"
+        },
+        {
+          "name": "Tolls",
+          "serializedValue": "tollRoad"
+        },
+        {
+          "name": "Highways",
+          "serializedValue": "controlledAccessHighway"
+        },
+        {
+          "name": "Ferries",
+          "serializedValue": "ferry"
+        },
+        {
+          "name": "Tunnels",
+          "serializedValue": "tunnel"
+        }
+      ]
+    },
+    {
+      "name": "RoutingMode",
+      "description": "Routing optimization mode.",
+      "isFlags": false,
+      "values": [
+        {
+          "name": "Fast",
+          "serializedValue": "fast"
+        },
+        {
+          "name": "Short",
+          "serializedValue": "short"
+        }
+      ]
+    },
+    {
+      "name": "TransportMode",
+      "description": "Transport mode for routing.",
+      "isFlags": false,
+      "values": [
+        {
+          "name": "Car",
+          "serializedValue": "car"
+        },
+        {
+          "name": "Truck",
+          "serializedValue": "truck"
+        },
+        {
+          "name": "Pedestrian",
+          "serializedValue": "pedestrian"
+        },
+        {
+          "name": "Bicycle",
+          "serializedValue": "bicycle"
+        },
+        {
+          "name": "Scooter",
+          "serializedValue": "scooter"
+        }
+      ]
+    },
+    {
+      "name": "TunnelCategory",
+      "description": "ADR tunnel restriction category.",
+      "isFlags": false,
+      "values": [
+        {
+          "name": "B",
+          "serializedValue": "B"
+        },
+        {
+          "name": "C",
+          "serializedValue": "C"
+        },
+        {
+          "name": "D",
+          "serializedValue": "D"
+        },
+        {
+          "name": "E",
+          "serializedValue": "E"
+        }
+      ]
+    }
+  ],
+  "resultTypes": [
+    {
+      "name": "GeocodeItem",
+      "description": "A single geocoding result item.",
+      "properties": [
+        {
+          "name": "Title",
+          "type": "string?",
+          "description": "Title/display name of the result."
+        },
+        {
+          "name": "Position",
+          "type": "LatLngLiteral?",
+          "description": "Geographic position.",
+          "nestedType": "LatLngLiteral"
+        },
+        {
+          "name": "Address",
+          "type": "string?",
+          "description": "Formatted address string."
+        },
+        {
+          "name": "ResultType",
+          "type": "string?",
+          "description": "Result type (e.g. \u0022houseNumber\u0022, \u0022street\u0022, \u0022locality\u0022)."
+        }
+      ]
+    },
+    {
+      "name": "GeocodeResult",
+      "description": "Result of a geocoding request.",
+      "properties": [
+        {
+          "name": "Items",
+          "type": "List\u003CGeocodeItem\u003E?",
+          "description": "Geocoding result items.",
+          "nestedType": "GeocodeItem"
+        }
+      ]
+    },
+    {
+      "name": "GeofenceCheckResult",
+      "description": "Result of a geofence check.",
+      "properties": [
+        {
+          "name": "IsInside",
+          "type": "bool",
+          "description": "Whether the position is inside any of the checked zones."
+        },
+        {
+          "name": "MatchedZoneIds",
+          "type": "List\u003Cstring\u003E?",
+          "description": "IDs of zones the position is inside."
+        }
+      ]
+    },
+    {
+      "name": "IsolinePolygon",
+      "description": "A single isoline polygon.",
+      "properties": [
+        {
+          "name": "Range",
+          "type": "int",
+          "description": "Range value for this isoline."
+        },
+        {
+          "name": "Polygon",
+          "type": "List\u003CLatLngLiteral\u003E?",
+          "description": "Decoded polygon coordinates.",
+          "nestedType": "LatLngLiteral"
+        },
+        {
+          "name": "EncodedPolyline",
+          "type": "string?",
+          "description": "Encoded flexible polyline (for C#-side decoding if JS decoding failed)."
+        }
+      ]
+    },
+    {
+      "name": "IsolineResult",
+      "description": "Result of an isoline calculation.",
+      "properties": [
+        {
+          "name": "Isolines",
+          "type": "List\u003CIsolinePolygon\u003E?",
+          "description": "Calculated isolines.",
+          "nestedType": "IsolinePolygon"
+        }
+      ]
+    },
+    {
+      "name": "LatLngLiteral",
+      "description": "Represents a geographic coordinate with latitude and longitude. Compatible with HERE Maps {lat, lng} format.",
+      "properties": []
+    },
+    {
+      "name": "MatrixEntry",
+      "description": "A single entry in the routing matrix.",
+      "properties": [
+        {
+          "name": "OriginIndex",
+          "type": "int",
+          "description": "Index of the origin in the request."
+        },
+        {
+          "name": "DestinationIndex",
+          "type": "int",
+          "description": "Index of the destination in the request."
+        },
+        {
+          "name": "Duration",
+          "type": "int",
+          "description": "Travel duration in seconds."
+        },
+        {
+          "name": "Length",
+          "type": "int",
+          "description": "Travel distance in meters."
+        }
+      ]
+    },
+    {
+      "name": "MatrixRoutingResult",
+      "description": "Result of a matrix routing calculation.",
+      "properties": [
+        {
+          "name": "NumOrigins",
+          "type": "int",
+          "description": "Number of origins in the matrix."
+        },
+        {
+          "name": "NumDestinations",
+          "type": "int",
+          "description": "Number of destinations in the matrix."
+        },
+        {
+          "name": "Matrix",
+          "type": "List\u003CMatrixEntry\u003E",
+          "description": "Matrix entries containing travel times and distances.",
+          "nestedType": "MatrixEntry"
+        }
+      ]
+    },
+    {
+      "name": "PlaceContact",
+      "description": "Contact information for a place.",
+      "properties": [
+        {
+          "name": "Type",
+          "type": "string?",
+          "description": "Contact type (e.g. \u0022phone\u0022, \u0022website\u0022, \u0022email\u0022)."
+        },
+        {
+          "name": "Value",
+          "type": "string?",
+          "description": "Contact value."
+        }
+      ]
+    },
+    {
+      "name": "PlaceItem",
+      "description": "A single place result item.",
+      "properties": [
+        {
+          "name": "Title",
+          "type": "string?",
+          "description": "Display name of the place."
+        },
+        {
+          "name": "Position",
+          "type": "LatLngLiteral?",
+          "description": "Geographic position.",
+          "nestedType": "LatLngLiteral"
+        },
+        {
+          "name": "Address",
+          "type": "string?",
+          "description": "Formatted address string."
+        },
+        {
+          "name": "Categories",
+          "type": "List\u003Cstring\u003E?",
+          "description": "Category names."
+        },
+        {
+          "name": "OpeningHours",
+          "type": "string?",
+          "description": "Opening hours text."
+        },
+        {
+          "name": "Contacts",
+          "type": "List\u003CPlaceContact\u003E?",
+          "description": "Contact information (phone, website, etc.).",
+          "nestedType": "PlaceContact"
+        },
+        {
+          "name": "Distance",
+          "type": "int?",
+          "description": "Distance from the search center in meters."
+        },
+        {
+          "name": "PlaceId",
+          "type": "string?",
+          "description": "HERE Place ID for subsequent lookup requests."
+        }
+      ]
+    },
+    {
+      "name": "PlacesResult",
+      "description": "Result of a Places API request.",
+      "properties": [
+        {
+          "name": "Items",
+          "type": "List\u003CPlaceItem\u003E?",
+          "description": "Place result items.",
+          "nestedType": "PlaceItem"
+        }
+      ]
+    },
+    {
+      "name": "Route",
+      "description": "A single calculated route.",
+      "properties": [
+        {
+          "name": "Sections",
+          "type": "List\u003CRouteSection\u003E?",
+          "description": "Route sections (legs between waypoints).",
+          "nestedType": "RouteSection"
+        }
+      ]
+    },
+    {
+      "name": "RouteSection",
+      "description": "A section of a route between two waypoints.",
+      "properties": [
+        {
+          "name": "Polyline",
+          "type": "string?",
+          "description": "Encoded flexible polyline for this section."
+        },
+        {
+          "name": "DecodedPolyline",
+          "type": "List\u003CLatLngLiteral\u003E?",
+          "description": "Decoded polyline coordinates (populated by service).",
+          "nestedType": "LatLngLiteral"
+        },
+        {
+          "name": "Summary",
+          "type": "RouteSummary?",
+          "description": "Section summary.",
+          "nestedType": "RouteSummary"
+        },
+        {
+          "name": "Transport",
+          "type": "string?",
+          "description": "Transport mode used for this section."
+        },
+        {
+          "name": "TurnByTurnActions",
+          "type": "List\u003CTurnInstruction\u003E?",
+          "description": "Turn-by-turn instructions (populated when ReturnInstructions is true).",
+          "nestedType": "TurnInstruction"
+        }
+      ]
+    },
+    {
+      "name": "RouteSummary",
+      "description": "Summary information for a route section.",
+      "properties": [
+        {
+          "name": "Duration",
+          "type": "int",
+          "description": "Duration in seconds."
+        },
+        {
+          "name": "Length",
+          "type": "int",
+          "description": "Length in meters."
+        },
+        {
+          "name": "BaseDuration",
+          "type": "int?",
+          "description": "Base duration without traffic in seconds."
+        }
+      ]
+    },
+    {
+      "name": "RoutingResult",
+      "description": "Result of a route calculation.",
+      "properties": [
+        {
+          "name": "Routes",
+          "type": "List\u003CRoute\u003E?",
+          "description": "Calculated routes.",
+          "nestedType": "Route"
+        }
+      ]
+    },
+    {
+      "name": "TrafficFlowItem",
+      "description": "A traffic flow data item.",
+      "properties": [
+        {
+          "name": "CurrentSpeed",
+          "type": "double",
+          "description": "Current speed in km/h."
+        },
+        {
+          "name": "FreeFlowSpeed",
+          "type": "double",
+          "description": "Free-flow speed in km/h (speed without traffic)."
+        },
+        {
+          "name": "JamFactor",
+          "type": "double",
+          "description": "Jam factor (0=free flow, 10=standstill)."
+        },
+        {
+          "name": "RoadName",
+          "type": "string?",
+          "description": "Road name."
+        },
+        {
+          "name": "Position",
+          "type": "LatLngLiteral?",
+          "description": "Location along the road.",
+          "nestedType": "LatLngLiteral"
+        }
+      ]
+    },
+    {
+      "name": "TrafficFlowResult",
+      "description": "Result containing traffic flow data.",
+      "properties": [
+        {
+          "name": "Items",
+          "type": "List\u003CTrafficFlowItem\u003E?",
+          "description": "List of traffic flow items.",
+          "nestedType": "TrafficFlowItem"
+        }
+      ]
+    },
+    {
+      "name": "TrafficIncident",
+      "description": "A traffic incident from the HERE Traffic API.",
+      "properties": [
+        {
+          "name": "Type",
+          "type": "string?",
+          "description": "Incident type (e.g., \u0022accident\u0022, \u0022construction\u0022, \u0022congestion\u0022)."
+        },
+        {
+          "name": "Severity",
+          "type": "int",
+          "description": "Severity level (0-4, 0=unknown, 4=blocking)."
+        },
+        {
+          "name": "Description",
+          "type": "string?",
+          "description": "Description of the incident."
+        },
+        {
+          "name": "Position",
+          "type": "LatLngLiteral?",
+          "description": "Location of the incident.",
+          "nestedType": "LatLngLiteral"
+        },
+        {
+          "name": "RoadName",
+          "type": "string?",
+          "description": "Road name where the incident occurs."
+        },
+        {
+          "name": "StartTime",
+          "type": "string?",
+          "description": "Start time of the incident (ISO 8601)."
+        },
+        {
+          "name": "EndTime",
+          "type": "string?",
+          "description": "End time of the incident (ISO 8601)."
+        }
+      ]
+    },
+    {
+      "name": "TrafficIncidentsResult",
+      "description": "Result containing traffic incidents.",
+      "properties": [
+        {
+          "name": "Incidents",
+          "type": "List\u003CTrafficIncident\u003E?",
+          "description": "List of traffic incidents.",
+          "nestedType": "TrafficIncident"
+        }
+      ]
+    },
+    {
+      "name": "TransitDeparture",
+      "description": "A departure from a public transit station.",
+      "properties": [
+        {
+          "name": "LineName",
+          "type": "string?",
+          "description": "Line name or number."
+        },
+        {
+          "name": "Direction",
+          "type": "string?",
+          "description": "Direction/destination of the line."
+        },
+        {
+          "name": "DepartureTime",
+          "type": "string?",
+          "description": "Departure time (ISO 8601)."
+        },
+        {
+          "name": "TransportType",
+          "type": "string?",
+          "description": "Transport type (e.g., \u0022bus\u0022, \u0022subway\u0022, \u0022train\u0022, \u0022tram\u0022)."
+        },
+        {
+          "name": "StationName",
+          "type": "string?",
+          "description": "Station name."
+        }
+      ]
+    },
+    {
+      "name": "TransitDeparturesResult",
+      "description": "Result containing transit departures.",
+      "properties": [
+        {
+          "name": "Departures",
+          "type": "List\u003CTransitDeparture\u003E?",
+          "description": "List of departures.",
+          "nestedType": "TransitDeparture"
+        }
+      ]
+    },
+    {
+      "name": "TransitStation",
+      "description": "A transit station.",
+      "properties": [
+        {
+          "name": "Name",
+          "type": "string?",
+          "description": "Station name."
+        },
+        {
+          "name": "Position",
+          "type": "LatLngLiteral?",
+          "description": "Station position.",
+          "nestedType": "LatLngLiteral"
+        },
+        {
+          "name": "Distance",
+          "type": "double",
+          "description": "Distance from search center in meters."
+        },
+        {
+          "name": "TransportTypes",
+          "type": "List\u003Cstring\u003E?",
+          "description": "Transport types available at this station."
+        }
+      ]
+    },
+    {
+      "name": "TransitStationsResult",
+      "description": "Result containing transit stations.",
+      "properties": [
+        {
+          "name": "Stations",
+          "type": "List\u003CTransitStation\u003E?",
+          "description": "List of stations.",
+          "nestedType": "TransitStation"
+        }
+      ]
+    },
+    {
+      "name": "TurnInstruction",
+      "description": "A single turn-by-turn instruction in a route section.",
+      "properties": [
+        {
+          "name": "Action",
+          "type": "string?",
+          "description": "Action type (e.g. \u0022depart\u0022, \u0022arrive\u0022, \u0022turnLeft\u0022, \u0022turnRight\u0022, \u0022continue\u0022)."
+        },
+        {
+          "name": "Instruction",
+          "type": "string?",
+          "description": "Human-readable instruction text."
+        },
+        {
+          "name": "Duration",
+          "type": "int",
+          "description": "Duration for this maneuver in seconds."
+        },
+        {
+          "name": "Length",
+          "type": "int",
+          "description": "Length for this maneuver in meters."
+        },
+        {
+          "name": "Offset",
+          "type": "int",
+          "description": "Index offset into the polyline where this maneuver starts."
+        },
+        {
+          "name": "Position",
+          "type": "LatLngLiteral?",
+          "description": "Position of this maneuver.",
+          "nestedType": "LatLngLiteral"
+        }
+      ]
+    },
+    {
+      "name": "WaypointSequenceResult",
+      "description": "Result of waypoint sequence optimization.",
+      "properties": [
+        {
+          "name": "OptimizedIndices",
+          "type": "List\u003Cint\u003E?",
+          "description": "Optimized waypoint indices (original ordering mapped to optimal)."
+        },
+        {
+          "name": "OptimizedWaypoints",
+          "type": "List\u003CLatLngLiteral\u003E?",
+          "description": "Optimized waypoints in the recommended order.",
+          "nestedType": "LatLngLiteral"
+        },
+        {
+          "name": "TotalDistance",
+          "type": "int",
+          "description": "Total distance in meters."
+        },
+        {
+          "name": "TotalDuration",
+          "type": "int",
+          "description": "Total duration in seconds."
+        }
+      ]
+    }
+  ]
+}

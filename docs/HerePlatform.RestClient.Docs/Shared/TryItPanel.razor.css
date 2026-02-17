@@ -1,0 +1,17 @@
+::deep .try-it-panel {
+    border: 2px solid var(--here-teal, #48a9a6);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    margin: 1.5rem 0;
+}
+
+::deep .panel-header {
+    background-color: var(--here-teal, #48a9a6);
+    color: white;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+}
+
+::deep .panel-body {
+    padding: 1rem;
+}

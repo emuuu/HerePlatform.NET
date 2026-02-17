@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 namespace HerePlatform.Core.Services;
 
 /// <summary>
-/// Service for optimizing waypoint sequences using HERE API.
+/// Optimize waypoint order for minimum travel time or distance via the HERE Waypoint Sequence API v8.
 /// </summary>
 public interface IWaypointSequenceService
 {
     /// <summary>
-    /// Optimize the sequence of waypoints for minimum travel time/distance.
+    /// Given a start, end, and intermediate waypoints, find the optimal visiting order.
     /// </summary>
     Task<WaypointSequenceResult> OptimizeSequenceAsync(WaypointSequenceRequest request);
 }

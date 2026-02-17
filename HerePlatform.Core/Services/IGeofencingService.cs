@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 namespace HerePlatform.Core.Services;
 
 /// <summary>
-/// Service for geofence checks (client-side point-in-polygon/circle).
+/// Client-side geofence checks — point-in-polygon and point-in-circle without any HTTP call.
 /// </summary>
 public interface IGeofencingService
 {
     /// <summary>
-    /// Check if a position is inside any of the given geofence zones.
+    /// Check whether a position falls inside any of the given geofence zones (polygon or circle).
     /// </summary>
+    /// <param name="position">Position to check.</param>
+    /// <param name="zones">Geofence zones (polygon or circle).</param>
     Task<GeofenceCheckResult> CheckPositionAsync(LatLngLiteral position, List<GeofenceZone> zones);
 }

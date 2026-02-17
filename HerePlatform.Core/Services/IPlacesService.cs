@@ -4,22 +4,22 @@ using System.Threading.Tasks;
 namespace HerePlatform.Core.Services;
 
 /// <summary>
-/// Service for HERE Places API (discover, browse, lookup).
+/// Discover, browse, and look up places via the HERE Places API v1.
 /// </summary>
 public interface IPlacesService
 {
     /// <summary>
-    /// Free-text search for places (H.service.SearchService.discover).
+    /// Free-text search for places near a given position.
     /// </summary>
     Task<PlacesResult> DiscoverAsync(PlacesRequest request);
 
     /// <summary>
-    /// Browse places by category (H.service.SearchService.browse).
+    /// Browse places by category near a given position.
     /// </summary>
     Task<PlacesResult> BrowseAsync(PlacesRequest request);
 
     /// <summary>
-    /// Look up a single place by HERE Place ID (H.service.SearchService.lookup).
+    /// Look up a single place by its HERE Place ID.
     /// </summary>
     Task<PlacesResult> LookupAsync(PlacesRequest request);
 }

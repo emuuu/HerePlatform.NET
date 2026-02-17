@@ -1,0 +1,104 @@
+@page "/services/isoline"
+@inject IIsolineService IsolineService
+@inject IRestApiDocService DocService
+
+<PageTitle>Isoline — HerePlatform.RestClient Docs</PageTitle>
+
+<div class="doc-content">
+    <h1>IIsolineService</h1>
+    <p class="lead">@_serviceDescription</p>
+    <ApiKeyWarning />
+
+    <h2>CalculateIsolineAsync</h2>
+    <p>@_methodDescription</p>
+    <ParamTable Parameters="@_params" />
+
+    <h5>Example Response (Success)</h5>
+    <CodeBlock Language="json" Code="@_successExample" />
+
+    <TryItPanel TResult="IsolineResult" OnExecute="ExecuteIsoline">
+        <FormContent>
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <label class="form-label">Center Lat</label>
+                    <input type="number" step="any" class="form-control form-control-sm" @bind="_lat" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Center Lng</label>
+                    <input type="number" step="any" class="form-control form-control-sm" @bind="_lng" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Range Type</label>
+                    <select class="form-select form-select-sm" @bind="_rangeType">
+                        <option value="@IsolineRangeType.Time">Time (seconds)</option>
+                        <option value="@IsolineRangeType.Distance">Distance (meters)</option>
+                        <option value="@IsolineRangeType.Consumption">Consumption</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Transport Mode</label>
+                    <select class="form-select form-select-sm" @bind="_transportMode">
+                        <option value="@TransportMode.Car">Car</option>
+                        <option value="@TransportMode.Truck">Truck</option>
+                        <option value="@TransportMode.Pedestrian">Pedestrian</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row g-2 mt-1">
+                <div class="col-md-6">
+                    <label class="form-label">Ranges (comma-separated)</label>
+                    <input class="form-control form-control-sm" @bind="_rangesText" placeholder="300,600,900" />
+                </div>
+            </div>
+        </FormContent>
+    </TryItPanel>
+</div>
+
+@code {
+    private double _lat = 52.5308, _lng = 13.3847;
+    private IsolineRangeType _rangeType = IsolineRangeType.Time;
+    private TransportMode _transportMode = TransportMode.Car;
+    private string _rangesText = "300,600,900";
+
+    private Task<IsolineResult> ExecuteIsoline()
+    {
+        var ranges = _rangesText.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(s => int.Parse(s, CultureInfo.InvariantCulture))
+            .ToList();
+
+        return IsolineService.CalculateIsolineAsync(new IsolineRequest
+        {
+            Center = new LatLngLiteral(_lat, _lng),
+            Ranges = ranges,
+            RangeType = _rangeType,
+            TransportMode = _transportMode
+        });
+    }
+
+    private string _serviceDescription = "";
+    private string _methodDescription = "";
+    private List<ParamDoc> _params = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await DocService.InitializeAsync();
+        var svc = DocService.GetService("IIsolineService");
+        _serviceDescription = svc?.Description ?? "";
+        _methodDescription = DocService.GetMethod("IIsolineService", "CalculateIsolineAsync")?.Description ?? "";
+        _params = DocService.GetMethodParams("IIsolineService", "CalculateIsolineAsync");
+    }
+
+    private const string _successExample = @"{
+  ""isolines"": [
+    {
+      ""range"": 300,
+      ""encodedPolyline"": ""BG...(encoded)..."",
+      ""polygon"": [
+        { ""lat"": 52.535, ""lng"": 13.380 },
+        { ""lat"": 52.528, ""lng"": 13.392 },
+        { ""lat"": 52.525, ""lng"": 13.378 }
+      ]
+    }
+  ]
+}";
+}

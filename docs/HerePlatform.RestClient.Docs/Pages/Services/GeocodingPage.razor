@@ -1,0 +1,147 @@
+@page "/services/geocoding"
+@inject IGeocodingService GeocodingService
+@inject IRestApiDocService DocService
+
+<PageTitle>Geocoding — HerePlatform.RestClient Docs</PageTitle>
+
+<div class="doc-content">
+    <h1>IGeocodingService</h1>
+    <p class="lead">@_serviceDescription</p>
+    <ApiKeyWarning />
+
+    @* ── GeocodeAsync ── *@
+    <h2>GeocodeAsync</h2>
+    <p>@_geocodeMethodDescription</p>
+    <ParamTable Parameters="@_geocodeParams" />
+
+    <h5>Example Response (Success)</h5>
+    <CodeBlock Language="json" Code="@_geocodeSuccessExample" />
+    <h5>Example Response (Error — invalid key)</h5>
+    <CodeBlock Language="json" Code="@_errorExample" />
+
+    <TryItPanel TResult="GeocodeResult" OnExecute="ExecuteGeocode">
+        <FormContent>
+            <div class="row g-2">
+                <div class="col-md-8">
+                    <label class="form-label">Query</label>
+                    <input class="form-control form-control-sm" @bind="_geocodeQuery" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Limit</label>
+                    <input type="number" class="form-control form-control-sm" @bind="_geocodeLimit" min="1" max="20" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Lang</label>
+                    <input class="form-control form-control-sm" @bind="_geocodeLang" placeholder="en" />
+                </div>
+            </div>
+        </FormContent>
+    </TryItPanel>
+
+    @* ── ReverseGeocodeAsync ── *@
+    <h2>ReverseGeocodeAsync</h2>
+    <p>@_reverseGeocodeMethodDescription</p>
+    <ParamTable Parameters="@_reverseGeocodeParams" />
+
+    <h5>Example Response (Success)</h5>
+    <CodeBlock Language="json" Code="@_reverseGeocodeSuccessExample" />
+
+    <TryItPanel TResult="GeocodeResult" OnExecute="ExecuteReverseGeocode">
+        <FormContent>
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <label class="form-label">Latitude</label>
+                    <input type="number" step="any" class="form-control form-control-sm" @bind="_reverseLat" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Longitude</label>
+                    <input type="number" step="any" class="form-control form-control-sm" @bind="_reverseLng" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Limit</label>
+                    <input type="number" class="form-control form-control-sm" @bind="_reverseLimit" min="1" max="20" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Lang</label>
+                    <input class="form-control form-control-sm" @bind="_reverseLang" placeholder="en" />
+                </div>
+            </div>
+        </FormContent>
+    </TryItPanel>
+</div>
+
+@code {
+    // ── Geocode form state ──
+    private string _geocodeQuery = "Invalidenstr. 116, Berlin";
+    private int _geocodeLimit = 5;
+    private string? _geocodeLang;
+
+    // ── Reverse geocode form state ──
+    private double _reverseLat = 52.5308;
+    private double _reverseLng = 13.3847;
+    private int _reverseLimit = 1;
+    private string? _reverseLang;
+
+    private Task<GeocodeResult> ExecuteGeocode() =>
+        GeocodingService.GeocodeAsync(_geocodeQuery, new GeocodeOptions
+        {
+            Limit = _geocodeLimit,
+            Lang = string.IsNullOrWhiteSpace(_geocodeLang) ? null : _geocodeLang
+        });
+
+    private Task<GeocodeResult> ExecuteReverseGeocode() =>
+        GeocodingService.ReverseGeocodeAsync(
+            new LatLngLiteral(_reverseLat, _reverseLng),
+            new GeocodeOptions
+            {
+                Limit = _reverseLimit,
+                Lang = string.IsNullOrWhiteSpace(_reverseLang) ? null : _reverseLang
+            });
+
+    // ── Generated parameter documentation ──
+    private string _serviceDescription = "";
+    private string _geocodeMethodDescription = "";
+    private string _reverseGeocodeMethodDescription = "";
+    private List<ParamDoc> _geocodeParams = [];
+    private List<ParamDoc> _reverseGeocodeParams = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await DocService.InitializeAsync();
+        var svc = DocService.GetService("IGeocodingService");
+        _serviceDescription = svc?.Description ?? "";
+        _geocodeMethodDescription = DocService.GetMethod("IGeocodingService", "GeocodeAsync")?.Description ?? "";
+        _reverseGeocodeMethodDescription = DocService.GetMethod("IGeocodingService", "ReverseGeocodeAsync")?.Description ?? "";
+        _geocodeParams = DocService.GetMethodParams("IGeocodingService", "GeocodeAsync");
+        _reverseGeocodeParams = DocService.GetMethodParams("IGeocodingService", "ReverseGeocodeAsync");
+    }
+
+    // ── Static examples ──
+    private const string _geocodeSuccessExample = @"{
+  ""items"": [
+    {
+      ""title"": ""Invalidenstraße 116, 10115 Berlin, Germany"",
+      ""address"": ""Invalidenstraße 116, 10115 Berlin, Germany"",
+      ""resultType"": ""houseNumber"",
+      ""position"": { ""lat"": 52.5308, ""lng"": 13.3847 }
+    }
+  ]
+}";
+
+    private const string _reverseGeocodeSuccessExample = @"{
+  ""items"": [
+    {
+      ""title"": ""Invalidenstraße 116, 10115 Berlin, Germany"",
+      ""address"": ""Invalidenstraße 116, 10115 Berlin, Germany"",
+      ""resultType"": ""houseNumber"",
+      ""position"": { ""lat"": 52.5308, ""lng"": 13.3847 }
+    }
+  ]
+}";
+
+    private const string _errorExample = @"{
+  ""status"": 401,
+  ""title"": ""Unauthorized"",
+  ""detail"": ""No valid API Key provided.""
+}";
+}

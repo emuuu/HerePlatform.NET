@@ -1,0 +1,32 @@
+@if (Parameters is { Count: > 0 })
+{
+    <div class="table-responsive param-table">
+        <table class="table table-sm table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Parameter</th>
+                    <th>Type</th>
+                    <th>Required</th>
+                    <th>Description</th>
+                    <th>Example</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Parameters)
+                {
+                    <tr>
+                        <td><code>@p.Name</code></td>
+                        <td><code>@p.Type</code></td>
+                        <td>@(p.Required ? "Yes" : "No")</td>
+                        <td>@p.Description</td>
+                        <td>@(p.Example ?? "—")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public List<ParamDoc> Parameters { get; set; } = [];
+}

@@ -1,0 +1,9 @@
+@inject DocsApiKeyService ApiKeyService
+
+@if (!ApiKeyService.HasKey)
+{
+    <div class="alert alert-warning d-flex align-items-center" role="alert">
+        <strong class="me-2">No API Key configured.</strong>
+        <span>Enter your HERE API Key in the header to enable the Try It panels.</span>
+    </div>
+}

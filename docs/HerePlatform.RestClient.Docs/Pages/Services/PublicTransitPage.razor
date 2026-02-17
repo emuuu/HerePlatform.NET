@@ -1,0 +1,127 @@
+@page "/services/public-transit"
+@inject IPublicTransitService TransitService
+@inject IRestApiDocService DocService
+
+<PageTitle>Public Transit — HerePlatform.RestClient Docs</PageTitle>
+
+<div class="doc-content">
+    <h1>IPublicTransitService</h1>
+    <p class="lead">@_serviceDescription</p>
+    <ApiKeyWarning />
+
+    @* ── GetDeparturesAsync ── *@
+    <h2>GetDeparturesAsync</h2>
+    <p>@_departuresMethodDescription</p>
+    <ParamTable Parameters="@_departuresParams" />
+
+    <h5>Example Response (Success)</h5>
+    <CodeBlock Language="json" Code="@_departuresSuccessExample" />
+
+    <TryItPanel TResult="TransitDeparturesResult" OnExecute="ExecuteDepartures">
+        <FormContent>
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <label class="form-label">Latitude</label>
+                    <input type="number" step="any" class="form-control form-control-sm" @bind="_depLat" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Longitude</label>
+                    <input type="number" step="any" class="form-control form-control-sm" @bind="_depLng" />
+                </div>
+            </div>
+        </FormContent>
+    </TryItPanel>
+
+    @* ── SearchStationsAsync ── *@
+    <h2>SearchStationsAsync</h2>
+    <p>@_stationsMethodDescription</p>
+    <ParamTable Parameters="@_stationsParams" />
+
+    <h5>Example Response (Success)</h5>
+    <CodeBlock Language="json" Code="@_stationsSuccessExample" />
+
+    <TryItPanel TResult="TransitStationsResult" OnExecute="ExecuteStations">
+        <FormContent>
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <label class="form-label">Latitude</label>
+                    <input type="number" step="any" class="form-control form-control-sm" @bind="_stLat" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Longitude</label>
+                    <input type="number" step="any" class="form-control form-control-sm" @bind="_stLng" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Radius (meters)</label>
+                    <input type="number" class="form-control form-control-sm" @bind="_stRadius" min="100" max="5000" />
+                </div>
+            </div>
+        </FormContent>
+    </TryItPanel>
+</div>
+
+@code {
+    // Berlin Hauptbahnhof area
+    private double _depLat = 52.5251, _depLng = 13.3694;
+    private double _stLat = 52.5251, _stLng = 13.3694;
+    private double _stRadius = 500;
+
+    private Task<TransitDeparturesResult> ExecuteDepartures() =>
+        TransitService.GetDeparturesAsync(new LatLngLiteral(_depLat, _depLng));
+
+    private Task<TransitStationsResult> ExecuteStations() =>
+        TransitService.SearchStationsAsync(new LatLngLiteral(_stLat, _stLng), _stRadius);
+
+    private string _serviceDescription = "";
+    private string _departuresMethodDescription = "";
+    private string _stationsMethodDescription = "";
+    private List<ParamDoc> _departuresParams = [];
+    private List<ParamDoc> _stationsParams = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await DocService.InitializeAsync();
+        var svc = DocService.GetService("IPublicTransitService");
+        _serviceDescription = svc?.Description ?? "";
+        _departuresMethodDescription = DocService.GetMethod("IPublicTransitService", "GetDeparturesAsync")?.Description ?? "";
+        _stationsMethodDescription = DocService.GetMethod("IPublicTransitService", "SearchStationsAsync")?.Description ?? "";
+        _departuresParams = DocService.GetMethodParams("IPublicTransitService", "GetDeparturesAsync");
+        _stationsParams = DocService.GetMethodParams("IPublicTransitService", "SearchStationsAsync");
+    }
+
+    private const string _departuresSuccessExample = @"{
+  ""departures"": [
+    {
+      ""lineName"": ""S5"",
+      ""direction"": ""Strausberg Nord"",
+      ""departureTime"": ""2025-06-15T14:32:00+02:00"",
+      ""transportType"": ""suburbanTrain"",
+      ""stationName"": ""Berlin Hauptbahnhof""
+    },
+    {
+      ""lineName"": ""U55"",
+      ""direction"": ""Brandenburger Tor"",
+      ""departureTime"": ""2025-06-15T14:35:00+02:00"",
+      ""transportType"": ""subway"",
+      ""stationName"": ""Berlin Hauptbahnhof""
+    }
+  ]
+}";
+
+    private const string _stationsSuccessExample = @"{
+  ""stations"": [
+    {
+      ""name"": ""Berlin Hauptbahnhof"",
+      ""position"": { ""lat"": 52.5251, ""lng"": 13.3694 },
+      ""distance"": 42,
+      ""transportTypes"": [""suburbanTrain"", ""subway"", ""bus""]
+    },
+    {
+      ""name"": ""Invalidenpark"",
+      ""position"": { ""lat"": 52.5288, ""lng"": 13.3765 },
+      ""distance"": 380,
+      ""transportTypes"": [""tram""]
+    }
+  ]
+}";
+}
