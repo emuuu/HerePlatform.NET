@@ -1,4 +1,5 @@
 @page "/"
+@inject IRestApiDocService DocService
 
 <PageTitle>HerePlatform.RestClient Docs</PageTitle>
 
@@ -10,95 +11,42 @@
     </p>
 
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3 mt-3">
-        <div class="col">
-            <a href="services/geocoding" class="text-decoration-none">
-                <div class="card h-100 service-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Geocoding</h5>
-                        <p class="card-text text-muted">Forward and reverse geocoding — convert addresses to coordinates and back.</p>
+        @foreach (var card in _cards)
+        {
+            <div class="col">
+                <a href="@card.Href" class="text-decoration-none">
+                    <div class="card h-100 service-card">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                @card.Title
+                                @if (card.ApiVersion is not null)
+                                {
+                                    <span class="badge bg-info text-dark fw-normal">@card.ApiVersion</span>
+                                }
+                            </h5>
+                            <p class="card-text text-muted">@card.Description</p>
+                        </div>
                     </div>
-                </div>
-            </a>
-        </div>
-        <div class="col">
-            <a href="services/routing" class="text-decoration-none">
-                <div class="card h-100 service-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Routing</h5>
-                        <p class="card-text text-muted">Calculate routes with support for car, truck, pedestrian, bicycle, and EV options.</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col">
-            <a href="services/places" class="text-decoration-none">
-                <div class="card h-100 service-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Places</h5>
-                        <p class="card-text text-muted">Discover, browse, and look up places by text search, category, or place ID.</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col">
-            <a href="services/isoline" class="text-decoration-none">
-                <div class="card h-100 service-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Isoline</h5>
-                        <p class="card-text text-muted">Calculate reachable areas (isochrones/isodistances) from a center point.</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col">
-            <a href="services/matrix-routing" class="text-decoration-none">
-                <div class="card h-100 service-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Matrix Routing</h5>
-                        <p class="card-text text-muted">Compute travel time and distance matrices between multiple origins and destinations.</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col">
-            <a href="services/traffic" class="text-decoration-none">
-                <div class="card h-100 service-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Traffic</h5>
-                        <p class="card-text text-muted">Get real-time traffic incidents and flow data within a bounding box.</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col">
-            <a href="services/public-transit" class="text-decoration-none">
-                <div class="card h-100 service-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Public Transit</h5>
-                        <p class="card-text text-muted">Search for transit stations and get live departure information.</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col">
-            <a href="services/waypoint-sequence" class="text-decoration-none">
-                <div class="card h-100 service-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Waypoint Sequence</h5>
-                        <p class="card-text text-muted">Optimize the order of waypoints for minimum travel time or distance.</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col">
-            <a href="services/geofencing" class="text-decoration-none">
-                <div class="card h-100 service-card">
-                    <div class="card-body">
-                        <h5 class="card-title">Geofencing</h5>
-                        <p class="card-text text-muted">Client-side point-in-polygon/circle checks — no HTTP call required.</p>
-                    </div>
-                </div>
-            </a>
-        </div>
+                </a>
+            </div>
+        }
     </div>
 </div>
+
+@code {
+    private record ServiceCard(string Title, string Href, string Description, string? ApiVersion = null);
+
+    private List<ServiceCard> _cards = ServiceDefinitions.All
+        .Select(d => new ServiceCard(d.Title, d.Href, d.Description))
+        .ToList();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await DocService.InitializeAsync();
+        _cards = ServiceDefinitions.All.Select(d =>
+        {
+            var svc = DocService.GetService(d.InterfaceName);
+            return new ServiceCard(d.Title, d.Href, d.Description, svc?.ApiVersion);
+        }).ToList();
+    }
+}

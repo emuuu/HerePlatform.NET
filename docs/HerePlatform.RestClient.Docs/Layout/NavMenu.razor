@@ -17,60 +17,15 @@
 
     <h6 class="nav-section-title text-uppercase fw-bold mt-3 mb-2">Services</h6>
     <ul class="nav flex-column">
-        <li class="nav-item">
-            <NavLink class="nav-link py-1" href="services/geocoding"
-                     @onclick="() => OnNavigate.InvokeAsync()">
-                Geocoding
-            </NavLink>
-        </li>
-        <li class="nav-item">
-            <NavLink class="nav-link py-1" href="services/routing"
-                     @onclick="() => OnNavigate.InvokeAsync()">
-                Routing
-            </NavLink>
-        </li>
-        <li class="nav-item">
-            <NavLink class="nav-link py-1" href="services/places"
-                     @onclick="() => OnNavigate.InvokeAsync()">
-                Places
-            </NavLink>
-        </li>
-        <li class="nav-item">
-            <NavLink class="nav-link py-1" href="services/isoline"
-                     @onclick="() => OnNavigate.InvokeAsync()">
-                Isoline
-            </NavLink>
-        </li>
-        <li class="nav-item">
-            <NavLink class="nav-link py-1" href="services/matrix-routing"
-                     @onclick="() => OnNavigate.InvokeAsync()">
-                Matrix Routing
-            </NavLink>
-        </li>
-        <li class="nav-item">
-            <NavLink class="nav-link py-1" href="services/traffic"
-                     @onclick="() => OnNavigate.InvokeAsync()">
-                Traffic
-            </NavLink>
-        </li>
-        <li class="nav-item">
-            <NavLink class="nav-link py-1" href="services/public-transit"
-                     @onclick="() => OnNavigate.InvokeAsync()">
-                Public Transit
-            </NavLink>
-        </li>
-        <li class="nav-item">
-            <NavLink class="nav-link py-1" href="services/waypoint-sequence"
-                     @onclick="() => OnNavigate.InvokeAsync()">
-                Waypoint Sequence
-            </NavLink>
-        </li>
-        <li class="nav-item">
-            <NavLink class="nav-link py-1" href="services/geofencing"
-                     @onclick="() => OnNavigate.InvokeAsync()">
-                Geofencing
-            </NavLink>
-        </li>
+        @foreach (var svc in ServiceDefinitions.All)
+        {
+            <li class="nav-item">
+                <NavLink class="nav-link py-1" href="@svc.Href"
+                         @onclick="() => OnNavigate.InvokeAsync()">
+                    @svc.Title
+                </NavLink>
+            </li>
+        }
     </ul>
 </div>
 

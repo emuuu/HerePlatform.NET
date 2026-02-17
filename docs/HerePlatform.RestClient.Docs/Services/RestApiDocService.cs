@@ -6,6 +6,7 @@ namespace HerePlatform.RestClient.Docs.Services;
 public interface IRestApiDocService
 {
     Task InitializeAsync();
+    List<ServiceDoc> GetAllServices();
     ServiceDoc? GetService(string interfaceName);
     MethodDoc? GetMethod(string interfaceName, string methodName);
     List<ParamDoc> GetMethodParams(string interfaceName, string methodName);
@@ -14,6 +15,7 @@ public interface IRestApiDocService
 public class RestApiDocService : IRestApiDocService
 {
     private readonly HttpClient _http;
+    private readonly SemaphoreSlim _initLock = new(1, 1);
     private RestApiDocsRoot? _docs;
 
     public RestApiDocService(HttpClient http)
@@ -24,8 +26,20 @@ public class RestApiDocService : IRestApiDocService
     public async Task InitializeAsync()
     {
         if (_docs is not null) return;
-        _docs = await _http.GetFromJsonAsync<RestApiDocsRoot>("data/rest-api-docs.json");
+        await _initLock.WaitAsync();
+        try
+        {
+            if (_docs is not null) return;
+            _docs = await _http.GetFromJsonAsync<RestApiDocsRoot>("data/rest-api-docs.json");
+        }
+        finally
+        {
+            _initLock.Release();
+        }
     }
+
+    public List<ServiceDoc> GetAllServices() =>
+        _docs?.Services ?? [];
 
     public ServiceDoc? GetService(string interfaceName) =>
         _docs?.Services.FirstOrDefault(s => s.InterfaceName == interfaceName);
