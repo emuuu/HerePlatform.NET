@@ -13,8 +13,7 @@ public class AuthHandlerTests
     {
         var optionsWrapper = Options.Create(options);
 
-        // Create a minimal IHttpClientFactory for OAuth token client
-        var factory = new FakeHttpClientFactory(innerHandler);
+        var factory = new TestHttpClientFactory(innerHandler ?? new MockHttpHandler(new HttpResponseMessage(HttpStatusCode.OK)));
         var handler = new HereAuthHandler(optionsWrapper, factory);
         handler.InnerHandler = innerHandler ?? new MockHttpHandler(new HttpResponseMessage(HttpStatusCode.OK));
         return handler;
@@ -66,23 +65,4 @@ public class AuthHandlerTests
         Assert.That(mockInner.LastRequest!.Headers.Authorization!.Parameter, Is.EqualTo("ext-token-123"));
     }
 
-    /// <summary>
-    /// Minimal IHttpClientFactory for tests — returns HttpClient with the given handler.
-    /// </summary>
-    private class FakeHttpClientFactory : IHttpClientFactory
-    {
-        private readonly HttpMessageHandler? _handler;
-
-        public FakeHttpClientFactory(HttpMessageHandler? handler = null)
-        {
-            _handler = handler;
-        }
-
-        public HttpClient CreateClient(string name)
-        {
-            return _handler is not null
-                ? new HttpClient(_handler)
-                : new HttpClient(new MockHttpHandler(new HttpResponseMessage(HttpStatusCode.OK)));
-        }
-    }
 }

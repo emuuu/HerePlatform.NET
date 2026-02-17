@@ -1,4 +1,6 @@
+using System.Globalization;
 using System.Net;
+using HerePlatform.Core.Coordinates;
 using HerePlatform.Core.Exceptions;
 using HerePlatform.RestClient.Internal;
 
@@ -61,5 +63,45 @@ public class HereApiHelperTests
     {
         var qs = HereApiHelper.BuildQueryString();
         Assert.That(qs, Is.Empty);
+    }
+
+    [Test]
+    public void FormatCoord_UsesInvariantCulture()
+    {
+        var original = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+            var coord = new LatLngLiteral(52.5, 13.4);
+            var result = HereApiHelper.FormatCoord(coord);
+            Assert.That(result, Is.EqualTo("52.5,13.4"));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = original;
+        }
+    }
+
+    [Test]
+    public void Invariant_Double_UsesInvariantCulture()
+    {
+        var original = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = new CultureInfo("de-DE");
+            var result = HereApiHelper.Invariant(52.5);
+            Assert.That(result, Is.EqualTo("52.5"));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = original;
+        }
+    }
+
+    [Test]
+    public void GetEnumMemberValue_ReturnsEnumMemberAttribute()
+    {
+        var result = HereApiHelper.GetEnumMemberValue(Core.Routing.TransportMode.Car);
+        Assert.That(result, Is.EqualTo("car"));
     }
 }
