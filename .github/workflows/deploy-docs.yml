@@ -3,8 +3,10 @@ on:
   push:
     branches: [main]
     paths:
-      - 'docs/**'
+      - 'docs/BlazorHerePlatform.Docs/**'
+      - 'docs/BlazorHerePlatform.Docs.Generator/**'
       - 'HerePlatformComponents/**'
+      - 'HerePlatform.Core/**'
   workflow_dispatch:
 
 permissions:

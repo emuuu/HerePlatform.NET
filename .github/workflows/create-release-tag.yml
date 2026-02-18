@@ -2,6 +2,13 @@ name: Create Release Tag
 on:
   workflow_dispatch:
     inputs:
+      package:
+        description: 'Package to release'
+        required: true
+        type: choice
+        options:
+          - blazor
+          - restclient
       version:
         description: 'SemVer version (without v prefix, e.g. 1.0.0)'
         required: true
@@ -32,10 +39,10 @@ jobs:
         id: tag
         run: |
           if [ "${{ inputs.prerelease }}" = "true" ]; then
-            EXISTING=$(git tag -l "v${{ inputs.version }}-preview.*" | wc -l)
-            TAG_NAME="v${{ inputs.version }}-preview.${EXISTING}"
+            EXISTING=$(git tag -l "${{ inputs.package }}/v${{ inputs.version }}-preview.*" | wc -l)
+            TAG_NAME="${{ inputs.package }}/v${{ inputs.version }}-preview.${EXISTING}"
           else
-            TAG_NAME="v${{ inputs.version }}"
+            TAG_NAME="${{ inputs.package }}/v${{ inputs.version }}"
           fi
           echo "TAG_NAME=${TAG_NAME}" >> $GITHUB_OUTPUT
       - name: Check tag does not exist

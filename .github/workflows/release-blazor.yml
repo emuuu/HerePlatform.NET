@@ -1,0 +1,40 @@
+name: Release Blazor
+on:
+  push:
+    tags: ['blazor/v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+      - run: dotnet restore
+      - run: dotnet build -c Release --no-restore
+      - run: dotnet test -c Release --no-build
+        working-directory: tests/HerePlatformComponents.Tests
+      - name: Extract version from tag
+        run: echo "VERSION=${GITHUB_REF_NAME#blazor/v}" >> $GITHUB_ENV
+      - name: Pack
+        run: dotnet pack HerePlatformComponents/HerePlatformComponents.csproj -c Release --no-build -p:Version=$VERSION -o ./artifacts
+      - name: Push to NuGet
+        run: |
+          dotnet nuget push ./artifacts/*.nupkg --skip-duplicate -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}
+          dotnet nuget push ./artifacts/*.snupkg --skip-duplicate -s https://api.nuget.org/v3/index.json -k ${{ secrets.NUGET_API_KEY }}
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [[ "$VERSION" == *"-preview"* ]]; then
+            gh release create ${{ github.ref_name }} ./artifacts/*.nupkg --generate-notes --prerelease --title "BlazorHerePlatform v$VERSION"
+          else
+            gh release create ${{ github.ref_name }} ./artifacts/*.nupkg --generate-notes --title "BlazorHerePlatform v$VERSION"
+          fi
