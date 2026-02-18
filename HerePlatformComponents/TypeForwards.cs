@@ -152,6 +152,7 @@ using HerePlatform.Core.TourPlanning;
 [assembly: TypeForwardedTo(typeof(WktParser))]
 
 // Exceptions
+[assembly: TypeForwardedTo(typeof(HereApiException))]
 [assembly: TypeForwardedTo(typeof(HereApiAuthenticationException))]
 
 // Service attributes
