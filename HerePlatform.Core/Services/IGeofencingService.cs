@@ -1,7 +1,5 @@
 using HerePlatform.Core.Coordinates;
 using HerePlatform.Core.Geofencing;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace HerePlatform.Core.Services;
 
@@ -15,5 +13,5 @@ public interface IGeofencingService
     /// </summary>
     /// <param name="position">Position to check.</param>
     /// <param name="zones">Geofence zones (polygon or circle).</param>
-    Task<GeofenceCheckResult> CheckPositionAsync(LatLngLiteral position, List<GeofenceZone> zones);
+    Task<GeofenceCheckResult> CheckPositionAsync(LatLngLiteral position, List<GeofenceZone> zones, CancellationToken cancellationToken = default);
 }

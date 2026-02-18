@@ -20,7 +20,7 @@ public class RoutingService : IRoutingService
         _js = js;
     }
 
-    public async Task<RoutingResult> CalculateRouteAsync(RoutingRequest request)
+    public async Task<RoutingResult> CalculateRouteAsync(RoutingRequest request, CancellationToken cancellationToken = default)
     {
         RoutingResult? result;
         try

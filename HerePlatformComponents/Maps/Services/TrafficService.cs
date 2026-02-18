@@ -1,6 +1,7 @@
 using HerePlatform.Core.Services;
 using HerePlatform.Core.Traffic;
 using Microsoft.JSInterop;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace HerePlatformComponents.Maps.Services;
@@ -17,7 +18,7 @@ public class TrafficService : ITrafficService
         _js = js;
     }
 
-    public async Task<TrafficIncidentsResult> GetTrafficIncidentsAsync(double north, double south, double east, double west)
+    public async Task<TrafficIncidentsResult> GetTrafficIncidentsAsync(double north, double south, double east, double west, CancellationToken cancellationToken = default)
     {
         TrafficIncidentsResult? result;
         try
@@ -35,7 +36,7 @@ public class TrafficService : ITrafficService
         return result ?? new TrafficIncidentsResult();
     }
 
-    public async Task<TrafficFlowResult> GetTrafficFlowAsync(double north, double south, double east, double west)
+    public async Task<TrafficFlowResult> GetTrafficFlowAsync(double north, double south, double east, double west, CancellationToken cancellationToken = default)
     {
         TrafficFlowResult? result;
         try

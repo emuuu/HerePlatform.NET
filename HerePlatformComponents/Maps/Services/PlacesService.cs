@@ -19,7 +19,7 @@ public class PlacesService : IPlacesService
         _js = js;
     }
 
-    public async Task<PlacesResult> DiscoverAsync(PlacesRequest request)
+    public async Task<PlacesResult> DiscoverAsync(PlacesRequest request, CancellationToken cancellationToken = default)
     {
         PlacesResult? result;
         try
@@ -39,7 +39,7 @@ public class PlacesService : IPlacesService
         return result ?? new PlacesResult();
     }
 
-    public async Task<PlacesResult> BrowseAsync(PlacesRequest request)
+    public async Task<PlacesResult> BrowseAsync(PlacesRequest request, CancellationToken cancellationToken = default)
     {
         PlacesResult? result;
         try
@@ -59,7 +59,7 @@ public class PlacesService : IPlacesService
         return result ?? new PlacesResult();
     }
 
-    public async Task<PlacesResult> LookupAsync(PlacesRequest request)
+    public async Task<PlacesResult> LookupAsync(PlacesRequest request, CancellationToken cancellationToken = default)
     {
         PlacesResult? result;
         try

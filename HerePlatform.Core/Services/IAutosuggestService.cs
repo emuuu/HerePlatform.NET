@@ -13,12 +13,14 @@ public interface IAutosuggestService
     /// </summary>
     /// <param name="query">Partial or full search text.</param>
     /// <param name="options">Optional parameters like language, limit, and geographic filter.</param>
-    Task<AutosuggestResult> SuggestAsync(string query, AutosuggestOptions? options = null);
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<AutosuggestResult> SuggestAsync(string query, AutosuggestOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get autocomplete suggestions for addresses and places (no position returned).
     /// </summary>
     /// <param name="query">Partial or full search text.</param>
     /// <param name="options">Optional parameters like language, limit, and geographic filter.</param>
-    Task<AutocompleteResult> AutocompleteAsync(string query, AutosuggestOptions? options = null);
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<AutocompleteResult> AutocompleteAsync(string query, AutosuggestOptions? options = null, CancellationToken cancellationToken = default);
 }

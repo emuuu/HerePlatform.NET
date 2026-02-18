@@ -3,6 +3,7 @@ using HerePlatform.Core.Geofencing;
 using HerePlatform.Core.Services;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace HerePlatformComponents.Maps.Services;
@@ -12,7 +13,7 @@ namespace HerePlatformComponents.Maps.Services;
 /// </summary>
 public class GeofencingService : IGeofencingService
 {
-    public Task<GeofenceCheckResult> CheckPositionAsync(LatLngLiteral position, List<GeofenceZone> zones)
+    public Task<GeofenceCheckResult> CheckPositionAsync(LatLngLiteral position, List<GeofenceZone> zones, CancellationToken cancellationToken = default)
     {
         var matchedIds = new List<string>();
 

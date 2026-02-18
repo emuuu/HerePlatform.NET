@@ -1,5 +1,4 @@
 using HerePlatform.Core.Isoline;
-using System.Threading.Tasks;
 
 namespace HerePlatform.Core.Services;
 
@@ -12,5 +11,5 @@ public interface IIsolineService
     /// <summary>
     /// Compute one or more isolines from a center point within given range values.
     /// </summary>
-    Task<IsolineResult> CalculateIsolineAsync(IsolineRequest request);
+    Task<IsolineResult> CalculateIsolineAsync(IsolineRequest request, CancellationToken cancellationToken = default);
 }

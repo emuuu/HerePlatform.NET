@@ -1,6 +1,5 @@
 using HerePlatform.Core.Coordinates;
 using HerePlatform.Core.Geocoding;
-using System.Threading.Tasks;
 
 namespace HerePlatform.Core.Services;
 
@@ -15,12 +14,14 @@ public interface IGeocodingService
     /// </summary>
     /// <param name="query">Free-text address or place name.</param>
     /// <param name="options">Optional geocoding parameters.</param>
-    Task<GeocodeResult> GeocodeAsync(string query, GeocodeOptions? options = null);
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<GeocodeResult> GeocodeAsync(string query, GeocodeOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Convert geographic coordinates into an address.
     /// </summary>
     /// <param name="position">Geographic coordinates (lat, lng).</param>
     /// <param name="options">Optional geocoding parameters.</param>
-    Task<GeocodeResult> ReverseGeocodeAsync(LatLngLiteral position, GeocodeOptions? options = null);
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<GeocodeResult> ReverseGeocodeAsync(LatLngLiteral position, GeocodeOptions? options = null, CancellationToken cancellationToken = default);
 }

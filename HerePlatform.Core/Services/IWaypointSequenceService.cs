@@ -1,5 +1,4 @@
 using HerePlatform.Core.WaypointSequence;
-using System.Threading.Tasks;
 
 namespace HerePlatform.Core.Services;
 
@@ -12,5 +11,5 @@ public interface IWaypointSequenceService
     /// <summary>
     /// Given a start, end, and intermediate waypoints, find the optimal visiting order.
     /// </summary>
-    Task<WaypointSequenceResult> OptimizeSequenceAsync(WaypointSequenceRequest request);
+    Task<WaypointSequenceResult> OptimizeSequenceAsync(WaypointSequenceRequest request, CancellationToken cancellationToken = default);
 }

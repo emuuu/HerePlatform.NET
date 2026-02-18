@@ -12,5 +12,6 @@ public interface IWeatherService
     /// Get weather observations and/or forecasts for a location.
     /// </summary>
     /// <param name="request">Location, products, and optional language.</param>
-    Task<WeatherResult> GetWeatherAsync(WeatherRequest request);
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<WeatherResult> GetWeatherAsync(WeatherRequest request, CancellationToken cancellationToken = default);
 }

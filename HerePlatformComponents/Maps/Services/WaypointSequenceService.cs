@@ -1,6 +1,7 @@
 using HerePlatform.Core.Services;
 using HerePlatform.Core.WaypointSequence;
 using Microsoft.JSInterop;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace HerePlatformComponents.Maps.Services;
@@ -17,7 +18,7 @@ public class WaypointSequenceService : IWaypointSequenceService
         _js = js;
     }
 
-    public async Task<WaypointSequenceResult> OptimizeSequenceAsync(WaypointSequenceRequest request)
+    public async Task<WaypointSequenceResult> OptimizeSequenceAsync(WaypointSequenceRequest request, CancellationToken cancellationToken = default)
     {
         WaypointSequenceResult? result;
         try

@@ -1,6 +1,5 @@
 using HerePlatform.Core.Coordinates;
 using HerePlatform.Core.Transit;
-using System.Threading.Tasks;
 
 namespace HerePlatform.Core.Services;
 
@@ -14,12 +13,14 @@ public interface IPublicTransitService
     /// Get live departures from the nearest transit station to a given position.
     /// </summary>
     /// <param name="position">Position to find nearest station departures.</param>
-    Task<TransitDeparturesResult> GetDeparturesAsync(LatLngLiteral position);
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<TransitDeparturesResult> GetDeparturesAsync(LatLngLiteral position, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Search for transit stations within a given radius around a position.
     /// </summary>
     /// <param name="position">Center of search area.</param>
     /// <param name="radiusMeters">Search radius in meters (default: 500).</param>
-    Task<TransitStationsResult> SearchStationsAsync(LatLngLiteral position, double radiusMeters = 500);
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<TransitStationsResult> SearchStationsAsync(LatLngLiteral position, double radiusMeters = 500, CancellationToken cancellationToken = default);
 }

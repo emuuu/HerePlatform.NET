@@ -19,7 +19,7 @@ public class MatrixRoutingService : IMatrixRoutingService
         _js = js;
     }
 
-    public async Task<MatrixRoutingResult> CalculateMatrixAsync(MatrixRoutingRequest request)
+    public async Task<MatrixRoutingResult> CalculateMatrixAsync(MatrixRoutingRequest request, CancellationToken cancellationToken = default)
     {
         MatrixRoutingResult? result;
         try

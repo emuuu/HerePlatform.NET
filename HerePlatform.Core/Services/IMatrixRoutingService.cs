@@ -1,5 +1,4 @@
 using HerePlatform.Core.MatrixRouting;
-using System.Threading.Tasks;
 
 namespace HerePlatform.Core.Services;
 
@@ -12,5 +11,5 @@ public interface IMatrixRoutingService
     /// <summary>
     /// Calculate a routing matrix between multiple origins and destinations. Returns duration and distance for each origin-destination pair.
     /// </summary>
-    Task<MatrixRoutingResult> CalculateMatrixAsync(MatrixRoutingRequest request);
+    Task<MatrixRoutingResult> CalculateMatrixAsync(MatrixRoutingRequest request, CancellationToken cancellationToken = default);
 }

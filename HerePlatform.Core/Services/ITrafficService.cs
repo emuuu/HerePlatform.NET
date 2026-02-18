@@ -1,5 +1,4 @@
 using HerePlatform.Core.Traffic;
-using System.Threading.Tasks;
 
 namespace HerePlatform.Core.Services;
 
@@ -16,7 +15,8 @@ public interface ITrafficService
     /// <param name="south">Southern latitude of bounding box.</param>
     /// <param name="east">Eastern longitude of bounding box.</param>
     /// <param name="west">Western longitude of bounding box.</param>
-    Task<TrafficIncidentsResult> GetTrafficIncidentsAsync(double north, double south, double east, double west);
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<TrafficIncidentsResult> GetTrafficIncidentsAsync(double north, double south, double east, double west, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get real-time traffic flow data (speed, jam factor) within a bounding box.
@@ -25,5 +25,6 @@ public interface ITrafficService
     /// <param name="south">Southern latitude of bounding box.</param>
     /// <param name="east">Eastern longitude of bounding box.</param>
     /// <param name="west">Western longitude of bounding box.</param>
-    Task<TrafficFlowResult> GetTrafficFlowAsync(double north, double south, double east, double west);
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<TrafficFlowResult> GetTrafficFlowAsync(double north, double south, double east, double west, CancellationToken cancellationToken = default);
 }

@@ -1,5 +1,4 @@
 using HerePlatform.Core.Places;
-using System.Threading.Tasks;
 
 namespace HerePlatform.Core.Services;
 
@@ -12,15 +11,15 @@ public interface IPlacesService
     /// <summary>
     /// Free-text search for places near a given position.
     /// </summary>
-    Task<PlacesResult> DiscoverAsync(PlacesRequest request);
+    Task<PlacesResult> DiscoverAsync(PlacesRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Browse places by category near a given position.
     /// </summary>
-    Task<PlacesResult> BrowseAsync(PlacesRequest request);
+    Task<PlacesResult> BrowseAsync(PlacesRequest request, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Look up a single place by its HERE Place ID.
     /// </summary>
-    Task<PlacesResult> LookupAsync(PlacesRequest request);
+    Task<PlacesResult> LookupAsync(PlacesRequest request, CancellationToken cancellationToken = default);
 }

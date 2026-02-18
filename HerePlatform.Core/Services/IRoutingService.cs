@@ -1,5 +1,4 @@
 using HerePlatform.Core.Routing;
-using System.Threading.Tasks;
 
 namespace HerePlatform.Core.Services;
 
@@ -13,5 +12,5 @@ public interface IRoutingService
     /// <summary>
     /// Calculate a route between an origin and destination, with optional via waypoints, avoidance features, truck, and EV parameters.
     /// </summary>
-    Task<RoutingResult> CalculateRouteAsync(RoutingRequest request);
+    Task<RoutingResult> CalculateRouteAsync(RoutingRequest request, CancellationToken cancellationToken = default);
 }

@@ -2,6 +2,7 @@ using HerePlatform.Core.Coordinates;
 using HerePlatform.Core.Geocoding;
 using HerePlatform.Core.Services;
 using Microsoft.JSInterop;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace HerePlatformComponents.Maps.Services;
@@ -18,7 +19,7 @@ public class GeocodingService : IGeocodingService
         _js = js;
     }
 
-    public async Task<GeocodeResult> GeocodeAsync(string query, GeocodeOptions? options = null)
+    public async Task<GeocodeResult> GeocodeAsync(string query, GeocodeOptions? options = null, CancellationToken cancellationToken = default)
     {
         GeocodeResult? result;
         try
@@ -36,7 +37,7 @@ public class GeocodingService : IGeocodingService
         return result ?? new GeocodeResult();
     }
 
-    public async Task<GeocodeResult> ReverseGeocodeAsync(LatLngLiteral position, GeocodeOptions? options = null)
+    public async Task<GeocodeResult> ReverseGeocodeAsync(LatLngLiteral position, GeocodeOptions? options = null, CancellationToken cancellationToken = default)
     {
         GeocodeResult? result;
         try

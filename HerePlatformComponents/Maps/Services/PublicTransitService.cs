@@ -2,6 +2,7 @@ using HerePlatform.Core.Coordinates;
 using HerePlatform.Core.Services;
 using HerePlatform.Core.Transit;
 using Microsoft.JSInterop;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace HerePlatformComponents.Maps.Services;
@@ -18,7 +19,7 @@ public class PublicTransitService : IPublicTransitService
         _js = js;
     }
 
-    public async Task<TransitDeparturesResult> GetDeparturesAsync(LatLngLiteral position)
+    public async Task<TransitDeparturesResult> GetDeparturesAsync(LatLngLiteral position, CancellationToken cancellationToken = default)
     {
         TransitDeparturesResult? result;
         try
@@ -36,7 +37,7 @@ public class PublicTransitService : IPublicTransitService
         return result ?? new TransitDeparturesResult();
     }
 
-    public async Task<TransitStationsResult> SearchStationsAsync(LatLngLiteral position, double radiusMeters = 500)
+    public async Task<TransitStationsResult> SearchStationsAsync(LatLngLiteral position, double radiusMeters = 500, CancellationToken cancellationToken = default)
     {
         TransitStationsResult? result;
         try

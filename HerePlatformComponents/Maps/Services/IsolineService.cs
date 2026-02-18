@@ -20,7 +20,7 @@ public class IsolineService : IIsolineService
         _js = js;
     }
 
-    public async Task<IsolineResult> CalculateIsolineAsync(IsolineRequest request)
+    public async Task<IsolineResult> CalculateIsolineAsync(IsolineRequest request, CancellationToken cancellationToken = default)
     {
         IsolineResult? result;
         try
