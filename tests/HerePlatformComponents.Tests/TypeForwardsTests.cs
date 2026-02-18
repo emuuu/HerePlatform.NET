@@ -71,10 +71,10 @@ public class TypeForwardsTests
     [Test]
     public void ExpectedForwardCount_Matches()
     {
-        // 3 Coordinates + 1 Serialization + 13 Routing + 3 Geocoding + 5 Search
+        // 3 Coordinates + 1 Serialization + 13 Routing + 3 Geocoding + 7 Search
         // + 3 MatrixRouting + 4 Isoline + 4 Traffic + 4 Transit + 4 Places
-        // + 2 Geofencing + 2 WaypointSequence + 3 Utilities + 1 Exceptions + 1 Attributes + 9 Services = 62
-        Assert.That(ForwardedTypes, Has.Length.EqualTo(62),
+        // + 2 Geofencing + 4 RouteMatching + 5 Weather + 2 WaypointSequence + 3 Utilities + 1 Exceptions + 1 Attributes + 12 Services = 76
+        Assert.That(ForwardedTypes, Has.Length.EqualTo(76),
             "TypeForwardedTo count changed — update this test if types were added/removed");
     }
 }

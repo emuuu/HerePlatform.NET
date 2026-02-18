@@ -44,6 +44,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IPublicTransitService, RestPublicTransitService>();
         services.AddSingleton<IWaypointSequenceService, RestWaypointSequenceService>();
         services.AddSingleton<IGeofencingService, RestGeofencingService>();
+        services.AddSingleton<IAutosuggestService, RestAutosuggestService>();
+        services.AddSingleton<IWeatherService, RestWeatherService>();
+        services.AddSingleton<IRouteMatchingService, RestRouteMatchingService>();
 
         return services;
     }

@@ -13,6 +13,9 @@ public static class ServiceDefinitions
         new("Public Transit", "services/public-transit", "Search for transit stations and get live departure information.", "IPublicTransitService"),
         new("Waypoint Sequence", "services/waypoint-sequence", "Optimize the order of waypoints for minimum travel time or distance.", "IWaypointSequenceService"),
         new("Geofencing", "services/geofencing", "Client-side point-in-polygon/circle checks \u2014 no HTTP call required.", "IGeofencingService"),
+        new("Autosuggest", "services/autosuggest", "Autosuggest and autocomplete for addresses and places as the user types.", "IAutosuggestService"),
+        new("Weather", "services/weather", "Current weather observations and forecasts for any location.", "IWeatherService"),
+        new("Route Matching", "services/route-matching", "Match GPS traces to road segments for fleet tracking and analysis.", "IRouteMatchingService"),
     ];
 }
 

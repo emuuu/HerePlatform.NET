@@ -13,6 +13,8 @@ using HerePlatform.Core.Traffic;
 using HerePlatform.Core.Transit;
 using HerePlatform.Core.Exceptions;
 using HerePlatform.Core.Utilities;
+using HerePlatform.Core.RouteMatching;
+using HerePlatform.Core.Weather;
 using HerePlatform.Core.WaypointSequence;
 
 // Coordinates
@@ -49,6 +51,8 @@ using HerePlatform.Core.WaypointSequence;
 [assembly: TypeForwardedTo(typeof(AutosuggestHighlights))]
 [assembly: TypeForwardedTo(typeof(AutosuggestHighlightRange))]
 [assembly: TypeForwardedTo(typeof(AutosuggestOptions))]
+[assembly: TypeForwardedTo(typeof(AutosuggestResult))]
+[assembly: TypeForwardedTo(typeof(AutocompleteResult))]
 
 // MatrixRouting
 [assembly: TypeForwardedTo(typeof(MatrixRoutingRequest))]
@@ -83,6 +87,19 @@ using HerePlatform.Core.WaypointSequence;
 [assembly: TypeForwardedTo(typeof(GeofenceZone))]
 [assembly: TypeForwardedTo(typeof(GeofenceCheckResult))]
 
+// RouteMatching
+[assembly: TypeForwardedTo(typeof(TracePoint))]
+[assembly: TypeForwardedTo(typeof(RouteMatchingRequest))]
+[assembly: TypeForwardedTo(typeof(MatchedLink))]
+[assembly: TypeForwardedTo(typeof(RouteMatchingResult))]
+
+// Weather
+[assembly: TypeForwardedTo(typeof(WeatherProduct))]
+[assembly: TypeForwardedTo(typeof(WeatherRequest))]
+[assembly: TypeForwardedTo(typeof(WeatherObservation))]
+[assembly: TypeForwardedTo(typeof(WeatherForecast))]
+[assembly: TypeForwardedTo(typeof(WeatherResult))]
+
 // WaypointSequence
 [assembly: TypeForwardedTo(typeof(WaypointSequenceRequest))]
 [assembly: TypeForwardedTo(typeof(WaypointSequenceResult))]
@@ -108,3 +125,6 @@ using HerePlatform.Core.WaypointSequence;
 [assembly: TypeForwardedTo(typeof(ITrafficService))]
 [assembly: TypeForwardedTo(typeof(IWaypointSequenceService))]
 [assembly: TypeForwardedTo(typeof(IGeofencingService))]
+[assembly: TypeForwardedTo(typeof(IAutosuggestService))]
+[assembly: TypeForwardedTo(typeof(IWeatherService))]
+[assembly: TypeForwardedTo(typeof(IRouteMatchingService))]

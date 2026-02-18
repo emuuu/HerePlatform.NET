@@ -1,0 +1,155 @@
+@page "/services/autosuggest"
+@inject IAutosuggestService AutosuggestService
+@inject IRestApiDocService DocService
+
+<PageTitle>Autosuggest — HerePlatform.RestClient Docs</PageTitle>
+
+<div class="doc-content">
+    <h1>IAutosuggestService</h1>
+    @if (_apiName is not null)
+    {
+        <span class="badge bg-info text-dark mb-2">@_apiName @_apiVersion</span>
+    }
+    <p class="lead">@_serviceDescription</p>
+    <ApiKeyWarning />
+
+    @* ── SuggestAsync ── *@
+    <h2>SuggestAsync</h2>
+    <p>@_suggestMethodDescription</p>
+    <ParamTable Parameters="@_suggestParams" />
+
+    <h5>Example Response (Success)</h5>
+    <CodeBlock Language="json" Code="@_suggestSuccessExample" />
+
+    <TryItPanel TResult="AutosuggestResult" OnExecute="ExecuteSuggest">
+        <FormContent>
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <label class="form-label">Query</label>
+                    <input class="form-control form-control-sm" @bind="_suggestQuery" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Limit</label>
+                    <input type="number" class="form-control form-control-sm" @bind="_suggestLimit" min="1" max="20" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Lang</label>
+                    <input class="form-control form-control-sm" @bind="_suggestLang" placeholder="de" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Country</label>
+                    <input class="form-control form-control-sm" @bind="_suggestIn" placeholder="countryCode:DEU" />
+                </div>
+            </div>
+        </FormContent>
+    </TryItPanel>
+
+    @* ── AutocompleteAsync ── *@
+    <h2>AutocompleteAsync</h2>
+    <p>@_autocompleteMethodDescription</p>
+    <ParamTable Parameters="@_autocompleteParams" />
+
+    <h5>Example Response (Success)</h5>
+    <CodeBlock Language="json" Code="@_autocompleteSuccessExample" />
+
+    <TryItPanel TResult="AutocompleteResult" OnExecute="ExecuteAutocomplete">
+        <FormContent>
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <label class="form-label">Query</label>
+                    <input class="form-control form-control-sm" @bind="_autocompleteQuery" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Limit</label>
+                    <input type="number" class="form-control form-control-sm" @bind="_autocompleteLimit" min="1" max="20" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Lang</label>
+                    <input class="form-control form-control-sm" @bind="_autocompleteLang" placeholder="de" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Country</label>
+                    <input class="form-control form-control-sm" @bind="_autocompleteIn" placeholder="countryCode:DEU" />
+                </div>
+            </div>
+        </FormContent>
+    </TryItPanel>
+</div>
+
+@code {
+    // ── Suggest form state ──
+    private string _suggestQuery = "Brandenburger";
+    private int _suggestLimit = 5;
+    private string? _suggestLang = "de";
+    private string? _suggestIn = "countryCode:DEU";
+
+    // ── Autocomplete form state ──
+    private string _autocompleteQuery = "Invalidenstr";
+    private int _autocompleteLimit = 5;
+    private string? _autocompleteLang = "de";
+    private string? _autocompleteIn = "countryCode:DEU";
+
+    private Task<AutosuggestResult> ExecuteSuggest() =>
+        AutosuggestService.SuggestAsync(_suggestQuery, new AutosuggestOptions
+        {
+            Limit = _suggestLimit,
+            Lang = string.IsNullOrWhiteSpace(_suggestLang) ? null : _suggestLang,
+            In = string.IsNullOrWhiteSpace(_suggestIn) ? null : _suggestIn
+        });
+
+    private Task<AutocompleteResult> ExecuteAutocomplete() =>
+        AutosuggestService.AutocompleteAsync(_autocompleteQuery, new AutosuggestOptions
+        {
+            Limit = _autocompleteLimit,
+            Lang = string.IsNullOrWhiteSpace(_autocompleteLang) ? null : _autocompleteLang,
+            In = string.IsNullOrWhiteSpace(_autocompleteIn) ? null : _autocompleteIn
+        });
+
+    // ── Generated parameter documentation ──
+    private string _serviceDescription = "";
+    private string _suggestMethodDescription = "";
+    private string _autocompleteMethodDescription = "";
+    private string? _apiName;
+    private string? _apiVersion;
+    private List<ParamDoc> _suggestParams = [];
+    private List<ParamDoc> _autocompleteParams = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await DocService.InitializeAsync();
+        var svc = DocService.GetService(nameof(IAutosuggestService));
+        _serviceDescription = svc?.Description ?? "";
+        _apiName = svc?.ApiName;
+        _apiVersion = svc?.ApiVersion;
+        _suggestMethodDescription = DocService.GetMethod(nameof(IAutosuggestService), nameof(IAutosuggestService.SuggestAsync))?.Description ?? "";
+        _autocompleteMethodDescription = DocService.GetMethod(nameof(IAutosuggestService), nameof(IAutosuggestService.AutocompleteAsync))?.Description ?? "";
+        _suggestParams = DocService.GetMethodParams(nameof(IAutosuggestService), nameof(IAutosuggestService.SuggestAsync));
+        _autocompleteParams = DocService.GetMethodParams(nameof(IAutosuggestService), nameof(IAutosuggestService.AutocompleteAsync));
+    }
+
+    // ── Static examples ──
+    private const string _suggestSuccessExample = @"{
+  ""items"": [
+    {
+      ""title"": ""Brandenburger Tor, Berlin"",
+      ""id"": ""here:pds:place:276u33db-abc123"",
+      ""resultType"": ""place"",
+      ""address"": { ""label"": ""Pariser Platz, 10117 Berlin, Deutschland"" },
+      ""position"": { ""lat"": 52.5163, ""lng"": 13.3777 },
+      ""highlights"": { ""title"": [{ ""start"": 0, ""end"": 13 }] }
+    }
+  ]
+}";
+
+    private const string _autocompleteSuccessExample = @"{
+  ""items"": [
+    {
+      ""title"": ""Invalidenstraße, Berlin"",
+      ""id"": ""here:pds:place:276u33db-def456"",
+      ""resultType"": ""street"",
+      ""address"": { ""label"": ""Invalidenstraße, 10115 Berlin, Deutschland"" },
+      ""highlights"": { ""title"": [{ ""start"": 0, ""end"": 12 }] }
+    }
+  ]
+}";
+}
