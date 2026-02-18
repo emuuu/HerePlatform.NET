@@ -68,7 +68,7 @@ public class MatrixRoutingServiceTests
 
         await service.CalculateMatrixAsync(request);
 
-        var body = await handler.LastRequest!.Content!.ReadAsStringAsync();
+        var body = handler.LastRequestBody;
         Assert.That(body, Does.Contain("\"lat\":52.5"));
         Assert.That(body, Does.Contain("\"lng\":13.4"));
         Assert.That(body, Does.Contain("\"profile\":\"truck\""));

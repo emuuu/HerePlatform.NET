@@ -1,6 +1,186 @@
 {
   "services": [
     {
+      "interfaceName": "IAutosuggestService",
+      "description": "Autosuggest and autocomplete via the HERE Geocoding \u0026 Search API v7.",
+      "apiName": "Geocoding \u0026 Search API",
+      "apiVersion": "v7",
+      "methods": [
+        {
+          "name": "SuggestAsync",
+          "description": "Get location suggestions as the user types.",
+          "returnType": "AutosuggestResult",
+          "parameters": [
+            {
+              "name": "query",
+              "type": "string",
+              "required": true,
+              "description": "Partial or full search text."
+            },
+            {
+              "name": "options",
+              "type": "AutosuggestOptions?",
+              "required": false,
+              "description": "Optional parameters like language, limit, and geographic filter.",
+              "properties": [
+                {
+                  "name": "Limit",
+                  "type": "int",
+                  "required": false,
+                  "description": "Maximum number of results to return. Default: 5.",
+                  "default": "5"
+                },
+                {
+                  "name": "Lang",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Language for results (BCP 47 tag, e.g. \u0022de\u0022, \u0022en\u0022). Default: \u0022de\u0022.",
+                  "default": "\u0022de\u0022"
+                },
+                {
+                  "name": "In",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Geographic filter expression (e.g. \u0022countryCode:DEU\u0022). Default: \u0022countryCode:DEU\u0022.",
+                  "default": "\u0022countryCode:DEU\u0022"
+                },
+                {
+                  "name": "At",
+                  "type": "LatLngLiteral?",
+                  "required": false,
+                  "description": "Geographic bias location. Results near this position are ranked higher.",
+                  "default": "null",
+                  "properties": []
+                }
+              ]
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "Cancellation token.",
+              "default": "null"
+            }
+          ]
+        },
+        {
+          "name": "AutocompleteAsync",
+          "description": "Get autocomplete suggestions for addresses and places (no position returned).",
+          "returnType": "AutocompleteResult",
+          "parameters": [
+            {
+              "name": "query",
+              "type": "string",
+              "required": true,
+              "description": "Partial or full search text."
+            },
+            {
+              "name": "options",
+              "type": "AutosuggestOptions?",
+              "required": false,
+              "description": "Optional parameters like language, limit, and geographic filter.",
+              "properties": [
+                {
+                  "name": "Limit",
+                  "type": "int",
+                  "required": false,
+                  "description": "Maximum number of results to return. Default: 5.",
+                  "default": "5"
+                },
+                {
+                  "name": "Lang",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Language for results (BCP 47 tag, e.g. \u0022de\u0022, \u0022en\u0022). Default: \u0022de\u0022.",
+                  "default": "\u0022de\u0022"
+                },
+                {
+                  "name": "In",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Geographic filter expression (e.g. \u0022countryCode:DEU\u0022). Default: \u0022countryCode:DEU\u0022.",
+                  "default": "\u0022countryCode:DEU\u0022"
+                },
+                {
+                  "name": "At",
+                  "type": "LatLngLiteral?",
+                  "required": false,
+                  "description": "Geographic bias location. Results near this position are ranked higher.",
+                  "default": "null",
+                  "properties": []
+                }
+              ]
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "Cancellation token.",
+              "default": "null"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "interfaceName": "IEvChargePointsService",
+      "description": "Search for EV charging stations via the HERE EV Charge Points API v3.",
+      "apiName": "EV Charge Points API",
+      "apiVersion": "v3",
+      "methods": [
+        {
+          "name": "SearchStationsAsync",
+          "description": "Search for EV charging stations near a position.",
+          "returnType": "EvChargePointsResult",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "EvChargePointsRequest",
+              "required": true,
+              "description": "Request parameters for EV Charge Points API station search.",
+              "properties": [
+                {
+                  "name": "Position",
+                  "type": "LatLngLiteral",
+                  "required": true,
+                  "description": "Center position for proximity search.",
+                  "properties": []
+                },
+                {
+                  "name": "Radius",
+                  "type": "double",
+                  "required": false,
+                  "description": "Search radius in meters (default 5000).",
+                  "default": "5000"
+                },
+                {
+                  "name": "ConnectorTypes",
+                  "type": "List\u003CConnectorType\u003E?",
+                  "required": false,
+                  "description": "Optional filter for specific connector types.",
+                  "default": "null"
+                },
+                {
+                  "name": "MaxResults",
+                  "type": "int",
+                  "required": false,
+                  "description": "Maximum number of results (default 20).",
+                  "default": "20"
+                }
+              ]
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "",
+              "default": "null"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "interfaceName": "IGeocodingService",
       "description": "Forward and reverse geocoding via the HERE Geocoding \u0026 Search API v7.",
       "apiName": "Geocoding \u0026 Search API",
@@ -45,6 +225,13 @@
                   "default": "null"
                 }
               ]
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "Cancellation token.",
+              "default": "null"
             }
           ]
         },
@@ -88,6 +275,13 @@
                   "default": "null"
                 }
               ]
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "Cancellation token.",
+              "default": "null"
             }
           ]
         }
@@ -114,6 +308,106 @@
               "type": "List\u003CGeofenceZone\u003E",
               "required": true,
               "description": "Geofence zones (polygon or circle)."
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "",
+              "default": "null"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "interfaceName": "IIntermodalRoutingService",
+      "description": "Calculate combined transport routes via the HERE Intermodal Routing API v8.",
+      "apiName": "Intermodal Routing API",
+      "apiVersion": "v8",
+      "methods": [
+        {
+          "name": "CalculateRouteAsync",
+          "description": "Calculate an intermodal route combining walking, transit, and other modes.",
+          "returnType": "IntermodalRoutingResult",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "IntermodalRoutingRequest",
+              "required": true,
+              "description": "Request parameters for the Intermodal Routing API.",
+              "properties": [
+                {
+                  "name": "Origin",
+                  "type": "LatLngLiteral",
+                  "required": true,
+                  "description": "Starting point.",
+                  "properties": []
+                },
+                {
+                  "name": "Destination",
+                  "type": "LatLngLiteral",
+                  "required": true,
+                  "description": "End point.",
+                  "properties": []
+                },
+                {
+                  "name": "DepartAt",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Departure time in ISO 8601 format (e.g. \u00222024-01-15T08:00:00\u0022).",
+                  "default": "null"
+                },
+                {
+                  "name": "ArriveAt",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Arrival time in ISO 8601 format.",
+                  "default": "null"
+                },
+                {
+                  "name": "Alternatives",
+                  "type": "int",
+                  "required": false,
+                  "description": "Number of alternative routes to calculate.",
+                  "default": "0"
+                },
+                {
+                  "name": "ReturnPolyline",
+                  "type": "bool",
+                  "required": false,
+                  "description": "Whether to return polylines for each section (default true).",
+                  "default": "true"
+                },
+                {
+                  "name": "ReturnActions",
+                  "type": "bool",
+                  "required": false,
+                  "description": "Whether to return turn-by-turn actions.",
+                  "default": "false"
+                },
+                {
+                  "name": "ReturnTravelSummary",
+                  "type": "bool",
+                  "required": false,
+                  "description": "Whether to return travel summary per section (default true).",
+                  "default": "true"
+                },
+                {
+                  "name": "Lang",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Language for results (e.g. \u0022en\u0022, \u0022de\u0022).",
+                  "default": "null"
+                }
+              ]
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "",
+              "default": "null"
             }
           ]
         }
@@ -186,6 +480,92 @@
                   "default": "null"
                 }
               ]
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "",
+              "default": "null"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "interfaceName": "IMapImageService",
+      "description": "Generate static map images via the HERE Map Image API v3.",
+      "apiName": "Map Image API",
+      "apiVersion": "v3",
+      "methods": [
+        {
+          "name": "GetImageAsync",
+          "description": "Get a static map image as a byte array.",
+          "returnType": "Byte[]",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "MapImageRequest",
+              "required": true,
+              "description": "Request parameters for the Map Image API.",
+              "properties": [
+                {
+                  "name": "Center",
+                  "type": "LatLngLiteral",
+                  "required": true,
+                  "description": "Center position of the map image.",
+                  "properties": []
+                },
+                {
+                  "name": "Zoom",
+                  "type": "int",
+                  "required": false,
+                  "description": "Zoom level (default 12).",
+                  "default": "12"
+                },
+                {
+                  "name": "Width",
+                  "type": "int",
+                  "required": false,
+                  "description": "Image width in pixels (default 512).",
+                  "default": "512"
+                },
+                {
+                  "name": "Height",
+                  "type": "int",
+                  "required": false,
+                  "description": "Image height in pixels (default 512).",
+                  "default": "512"
+                },
+                {
+                  "name": "Format",
+                  "type": "MapImageFormat",
+                  "required": false,
+                  "description": "Image output format (default PNG).",
+                  "default": "Png"
+                },
+                {
+                  "name": "Style",
+                  "type": "MapImageStyle",
+                  "required": false,
+                  "description": "Map style (default explore.day).",
+                  "default": "Default"
+                },
+                {
+                  "name": "Ppi",
+                  "type": "int",
+                  "required": false,
+                  "description": "Pixels per inch scaling factor (default 72). Use 250 or 320 for high-DPI.",
+                  "default": "72"
+                }
+              ]
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "",
+              "default": "null"
             }
           ]
         }
@@ -242,6 +622,13 @@
                   "default": "null"
                 }
               ]
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "",
+              "default": "null"
             }
           ]
         }
@@ -315,6 +702,13 @@
                   "default": "null"
                 }
               ]
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "",
+              "default": "null"
             }
           ]
         },
@@ -380,6 +774,13 @@
                   "default": "null"
                 }
               ]
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "",
+              "default": "null"
             }
           ]
         },
@@ -445,6 +846,13 @@
                   "default": "null"
                 }
               ]
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "",
+              "default": "null"
             }
           ]
         }
@@ -467,6 +875,13 @@
               "required": true,
               "description": "Position to find nearest station departures.",
               "properties": []
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "Cancellation token.",
+              "default": "null"
             }
           ]
         },
@@ -488,6 +903,57 @@
               "required": false,
               "description": "Search radius in meters (default: 500).",
               "default": "500"
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "Cancellation token.",
+              "default": "null"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "interfaceName": "IRouteMatchingService",
+      "description": "Match GPS traces to road segments via the HERE Route Matching API v8.",
+      "apiName": "Route Matching API",
+      "apiVersion": "v8",
+      "methods": [
+        {
+          "name": "MatchRouteAsync",
+          "description": "Match a sequence of GPS trace points to road segments.",
+          "returnType": "RouteMatchingResult",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "RouteMatchingRequest",
+              "required": true,
+              "description": "GPS trace and transport mode.",
+              "properties": [
+                {
+                  "name": "TracePoints",
+                  "type": "List\u003CTracePoint\u003E?",
+                  "required": false,
+                  "description": "GPS trace points to match against the road network.",
+                  "default": "null"
+                },
+                {
+                  "name": "TransportMode",
+                  "type": "TransportMode",
+                  "required": false,
+                  "description": "Transport mode for route matching.",
+                  "default": "Car"
+                }
+              ]
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "Cancellation token.",
+              "default": "null"
             }
           ]
         }
@@ -711,6 +1177,75 @@
                   ]
                 }
               ]
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "",
+              "default": "null"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "interfaceName": "ITourPlanningService",
+      "description": "Optimize fleet vehicle tours via the HERE Tour Planning API v3.",
+      "apiName": "Tour Planning API",
+      "apiVersion": "v3",
+      "methods": [
+        {
+          "name": "SolveAsync",
+          "description": "Solve a tour planning problem synchronously.",
+          "returnType": "TourPlanningResult",
+          "parameters": [
+            {
+              "name": "problem",
+              "type": "TourPlanningProblem",
+              "required": true,
+              "description": "A tour planning problem to optimize vehicle routes for deliveries and pickups.",
+              "properties": [
+                {
+                  "name": "Plan",
+                  "type": "TourPlan?",
+                  "required": false,
+                  "description": "The plan containing jobs to be fulfilled.",
+                  "default": "null",
+                  "properties": [
+                    {
+                      "name": "Jobs",
+                      "type": "List\u003CTourJob\u003E?",
+                      "required": false,
+                      "description": "Jobs to schedule across the fleet.",
+                      "default": "null"
+                    }
+                  ]
+                },
+                {
+                  "name": "Fleet",
+                  "type": "TourFleet?",
+                  "required": false,
+                  "description": "The fleet of vehicles available.",
+                  "default": "null",
+                  "properties": [
+                    {
+                      "name": "Types",
+                      "type": "List\u003CTourVehicleType\u003E?",
+                      "required": false,
+                      "description": "Vehicle types available in the fleet.",
+                      "default": "null"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "",
+              "default": "null"
             }
           ]
         }
@@ -750,6 +1285,13 @@
               "type": "double",
               "required": true,
               "description": "Western longitude of bounding box."
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "Cancellation token.",
+              "default": "null"
             }
           ]
         },
@@ -781,6 +1323,13 @@
               "type": "double",
               "required": true,
               "description": "Western longitude of bounding box."
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "Cancellation token.",
+              "default": "null"
             }
           ]
         }
@@ -832,6 +1381,64 @@
                   "default": "Car"
                 }
               ]
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "",
+              "default": "null"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "interfaceName": "IWeatherService",
+      "description": "Weather observations and forecasts via the HERE Destination Weather API v3.",
+      "apiName": "Destination Weather API",
+      "apiVersion": "v3",
+      "methods": [
+        {
+          "name": "GetWeatherAsync",
+          "description": "Get weather observations and/or forecasts for a location.",
+          "returnType": "WeatherResult",
+          "parameters": [
+            {
+              "name": "request",
+              "type": "WeatherRequest",
+              "required": true,
+              "description": "Location, products, and optional language.",
+              "properties": [
+                {
+                  "name": "Location",
+                  "type": "LatLngLiteral",
+                  "required": true,
+                  "description": "Location to get weather for (latitude, longitude).",
+                  "properties": []
+                },
+                {
+                  "name": "Products",
+                  "type": "List\u003CWeatherProduct\u003E?",
+                  "required": false,
+                  "description": "Weather products to request.",
+                  "default": "null"
+                },
+                {
+                  "name": "Lang",
+                  "type": "string?",
+                  "required": false,
+                  "description": "Language for weather descriptions (BCP 47, e.g. \u0022de\u0022, \u0022en\u0022).",
+                  "default": "null"
+                }
+              ]
+            },
+            {
+              "name": "cancellationToken",
+              "type": "CancellationToken?",
+              "required": false,
+              "description": "Cancellation token.",
+              "default": "null"
             }
           ]
         }
@@ -839,6 +1446,33 @@
     }
   ],
   "enums": [
+    {
+      "name": "ConnectorType",
+      "description": "EV connector type identifiers used by the HERE EV Charge Points API.",
+      "isFlags": false,
+      "values": [
+        {
+          "name": "Type2",
+          "serializedValue": "2"
+        },
+        {
+          "name": "Chademo",
+          "serializedValue": "3"
+        },
+        {
+          "name": "CcsCombo1",
+          "serializedValue": "22"
+        },
+        {
+          "name": "CcsCombo2",
+          "serializedValue": "33"
+        },
+        {
+          "name": "TeslaSupercharger",
+          "serializedValue": "7"
+        }
+      ]
+    },
     {
       "name": "HazardousGoods",
       "description": "Hazardous goods categories (flags enum for multi-select).",
@@ -910,6 +1544,48 @@
         {
           "name": "Consumption",
           "serializedValue": "consumption"
+        }
+      ]
+    },
+    {
+      "name": "MapImageFormat",
+      "description": "Output format for static map images.",
+      "isFlags": false,
+      "values": [
+        {
+          "name": "Png",
+          "serializedValue": "png"
+        },
+        {
+          "name": "Jpeg",
+          "serializedValue": "jpeg"
+        }
+      ]
+    },
+    {
+      "name": "MapImageStyle",
+      "description": "Map style for static map images.",
+      "isFlags": false,
+      "values": [
+        {
+          "name": "Default",
+          "serializedValue": "explore.day"
+        },
+        {
+          "name": "Night",
+          "serializedValue": "explore.night"
+        },
+        {
+          "name": "Satellite",
+          "serializedValue": "explore.satellite.day"
+        },
+        {
+          "name": "Lite",
+          "serializedValue": "lite.day"
+        },
+        {
+          "name": "LiteNight",
+          "serializedValue": "lite.night"
         }
       ]
     },
@@ -1004,9 +1680,290 @@
           "serializedValue": "E"
         }
       ]
+    },
+    {
+      "name": "WeatherProduct",
+      "description": "Weather product types available from the HERE Destination Weather API.",
+      "isFlags": false,
+      "values": [
+        {
+          "name": "Observation",
+          "serializedValue": "observation"
+        },
+        {
+          "name": "Forecast7Days",
+          "serializedValue": "forecast7days"
+        },
+        {
+          "name": "Forecast7DaysSimple",
+          "serializedValue": "forecast7daysSimple"
+        },
+        {
+          "name": "ForecastHourly",
+          "serializedValue": "forecastHourly"
+        },
+        {
+          "name": "ForecastAstronomy",
+          "serializedValue": "forecastAstronomy"
+        }
+      ]
     }
   ],
   "resultTypes": [
+    {
+      "name": "AutocompleteResult",
+      "description": "Result of a HERE Autocomplete API call.",
+      "properties": [
+        {
+          "name": "Items",
+          "type": "List\u003CAutosuggestItem\u003E?",
+          "description": "List of autocomplete items.",
+          "nestedType": "AutosuggestItem"
+        }
+      ]
+    },
+    {
+      "name": "AutosuggestAddress",
+      "description": "Structured address details from a HERE Autosuggest result.",
+      "properties": [
+        {
+          "name": "Label",
+          "type": "string?",
+          "description": "Full formatted address label."
+        },
+        {
+          "name": "CountryCode",
+          "type": "string?",
+          "description": "ISO 3166-1 alpha-3 country code (e.g. \u0022DEU\u0022)."
+        },
+        {
+          "name": "CountryName",
+          "type": "string?",
+          "description": "Country name."
+        },
+        {
+          "name": "State",
+          "type": "string?",
+          "description": "State or region name."
+        },
+        {
+          "name": "City",
+          "type": "string?",
+          "description": "City name."
+        },
+        {
+          "name": "District",
+          "type": "string?",
+          "description": "District or neighborhood name."
+        },
+        {
+          "name": "Street",
+          "type": "string?",
+          "description": "Street name."
+        },
+        {
+          "name": "PostalCode",
+          "type": "string?",
+          "description": "Postal code."
+        },
+        {
+          "name": "HouseNumber",
+          "type": "string?",
+          "description": "House number."
+        }
+      ]
+    },
+    {
+      "name": "AutosuggestHighlightRange[]",
+      "description": "",
+      "properties": [
+        {
+          "name": "Length",
+          "type": "int",
+          "description": ""
+        },
+        {
+          "name": "LongLength",
+          "type": "long",
+          "description": ""
+        },
+        {
+          "name": "Rank",
+          "type": "int",
+          "description": ""
+        },
+        {
+          "name": "SyncRoot",
+          "type": "object",
+          "description": ""
+        },
+        {
+          "name": "IsReadOnly",
+          "type": "bool",
+          "description": ""
+        },
+        {
+          "name": "IsFixedSize",
+          "type": "bool",
+          "description": ""
+        },
+        {
+          "name": "IsSynchronized",
+          "type": "bool",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "AutosuggestHighlights",
+      "description": "Highlight information indicating which portions of the title match the query.",
+      "properties": [
+        {
+          "name": "Title",
+          "type": "AutosuggestHighlightRange[]?",
+          "description": "Highlight ranges for the title field.",
+          "nestedType": "AutosuggestHighlightRange[]"
+        },
+        {
+          "name": "Address",
+          "type": "AutosuggestHighlightRange[]?",
+          "description": "Highlight ranges for the address label.",
+          "nestedType": "AutosuggestHighlightRange[]"
+        }
+      ]
+    },
+    {
+      "name": "AutosuggestItem",
+      "description": "A single result item from the HERE Autosuggest API.",
+      "properties": [
+        {
+          "name": "Title",
+          "type": "string?",
+          "description": "Display label for the suggestion."
+        },
+        {
+          "name": "Id",
+          "type": "string?",
+          "description": "HERE place ID (can be used for lookup/details)."
+        },
+        {
+          "name": "ResultType",
+          "type": "string?",
+          "description": "Result type: \u0022place\u0022, \u0022street\u0022, \u0022houseNumber\u0022, \u0022locality\u0022, etc."
+        },
+        {
+          "name": "Address",
+          "type": "AutosuggestAddress?",
+          "description": "Structured address details.",
+          "nestedType": "AutosuggestAddress"
+        },
+        {
+          "name": "Position",
+          "type": "LatLngLiteral?",
+          "description": "Geographic coordinates of the result, if available. May be null for some result types (e.g. categoryQuery).",
+          "nestedType": "LatLngLiteral"
+        },
+        {
+          "name": "Highlights",
+          "type": "AutosuggestHighlights?",
+          "description": "Highlight ranges for matching text portions.",
+          "nestedType": "AutosuggestHighlights"
+        }
+      ]
+    },
+    {
+      "name": "AutosuggestResult",
+      "description": "Result of a HERE Autosuggest API call.",
+      "properties": [
+        {
+          "name": "Items",
+          "type": "List\u003CAutosuggestItem\u003E?",
+          "description": "List of suggestion items.",
+          "nestedType": "AutosuggestItem"
+        }
+      ]
+    },
+    {
+      "name": "EvChargePointsResult",
+      "description": "Result of an EV Charge Points API search.",
+      "properties": [
+        {
+          "name": "Stations",
+          "type": "List\u003CEvStation\u003E?",
+          "description": "Charging stations found.",
+          "nestedType": "EvStation"
+        }
+      ]
+    },
+    {
+      "name": "EvConnector",
+      "description": "A single EV charging connector at a station.",
+      "properties": [
+        {
+          "name": "SupplierName",
+          "type": "string?",
+          "description": "Name of the charging network supplier."
+        },
+        {
+          "name": "ConnectorTypeName",
+          "type": "string?",
+          "description": "Display name of the connector type (e.g. \u0022Type 2\u0022, \u0022CCS\u0022)."
+        },
+        {
+          "name": "ConnectorTypeId",
+          "type": "string?",
+          "description": "Connector type identifier."
+        },
+        {
+          "name": "MaxPowerLevel",
+          "type": "double?",
+          "description": "Maximum power output in kW."
+        },
+        {
+          "name": "ChargeCapacity",
+          "type": "int?",
+          "description": "Number of vehicles that can charge simultaneously."
+        },
+        {
+          "name": "FixedCable",
+          "type": "bool?",
+          "description": "Whether the connector has a fixed (tethered) cable."
+        }
+      ]
+    },
+    {
+      "name": "EvStation",
+      "description": "An EV charging station with its connectors.",
+      "properties": [
+        {
+          "name": "PoolId",
+          "type": "string?",
+          "description": "Unique pool/station identifier."
+        },
+        {
+          "name": "Address",
+          "type": "string?",
+          "description": "Formatted address of the station."
+        },
+        {
+          "name": "Position",
+          "type": "LatLngLiteral?",
+          "description": "Geographic position.",
+          "nestedType": "LatLngLiteral"
+        },
+        {
+          "name": "TotalNumberOfConnectors",
+          "type": "int",
+          "description": "Total number of connectors at this station."
+        },
+        {
+          "name": "Connectors",
+          "type": "List\u003CEvConnector\u003E?",
+          "description": "Available connectors at this station.",
+          "nestedType": "EvConnector"
+        }
+      ]
+    },
     {
       "name": "GeocodeItem",
       "description": "A single geocoding result item.",
@@ -1063,6 +2020,145 @@
       ]
     },
     {
+      "name": "IntermodalPlace",
+      "description": "A departure or arrival place in an intermodal route section.",
+      "properties": [
+        {
+          "name": "Name",
+          "type": "string?",
+          "description": "Place name (e.g. station name)."
+        },
+        {
+          "name": "Position",
+          "type": "LatLngLiteral?",
+          "description": "Geographic position.",
+          "nestedType": "LatLngLiteral"
+        },
+        {
+          "name": "Time",
+          "type": "string?",
+          "description": "Time in ISO 8601 format."
+        }
+      ]
+    },
+    {
+      "name": "IntermodalRoute",
+      "description": "A single intermodal route consisting of multiple transport sections.",
+      "properties": [
+        {
+          "name": "Sections",
+          "type": "List\u003CIntermodalSection\u003E?",
+          "description": "Ordered sections of the route (e.g. walk \u2192 transit \u2192 walk).",
+          "nestedType": "IntermodalSection"
+        }
+      ]
+    },
+    {
+      "name": "IntermodalRoutingResult",
+      "description": "Result of an Intermodal Routing API request.",
+      "properties": [
+        {
+          "name": "Routes",
+          "type": "List\u003CIntermodalRoute\u003E?",
+          "description": "Calculated intermodal routes.",
+          "nestedType": "IntermodalRoute"
+        }
+      ]
+    },
+    {
+      "name": "IntermodalSection",
+      "description": "A single section of an intermodal route (e.g. pedestrian, transit, etc.).",
+      "properties": [
+        {
+          "name": "Type",
+          "type": "string?",
+          "description": "Section type (e.g. \u0022pedestrian\u0022, \u0022transit\u0022)."
+        },
+        {
+          "name": "Polyline",
+          "type": "string?",
+          "description": "Encoded polyline string."
+        },
+        {
+          "name": "Geometry",
+          "type": "List\u003CLatLngLiteral\u003E?",
+          "description": "Decoded polyline geometry.",
+          "nestedType": "LatLngLiteral"
+        },
+        {
+          "name": "Departure",
+          "type": "IntermodalPlace?",
+          "description": "Departure place.",
+          "nestedType": "IntermodalPlace"
+        },
+        {
+          "name": "Arrival",
+          "type": "IntermodalPlace?",
+          "description": "Arrival place.",
+          "nestedType": "IntermodalPlace"
+        },
+        {
+          "name": "Summary",
+          "type": "IntermodalSummary?",
+          "description": "Travel summary for this section.",
+          "nestedType": "IntermodalSummary"
+        },
+        {
+          "name": "Transport",
+          "type": "IntermodalTransport?",
+          "description": "Transport details (for transit sections).",
+          "nestedType": "IntermodalTransport"
+        }
+      ]
+    },
+    {
+      "name": "IntermodalSummary",
+      "description": "Travel summary for an intermodal route section.",
+      "properties": [
+        {
+          "name": "Duration",
+          "type": "int",
+          "description": "Duration in seconds."
+        },
+        {
+          "name": "Length",
+          "type": "int",
+          "description": "Length in meters."
+        }
+      ]
+    },
+    {
+      "name": "IntermodalTransport",
+      "description": "Transport details for a transit section.",
+      "properties": [
+        {
+          "name": "Mode",
+          "type": "string?",
+          "description": "Transport mode (e.g. \u0022bus\u0022, \u0022subway\u0022, \u0022pedestrian\u0022)."
+        },
+        {
+          "name": "Name",
+          "type": "string?",
+          "description": "Line or service name (e.g. \u0022U6\u0022)."
+        },
+        {
+          "name": "Headsign",
+          "type": "string?",
+          "description": "Direction/headsign text."
+        },
+        {
+          "name": "ShortName",
+          "type": "string?",
+          "description": "Short name or line number."
+        },
+        {
+          "name": "Color",
+          "type": "string?",
+          "description": "Line color as hex string (e.g. \u0022#0066CC\u0022)."
+        }
+      ]
+    },
+    {
       "name": "IsolinePolygon",
       "description": "A single isoline polygon.",
       "properties": [
@@ -1100,6 +2196,38 @@
       "name": "LatLngLiteral",
       "description": "Represents a geographic coordinate with latitude and longitude. Compatible with HERE Maps {lat, lng} format.",
       "properties": []
+    },
+    {
+      "name": "MatchedLink",
+      "description": "A road segment matched to a GPS trace by the HERE Route Matching API.",
+      "properties": [
+        {
+          "name": "LinkId",
+          "type": "string?",
+          "description": "HERE link ID for the matched road segment."
+        },
+        {
+          "name": "Confidence",
+          "type": "double?",
+          "description": "Confidence of the match (0.0 to 1.0)."
+        },
+        {
+          "name": "SpeedLimit",
+          "type": "double?",
+          "description": "Speed limit on the road segment in km/h, if available."
+        },
+        {
+          "name": "FunctionalClass",
+          "type": "int?",
+          "description": "Functional class of the road (1-5, where 1 = major highway)."
+        },
+        {
+          "name": "Geometry",
+          "type": "List\u003CLatLngLiteral\u003E?",
+          "description": "Geometry of the matched road segment.",
+          "nestedType": "LatLngLiteral"
+        }
+      ]
     },
     {
       "name": "MatrixEntry",
@@ -1238,6 +2366,23 @@
       ]
     },
     {
+      "name": "RouteMatchingResult",
+      "description": "Result from the HERE Route Matching API.",
+      "properties": [
+        {
+          "name": "MatchedLinks",
+          "type": "List\u003CMatchedLink\u003E?",
+          "description": "Matched road segments.",
+          "nestedType": "MatchedLink"
+        },
+        {
+          "name": "Warnings",
+          "type": "List\u003Cstring\u003E?",
+          "description": "Warnings or informational messages from the matching process."
+        }
+      ]
+    },
+    {
       "name": "RouteSection",
       "description": "A section of a route between two waypoints.",
       "properties": [
@@ -1301,6 +2446,107 @@
           "type": "List\u003CRoute\u003E?",
           "description": "Calculated routes.",
           "nestedType": "Route"
+        }
+      ]
+    },
+    {
+      "name": "Tour",
+      "description": "An optimized tour for a single vehicle.",
+      "properties": [
+        {
+          "name": "VehicleId",
+          "type": "string?",
+          "description": "Identifier of the vehicle assigned to this tour."
+        },
+        {
+          "name": "Stops",
+          "type": "List\u003CTourStop\u003E?",
+          "description": "Ordered stops in the tour.",
+          "nestedType": "TourStop"
+        },
+        {
+          "name": "Statistic",
+          "type": "TourStatistic?",
+          "description": "Statistics for this tour.",
+          "nestedType": "TourStatistic"
+        }
+      ]
+    },
+    {
+      "name": "TourActivity",
+      "description": "An activity at a tour stop (e.g. delivery, pickup, departure, arrival).",
+      "properties": [
+        {
+          "name": "Type",
+          "type": "string?",
+          "description": "Activity type (e.g. \u0022delivery\u0022, \u0022pickup\u0022, \u0022departure\u0022, \u0022arrival\u0022)."
+        },
+        {
+          "name": "JobId",
+          "type": "string?",
+          "description": "Associated job identifier (null for departure/arrival activities)."
+        }
+      ]
+    },
+    {
+      "name": "TourPlanningResult",
+      "description": "Result of a tour planning optimization.",
+      "properties": [
+        {
+          "name": "Tours",
+          "type": "List\u003CTour\u003E?",
+          "description": "Optimized tours for the fleet.",
+          "nestedType": "Tour"
+        },
+        {
+          "name": "UnassignedJobs",
+          "type": "List\u003Cstring\u003E?",
+          "description": "Job IDs that could not be assigned to any vehicle."
+        },
+        {
+          "name": "Statistic",
+          "type": "TourStatistic?",
+          "description": "Overall statistics for the solution.",
+          "nestedType": "TourStatistic"
+        }
+      ]
+    },
+    {
+      "name": "TourStatistic",
+      "description": "Statistics for a tour or overall solution.",
+      "properties": [
+        {
+          "name": "Cost",
+          "type": "double?",
+          "description": "Total cost."
+        },
+        {
+          "name": "Distance",
+          "type": "double?",
+          "description": "Total distance in meters."
+        },
+        {
+          "name": "Duration",
+          "type": "double?",
+          "description": "Total duration in seconds."
+        }
+      ]
+    },
+    {
+      "name": "TourStop",
+      "description": "A stop within a tour.",
+      "properties": [
+        {
+          "name": "Location",
+          "type": "LatLngLiteral?",
+          "description": "Geographic location of the stop.",
+          "nestedType": "LatLngLiteral"
+        },
+        {
+          "name": "Activities",
+          "type": "List\u003CTourActivity\u003E?",
+          "description": "Activities performed at this stop.",
+          "nestedType": "TourActivity"
         }
       ]
     },
@@ -1545,6 +2791,146 @@
           "name": "TotalDuration",
           "type": "int",
           "description": "Total duration in seconds."
+        }
+      ]
+    },
+    {
+      "name": "WeatherForecast",
+      "description": "A weather forecast entry from the HERE Weather API.",
+      "properties": [
+        {
+          "name": "Date",
+          "type": "string?",
+          "description": "Forecast date (e.g. \u00222025-01-15\u0022)."
+        },
+        {
+          "name": "TemperatureHigh",
+          "type": "double?",
+          "description": "High temperature in degrees Celsius."
+        },
+        {
+          "name": "TemperatureLow",
+          "type": "double?",
+          "description": "Low temperature in degrees Celsius."
+        },
+        {
+          "name": "Description",
+          "type": "string?",
+          "description": "Human-readable weather description."
+        },
+        {
+          "name": "Icon",
+          "type": "string?",
+          "description": "Weather icon identifier."
+        },
+        {
+          "name": "Humidity",
+          "type": "double?",
+          "description": "Relative humidity in percent."
+        },
+        {
+          "name": "WindSpeed",
+          "type": "double?",
+          "description": "Wind speed in km/h."
+        },
+        {
+          "name": "PrecipitationProbability",
+          "type": "double?",
+          "description": "Precipitation probability in percent."
+        },
+        {
+          "name": "Comfort",
+          "type": "double?",
+          "description": "Feels-like temperature in degrees Celsius."
+        }
+      ]
+    },
+    {
+      "name": "WeatherObservation",
+      "description": "A current weather observation from the HERE Weather API.",
+      "properties": [
+        {
+          "name": "Temperature",
+          "type": "double?",
+          "description": "Temperature in degrees Celsius."
+        },
+        {
+          "name": "Humidity",
+          "type": "double?",
+          "description": "Relative humidity in percent."
+        },
+        {
+          "name": "WindSpeed",
+          "type": "double?",
+          "description": "Wind speed in km/h."
+        },
+        {
+          "name": "WindDirection",
+          "type": "string?",
+          "description": "Wind direction as compass text (e.g. \u0022NW\u0022)."
+        },
+        {
+          "name": "Description",
+          "type": "string?",
+          "description": "Human-readable weather description."
+        },
+        {
+          "name": "Icon",
+          "type": "string?",
+          "description": "Weather icon identifier."
+        },
+        {
+          "name": "Timestamp",
+          "type": "string?",
+          "description": "Observation timestamp in UTC."
+        },
+        {
+          "name": "DewPoint",
+          "type": "double?",
+          "description": "Dew point temperature in degrees Celsius."
+        },
+        {
+          "name": "Comfort",
+          "type": "double?",
+          "description": "Feels-like temperature in degrees Celsius."
+        },
+        {
+          "name": "BarometerPressure",
+          "type": "double?",
+          "description": "Barometric pressure in mbar."
+        },
+        {
+          "name": "Visibility",
+          "type": "double?",
+          "description": "Visibility in km."
+        },
+        {
+          "name": "UvIndex",
+          "type": "int?",
+          "description": "UV index (0-11\u002B)."
+        },
+        {
+          "name": "PrecipitationProbability",
+          "type": "double?",
+          "description": "Precipitation probability in percent."
+        }
+      ]
+    },
+    {
+      "name": "WeatherResult",
+      "description": "Result from the HERE Destination Weather API.",
+      "properties": [
+        {
+          "name": "Observations",
+          "type": "List\u003CWeatherObservation\u003E?",
+          "description": "Current weather observations (when was requested).",
+          "nestedType": "WeatherObservation"
+        },
+        {
+          "name": "Forecasts",
+          "type": "List\u003CWeatherForecast\u003E?",
+          "description": "Forecast entries (when a forecast product was requested).",
+          "nestedType": "WeatherForecast"
         }
       ]
     }

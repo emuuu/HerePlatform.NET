@@ -157,6 +157,34 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://emuuu.github.io/BlazorHerePlatform/docs/services/autosuggest</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://emuuu.github.io/BlazorHerePlatform/docs/services/weather</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://emuuu.github.io/BlazorHerePlatform/docs/services/route-matching</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://emuuu.github.io/BlazorHerePlatform/docs/services/ev-charge-points</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://emuuu.github.io/BlazorHerePlatform/docs/services/map-image</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://emuuu.github.io/BlazorHerePlatform/docs/services/intermodal-routing</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://emuuu.github.io/BlazorHerePlatform/docs/services/tour-planning</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://emuuu.github.io/BlazorHerePlatform/docs/utilities/wkt-parser</loc>
     <priority>0.8</priority>
   </url>
@@ -238,10 +266,6 @@
   </url>
   <url>
     <loc>https://emuuu.github.io/BlazorHerePlatform/demo/map-utilities</loc>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://emuuu.github.io/BlazorHerePlatform/demo/map-error-handling</loc>
     <priority>0.5</priority>
   </url>
 </urlset>

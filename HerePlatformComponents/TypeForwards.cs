@@ -16,6 +16,10 @@ using HerePlatform.Core.Utilities;
 using HerePlatform.Core.RouteMatching;
 using HerePlatform.Core.Weather;
 using HerePlatform.Core.WaypointSequence;
+using HerePlatform.Core.EvChargePoints;
+using HerePlatform.Core.MapImage;
+using HerePlatform.Core.IntermodalRouting;
+using HerePlatform.Core.TourPlanning;
 
 // Coordinates
 [assembly: TypeForwardedTo(typeof(LatLngLiteral))]
@@ -104,6 +108,44 @@ using HerePlatform.Core.WaypointSequence;
 [assembly: TypeForwardedTo(typeof(WaypointSequenceRequest))]
 [assembly: TypeForwardedTo(typeof(WaypointSequenceResult))]
 
+// EvChargePoints
+[assembly: TypeForwardedTo(typeof(ConnectorType))]
+[assembly: TypeForwardedTo(typeof(EvConnector))]
+[assembly: TypeForwardedTo(typeof(EvStation))]
+[assembly: TypeForwardedTo(typeof(EvChargePointsResult))]
+[assembly: TypeForwardedTo(typeof(EvChargePointsRequest))]
+
+// MapImage
+[assembly: TypeForwardedTo(typeof(MapImageFormat))]
+[assembly: TypeForwardedTo(typeof(MapImageStyle))]
+[assembly: TypeForwardedTo(typeof(MapImageRequest))]
+
+// IntermodalRouting
+[assembly: TypeForwardedTo(typeof(IntermodalRoutingRequest))]
+[assembly: TypeForwardedTo(typeof(IntermodalRoutingResult))]
+[assembly: TypeForwardedTo(typeof(IntermodalRoute))]
+[assembly: TypeForwardedTo(typeof(IntermodalSection))]
+[assembly: TypeForwardedTo(typeof(IntermodalPlace))]
+[assembly: TypeForwardedTo(typeof(IntermodalSummary))]
+[assembly: TypeForwardedTo(typeof(IntermodalTransport))]
+
+// TourPlanning
+[assembly: TypeForwardedTo(typeof(TourPlanningProblem))]
+[assembly: TypeForwardedTo(typeof(TourPlan))]
+[assembly: TypeForwardedTo(typeof(TourJob))]
+[assembly: TypeForwardedTo(typeof(TourJobPlaces))]
+[assembly: TypeForwardedTo(typeof(TourJobPlace))]
+[assembly: TypeForwardedTo(typeof(TourFleet))]
+[assembly: TypeForwardedTo(typeof(TourVehicleType))]
+[assembly: TypeForwardedTo(typeof(TourVehicleCosts))]
+[assembly: TypeForwardedTo(typeof(TourVehicleShift))]
+[assembly: TypeForwardedTo(typeof(TourShiftEnd))]
+[assembly: TypeForwardedTo(typeof(TourPlanningResult))]
+[assembly: TypeForwardedTo(typeof(Tour))]
+[assembly: TypeForwardedTo(typeof(TourStop))]
+[assembly: TypeForwardedTo(typeof(TourActivity))]
+[assembly: TypeForwardedTo(typeof(TourStatistic))]
+
 // Utilities
 [assembly: TypeForwardedTo(typeof(FlexiblePolyline))]
 [assembly: TypeForwardedTo(typeof(GeoJsonExporter))]
@@ -128,3 +170,7 @@ using HerePlatform.Core.WaypointSequence;
 [assembly: TypeForwardedTo(typeof(IAutosuggestService))]
 [assembly: TypeForwardedTo(typeof(IWeatherService))]
 [assembly: TypeForwardedTo(typeof(IRouteMatchingService))]
+[assembly: TypeForwardedTo(typeof(IEvChargePointsService))]
+[assembly: TypeForwardedTo(typeof(IMapImageService))]
+[assembly: TypeForwardedTo(typeof(IIntermodalRoutingService))]
+[assembly: TypeForwardedTo(typeof(ITourPlanningService))]

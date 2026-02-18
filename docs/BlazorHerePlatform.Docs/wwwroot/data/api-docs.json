@@ -1258,13 +1258,13 @@
     "fullName": "HerePlatformComponents.Maps.Services.GeocodingService",
     "members": [
       {
-        "name": "GeocodeAsync(string query, GeocodeOptions options)",
+        "name": "GeocodeAsync(string query, GeocodeOptions options, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CGeocodeResult\u003E",
         "description": ""
       },
       {
-        "name": "ReverseGeocodeAsync(LatLngLiteral position, GeocodeOptions options)",
+        "name": "ReverseGeocodeAsync(LatLngLiteral position, GeocodeOptions options, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CGeocodeResult\u003E",
         "description": ""
@@ -1276,7 +1276,7 @@
     "fullName": "HerePlatformComponents.Maps.Services.GeofencingService",
     "members": [
       {
-        "name": "CheckPositionAsync(LatLngLiteral position, List\u003CGeofenceZone\u003E zones)",
+        "name": "CheckPositionAsync(LatLngLiteral position, List\u003CGeofenceZone\u003E zones, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CGeofenceCheckResult\u003E",
         "description": ""
@@ -1445,7 +1445,7 @@
         "name": "Opacity",
         "kind": "Property",
         "type": "double",
-        "default": "0,6",
+        "default": "0.6",
         "description": "Opacity of the heatmap layer (0-1)."
       },
       {
@@ -1948,7 +1948,7 @@
     "fullName": "HerePlatformComponents.Maps.Services.IsolineService",
     "members": [
       {
-        "name": "CalculateIsolineAsync(IsolineRequest request)",
+        "name": "CalculateIsolineAsync(IsolineRequest request, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CIsolineResult\u003E",
         "description": ""
@@ -3075,7 +3075,7 @@
     "fullName": "HerePlatformComponents.Maps.Services.MatrixRoutingService",
     "members": [
       {
-        "name": "CalculateMatrixAsync(MatrixRoutingRequest request)",
+        "name": "CalculateMatrixAsync(MatrixRoutingRequest request, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CMatrixRoutingResult\u003E",
         "description": ""
@@ -3137,19 +3137,19 @@
     "fullName": "HerePlatformComponents.Maps.Services.PlacesService",
     "members": [
       {
-        "name": "DiscoverAsync(PlacesRequest request)",
+        "name": "DiscoverAsync(PlacesRequest request, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CPlacesResult\u003E",
         "description": ""
       },
       {
-        "name": "BrowseAsync(PlacesRequest request)",
+        "name": "BrowseAsync(PlacesRequest request, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CPlacesResult\u003E",
         "description": ""
       },
       {
-        "name": "LookupAsync(PlacesRequest request)",
+        "name": "LookupAsync(PlacesRequest request, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CPlacesResult\u003E",
         "description": ""
@@ -3696,13 +3696,13 @@
     "fullName": "HerePlatformComponents.Maps.Services.PublicTransitService",
     "members": [
       {
-        "name": "GetDeparturesAsync(LatLngLiteral position)",
+        "name": "GetDeparturesAsync(LatLngLiteral position, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CTransitDeparturesResult\u003E",
         "description": ""
       },
       {
-        "name": "SearchStationsAsync(LatLngLiteral position, double radiusMeters)",
+        "name": "SearchStationsAsync(LatLngLiteral position, double radiusMeters, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CTransitStationsResult\u003E",
         "description": ""
@@ -4105,7 +4105,7 @@
     "fullName": "HerePlatformComponents.Maps.Services.RoutingService",
     "members": [
       {
-        "name": "CalculateRouteAsync(RoutingRequest request)",
+        "name": "CalculateRouteAsync(RoutingRequest request, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CRoutingResult\u003E",
         "description": ""
@@ -4249,13 +4249,13 @@
     "fullName": "HerePlatformComponents.Maps.Services.TrafficService",
     "members": [
       {
-        "name": "GetTrafficIncidentsAsync(double north, double south, double east, double west)",
+        "name": "GetTrafficIncidentsAsync(double north, double south, double east, double west, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CTrafficIncidentsResult\u003E",
         "description": ""
       },
       {
-        "name": "GetTrafficFlowAsync(double north, double south, double east, double west)",
+        "name": "GetTrafficFlowAsync(double north, double south, double east, double west, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CTrafficFlowResult\u003E",
         "description": ""
@@ -4267,7 +4267,7 @@
     "fullName": "HerePlatformComponents.Maps.Services.WaypointSequenceService",
     "members": [
       {
-        "name": "OptimizeSequenceAsync(WaypointSequenceRequest request)",
+        "name": "OptimizeSequenceAsync(WaypointSequenceRequest request, CancellationToken cancellationToken)",
         "kind": "Method",
         "type": "Task\u003CWaypointSequenceResult\u003E",
         "description": ""

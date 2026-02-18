@@ -7,6 +7,7 @@ internal class MockHttpHandler : HttpMessageHandler
     private readonly Func<HttpRequestMessage, HttpResponseMessage> _handler;
 
     public HttpRequestMessage? LastRequest { get; private set; }
+    public string? LastRequestBody { get; private set; }
     public List<HttpRequestMessage> AllRequests { get; } = [];
 
     public MockHttpHandler(HttpResponseMessage response)
@@ -19,12 +20,15 @@ internal class MockHttpHandler : HttpMessageHandler
         _handler = handler;
     }
 
-    protected override Task<HttpResponseMessage> SendAsync(
+    protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request, CancellationToken cancellationToken)
     {
         LastRequest = request;
+        LastRequestBody = request.Content is not null
+            ? await request.Content.ReadAsStringAsync(cancellationToken)
+            : null;
         AllRequests.Add(request);
-        return Task.FromResult(_handler(request));
+        return _handler(request);
     }
 
     public static MockHttpHandler WithJson(string json, HttpStatusCode statusCode = HttpStatusCode.OK)
@@ -38,5 +42,16 @@ internal class MockHttpHandler : HttpMessageHandler
     public static MockHttpHandler WithStatus(HttpStatusCode statusCode)
     {
         return new MockHttpHandler(new HttpResponseMessage(statusCode));
+    }
+
+    public static MockHttpHandler WithBytes(byte[] bytes, string contentType)
+    {
+        return new MockHttpHandler(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new ByteArrayContent(bytes)
+            {
+                Headers = { { "Content-Type", contentType } }
+            }
+        });
     }
 }

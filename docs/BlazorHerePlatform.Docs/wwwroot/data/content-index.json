@@ -578,6 +578,126 @@
     "searchText": "Basic Usage Check whether a geographic position falls inside one or more geofence zones. The service performs client-side point-in-polygon and point-in-circle checks. Geofence Zones Zones can be defined as circles or polygons. Circle zone: Polygon zone: | Property | Type | Default | Description | |----------|------|---------|-------------| | Id | string? | null | Unique identifier for the zone. | | Name | string? | null | Display name. | | Type | string | \u0022polygon\u0022 | Zone type: \u0022polygon\u0022 or \u0022cir"
   },
   {
+    "slug": "services/autosuggest",
+    "title": "Autosuggest Service",
+    "category": "Services",
+    "order": 10,
+    "description": "Type-ahead address and place suggestions.",
+    "apiRef": "IAutosuggestService",
+    "headings": [
+      "Setup",
+      "SuggestAsync",
+      "AutocompleteAsync",
+      "AutosuggestOptions",
+      "Result Types"
+    ],
+    "searchText": "Setup Inject IAutosuggestService into your component. It is registered automatically by AddBlazorHerePlatform. SuggestAsync Return rich place and address suggestions as the user types. Results include position coordinates and highlight ranges for matched text. AutocompleteAsync Return lightweight address completions optimized for type-ahead input fields. Faster than SuggestAsync but returns fewer details. AutosuggestOptions Both methods accept an optional AutosuggestOptions parameter: | Property"
+  },
+  {
+    "slug": "services/weather",
+    "title": "Weather Service",
+    "category": "Services",
+    "order": 11,
+    "description": "Current conditions and weather forecasts.",
+    "apiRef": "IWeatherService",
+    "headings": [
+      "Setup",
+      "GetWeatherAsync",
+      "WeatherRequest Options",
+      "WeatherProduct Enum",
+      "WeatherObservation",
+      "WeatherForecast"
+    ],
+    "searchText": "Setup Inject IWeatherService into your component. It is registered automatically by AddBlazorHerePlatform. GetWeatherAsync Retrieve current weather observations and multi-day forecasts for a location. WeatherRequest Options | Property | Type | Default | Description | |----------|------|---------|-------------| | Location | LatLngLiteral | -- | Position to query (required). | | Products | List\u003CWeatherProduct\u003E? | null | Weather products to include. | | Lang | string? | null | Language (BCP 47). | "
+  },
+  {
+    "slug": "services/route-matching",
+    "title": "Route Matching Service",
+    "category": "Services",
+    "order": 12,
+    "description": "Match GPS traces to road segments.",
+    "apiRef": "IRouteMatchingService",
+    "headings": [
+      "Setup",
+      "MatchRouteAsync",
+      "RouteMatchingRequest Options",
+      "TracePoint",
+      "MatchedLink"
+    ],
+    "searchText": "Setup Inject IRouteMatchingService into your component. It is registered automatically by AddBlazorHerePlatform. MatchRouteAsync Match a sequence of GPS trace points to road links on the HERE map. Useful for fleet telemetry, trip reconstruction, and speed analysis. RouteMatchingRequest Options | Property | Type | Default | Description | |----------|------|---------|-------------| | TracePoints | List\u003CTracePoint\u003E? | null | Ordered GPS points (required). | | TransportMode | TransportMode | Car | C"
+  },
+  {
+    "slug": "services/ev-charge-points",
+    "title": "EV Charge Points Service",
+    "category": "Services",
+    "order": 13,
+    "description": "Find electric vehicle charging stations nearby.",
+    "apiRef": "IEvChargePointsService",
+    "headings": [
+      "Setup",
+      "SearchStationsAsync",
+      "EvChargePointsRequest Options",
+      "ConnectorType Enum",
+      "EvStation",
+      "EvConnector"
+    ],
+    "searchText": "Setup Inject IEvChargePointsService into your component. It is registered automatically by AddBlazorHerePlatform. SearchStationsAsync Search for EV charging stations near a location. Filter by connector type and radius. EvChargePointsRequest Options | Property | Type | Default | Description | |----------|------|---------|-------------| | Position | LatLngLiteral | -- | Search center (required). | | Radius | double | 5000 | Search radius in meters. | | ConnectorTypes | List\u003CConnectorType\u003E? | null"
+  },
+  {
+    "slug": "services/map-image",
+    "title": "Map Image Service",
+    "category": "Services",
+    "order": 14,
+    "description": "Generate static map images.",
+    "apiRef": "IMapImageService",
+    "headings": [
+      "Setup",
+      "GetImageAsync",
+      "MapImageRequest Options",
+      "MapImageFormat Enum",
+      "MapImageStyle Enum",
+      "Displaying Images"
+    ],
+    "searchText": "Setup Inject IMapImageService into your component. It is registered automatically by AddBlazorHerePlatform. GetImageAsync Generate a static map image centered on a location. Returns raw image bytes that can be displayed directly or saved to disk. MapImageRequest Options | Property | Type | Default | Description | |----------|------|---------|-------------| | Center | LatLngLiteral | -- | Map center (required). | | Zoom | int | 12 | Zoom level (0\u201322). | | Width | int | 512 | Image width in pixels"
+  },
+  {
+    "slug": "services/intermodal-routing",
+    "title": "Intermodal Routing Service",
+    "category": "Services",
+    "order": 15,
+    "description": "Route combining transit and walking segments.",
+    "apiRef": "IIntermodalRoutingService",
+    "headings": [
+      "Setup",
+      "CalculateRouteAsync",
+      "IntermodalRoutingRequest Options",
+      "IntermodalSection",
+      "IntermodalTransport"
+    ],
+    "searchText": "Setup Inject IIntermodalRoutingService into your component. It is registered automatically by AddBlazorHerePlatform. CalculateRouteAsync Calculate routes that combine public transit and pedestrian segments. Returns multi-section routes with departure/arrival times, transit line details, and polylines. IntermodalRoutingRequest Options | Property | Type | Default | Description | |----------|------|---------|-------------| | Origin | LatLngLiteral | -- | Start position (required). | | Destination |"
+  },
+  {
+    "slug": "services/tour-planning",
+    "title": "Tour Planning Service",
+    "category": "Services",
+    "order": 16,
+    "description": "Optimize vehicle tours for deliveries and pickups.",
+    "apiRef": "ITourPlanningService",
+    "headings": [
+      "Setup",
+      "SolveAsync",
+      "Problem Structure",
+      "TourPlan",
+      "TourJob",
+      "TourJobPlace",
+      "TourFleet",
+      "TourVehicleType",
+      "TourVehicleCosts",
+      "Result Structure"
+    ],
+    "searchText": "Setup Inject ITourPlanningService into your component. It is registered automatically by AddBlazorHerePlatform. SolveAsync Solve a vehicle routing problem with jobs (deliveries/pickups) and a fleet of vehicles. The optimizer assigns jobs to vehicles and determines the optimal stop sequence. Problem Structure TourPlan | Property | Type | Description | |----------|------|-------------| | Jobs | List\u003CTourJob\u003E? | Jobs to be assigned to vehicles. | TourJob | Property | Type | Description | |---------"
+  },
+  {
     "slug": "utilities/wkt-parser",
     "title": "WKT Parser",
     "category": "Utilities",
