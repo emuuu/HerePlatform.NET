@@ -45,4 +45,13 @@ internal sealed class HereAuthHandler : DelegatingHandler
 
         return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
     }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _oauthManager?.Dispose();
+        }
+        base.Dispose(disposing);
+    }
 }

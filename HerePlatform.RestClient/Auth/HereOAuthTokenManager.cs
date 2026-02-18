@@ -1,11 +1,10 @@
-using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
 namespace HerePlatform.RestClient.Auth;
 
-internal sealed class HereOAuthTokenManager
+internal sealed class HereOAuthTokenManager : IDisposable
 {
     private const string TokenEndpoint = "https://account.api.here.com/oauth2/token";
     private static readonly TimeSpan RefreshMargin = TimeSpan.FromSeconds(60);
@@ -13,10 +12,11 @@ internal sealed class HereOAuthTokenManager
     private readonly string _accessKeyId;
     private readonly string _accessKeySecret;
     private readonly HttpClient _httpClient;
-
-    private string? _cachedToken;
-    private DateTimeOffset _tokenExpiry = DateTimeOffset.MinValue;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
+
+    private volatile CachedToken? _cached;
+
+    private sealed record CachedToken(string Token, DateTimeOffset Expiry);
 
     public HereOAuthTokenManager(string accessKeyId, string accessKeySecret, HttpClient httpClient)
     {
@@ -27,15 +27,17 @@ internal sealed class HereOAuthTokenManager
 
     public async Task<string> GetTokenAsync(CancellationToken cancellationToken)
     {
-        if (_cachedToken is not null && DateTimeOffset.UtcNow < _tokenExpiry - RefreshMargin)
-            return _cachedToken;
+        var snapshot = _cached;
+        if (snapshot is not null && DateTimeOffset.UtcNow < snapshot.Expiry - RefreshMargin)
+            return snapshot.Token;
 
         await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             // Double-check after acquiring lock
-            if (_cachedToken is not null && DateTimeOffset.UtcNow < _tokenExpiry - RefreshMargin)
-                return _cachedToken;
+            snapshot = _cached;
+            if (snapshot is not null && DateTimeOffset.UtcNow < snapshot.Expiry - RefreshMargin)
+                return snapshot.Token;
 
             return await RequestTokenAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -94,12 +96,14 @@ internal sealed class HereOAuthTokenManager
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
 
-        _cachedToken = root.GetProperty("access_token").GetString()
+        var token = root.GetProperty("access_token").GetString()
             ?? throw new InvalidOperationException("OAuth response missing access_token.");
         var expiresIn = root.GetProperty("expires_in").GetInt32();
-        _tokenExpiry = DateTimeOffset.UtcNow.AddSeconds(expiresIn);
+        var expiry = DateTimeOffset.UtcNow.AddSeconds(expiresIn);
 
-        return _cachedToken;
+        _cached = new CachedToken(token, expiry);
+
+        return token;
     }
 
     internal static string ComputeHmacSha256(string key, string data)
@@ -107,5 +111,10 @@ internal sealed class HereOAuthTokenManager
         using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(key));
         var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(data));
         return Convert.ToBase64String(hash);
+    }
+
+    public void Dispose()
+    {
+        _semaphore.Dispose();
     }
 }

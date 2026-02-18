@@ -7,9 +7,9 @@ namespace HerePlatform.RestClient;
 
 internal static class HereJsonDefaults
 {
-    private static JsonSerializerOptions? _options;
+    private static readonly JsonSerializerOptions _options = Create();
 
-    public static JsonSerializerOptions Options => _options ??= Create();
+    public static JsonSerializerOptions Options => _options;
 
     private static JsonSerializerOptions Create()
     {
