@@ -2,7 +2,6 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using System.Net;
 using System.Runtime.Serialization;
-using System.Text.Json;
 using HerePlatform.Core.Coordinates;
 using HerePlatform.Core.Exceptions;
 using HerePlatform.Core.Routing;
@@ -41,19 +40,6 @@ internal static class HereApiHelper
             var errorBody = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             throw new HereApiException(response.StatusCode, errorBody, serviceName);
         }
-    }
-
-    public static async Task<T?> SendAndDeserializeAsync<T>(
-        IHttpClientFactory factory, HttpRequestMessage request, string serviceName, CancellationToken cancellationToken = default)
-    {
-        var client = factory.CreateClient(ClientName);
-        using var response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
-
-        await EnsureSuccessOrThrowAsync(response, serviceName, cancellationToken).ConfigureAwait(false);
-
-        return await JsonSerializer.DeserializeAsync<T>(
-            await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false),
-            HereJsonDefaults.Options, cancellationToken).ConfigureAwait(false);
     }
 
     public static string BuildQueryString(params (string key, string? value)[] parameters)
