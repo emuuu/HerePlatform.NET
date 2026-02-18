@@ -95,6 +95,37 @@ public class GeocodingServiceTests
     }
 
     [Test]
+    public void GeocodeAsync_400_ThrowsHereApiException()
+    {
+        var handler = MockHttpHandler.WithJson("""{"status":400,"title":"Bad Request"}""", HttpStatusCode.BadRequest);
+        var service = CreateService(handler);
+
+        var ex = Assert.ThrowsAsync<HereApiException>(
+            () => service.GeocodeAsync("Berlin"));
+        Assert.That(ex!.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        Assert.That(ex.Service, Is.EqualTo("geocoding"));
+        Assert.That(ex.ErrorBody, Does.Contain("Bad Request"));
+    }
+
+    [Test]
+    public void GeocodeAsync_NullQuery_ThrowsArgumentNullException()
+    {
+        var handler = MockHttpHandler.WithJson("""{"items":[]}""");
+        var service = CreateService(handler);
+
+        Assert.ThrowsAsync<ArgumentNullException>(() => service.GeocodeAsync(null!));
+    }
+
+    [Test]
+    public void GeocodeAsync_EmptyQuery_ThrowsArgumentException()
+    {
+        var handler = MockHttpHandler.WithJson("""{"items":[]}""");
+        var service = CreateService(handler);
+
+        Assert.ThrowsAsync<ArgumentException>(() => service.GeocodeAsync(""));
+    }
+
+    [Test]
     public async Task ReverseGeocodeAsync_BuildsCorrectUrl()
     {
         var handler = MockHttpHandler.WithJson("""{"items":[]}""");

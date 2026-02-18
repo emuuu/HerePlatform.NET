@@ -115,6 +115,19 @@ public class TrafficServiceTests
         Assert.That(result.Incidents, Is.Empty);
     }
 
+    [Test]
+    public void GetTrafficIncidentsAsync_400_ThrowsHereApiException()
+    {
+        var handler = MockHttpHandler.WithJson("""{"error":"Bad request"}""", HttpStatusCode.BadRequest);
+        var service = CreateService(handler);
+
+        var ex = Assert.ThrowsAsync<HereApiException>(
+            () => service.GetTrafficIncidentsAsync(53, 52, 14, 13));
+        Assert.That(ex!.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        Assert.That(ex.Service, Is.EqualTo("traffic"));
+        Assert.That(ex.ErrorBody, Does.Contain("Bad request"));
+    }
+
     // --- Flow ---
 
     [Test]
@@ -162,5 +175,28 @@ public class TrafficServiceTests
         Assert.That(item.JamFactor, Is.EqualTo(3.2));
         Assert.That(item.RoadName, Is.EqualTo("Friedrichstr."));
         Assert.That(item.Position!.Value.Lat, Is.EqualTo(52.52));
+    }
+
+    [Test]
+    public void GetTrafficFlowAsync_401_ThrowsAuthException()
+    {
+        var handler = MockHttpHandler.WithStatus(HttpStatusCode.Unauthorized);
+        var service = CreateService(handler);
+
+        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(
+            () => service.GetTrafficFlowAsync(53, 52, 14, 13));
+        Assert.That(ex!.Service, Is.EqualTo("traffic"));
+    }
+
+    [Test]
+    public void GetTrafficFlowAsync_400_ThrowsHereApiException()
+    {
+        var handler = MockHttpHandler.WithJson("""{"error":"Invalid bbox"}""", HttpStatusCode.BadRequest);
+        var service = CreateService(handler);
+
+        var ex = Assert.ThrowsAsync<HereApiException>(
+            () => service.GetTrafficFlowAsync(53, 52, 14, 13));
+        Assert.That(ex!.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        Assert.That(ex.Service, Is.EqualTo("traffic"));
     }
 }

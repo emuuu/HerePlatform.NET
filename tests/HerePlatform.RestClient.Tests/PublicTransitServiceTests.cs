@@ -153,4 +153,39 @@ public class PublicTransitServiceTests
         Assert.That(result.Stations, Is.Not.Null);
         Assert.That(result.Stations, Is.Empty);
     }
+
+    [Test]
+    public void SearchStationsAsync_401_ThrowsAuthException()
+    {
+        var handler = MockHttpHandler.WithStatus(HttpStatusCode.Unauthorized);
+        var service = CreateService(handler);
+
+        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(
+            () => service.SearchStationsAsync(new LatLngLiteral(52.52, 13.37)));
+        Assert.That(ex!.Service, Is.EqualTo("transit"));
+    }
+
+    [Test]
+    public void GetDeparturesAsync_400_ThrowsHereApiException()
+    {
+        var handler = MockHttpHandler.WithJson("""{"error":"Bad request"}""", HttpStatusCode.BadRequest);
+        var service = CreateService(handler);
+
+        var ex = Assert.ThrowsAsync<HereApiException>(
+            () => service.GetDeparturesAsync(new LatLngLiteral(52.52, 13.37)));
+        Assert.That(ex!.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        Assert.That(ex.Service, Is.EqualTo("transit"));
+    }
+
+    [Test]
+    public void SearchStationsAsync_400_ThrowsHereApiException()
+    {
+        var handler = MockHttpHandler.WithJson("""{"error":"Invalid radius"}""", HttpStatusCode.BadRequest);
+        var service = CreateService(handler);
+
+        var ex = Assert.ThrowsAsync<HereApiException>(
+            () => service.SearchStationsAsync(new LatLngLiteral(52.52, 13.37)));
+        Assert.That(ex!.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        Assert.That(ex.Service, Is.EqualTo("transit"));
+    }
 }
