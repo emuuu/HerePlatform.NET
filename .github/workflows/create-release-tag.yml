@@ -67,5 +67,9 @@ jobs:
           git tag "${{ steps.tag.outputs.TAG_NAME }}"
           git push origin "${{ steps.tag.outputs.TAG_NAME }}"
           echo "Created and pushed tag: ${{ steps.tag.outputs.TAG_NAME }}"
-      - name: Summary
-        run: echo "Tag ${{ steps.tag.outputs.TAG_NAME }} pushed — release workflow will be triggered automatically by the tag push event."
+      - name: Trigger release workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run "release-${{ inputs.package }}.yml" --ref "${{ steps.tag.outputs.TAG_NAME }}"
+          echo "Triggered release-${{ inputs.package }}.yml on ${{ steps.tag.outputs.TAG_NAME }}"
