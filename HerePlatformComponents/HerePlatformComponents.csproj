@@ -8,7 +8,7 @@
 		<PackageTags>blazor;here;maps;components;geolocation;routing</PackageTags>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageIcon>blazor-here-platform.png</PackageIcon>
+		<PackageIcon>here-platform.png</PackageIcon>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -17,7 +17,7 @@
 
 	<ItemGroup>
 		<None Include="..\README.md" Pack="true" PackagePath="\" />
-		<None Include="..\blazor-here-platform.png" Pack="true" PackagePath="\" />
+		<None Include="..\here-platform.png" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
 	<ItemGroup>

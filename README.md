@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="blazor-here-platform.svg" alt="BlazorHerePlatform" width="128" />
+  <img src="here-platform.svg" alt="HerePlatform.NET" width="128" />
 </p>
 
 # HerePlatform.NET

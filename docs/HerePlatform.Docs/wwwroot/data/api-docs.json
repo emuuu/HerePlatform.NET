@@ -1445,7 +1445,7 @@
         "name": "Opacity",
         "kind": "Property",
         "type": "double",
-        "default": "0,6",
+        "default": "0.6",
         "description": "Opacity of the heatmap layer (0-1)."
       },
       {

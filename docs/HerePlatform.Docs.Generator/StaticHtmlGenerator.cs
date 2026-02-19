@@ -88,12 +88,12 @@ public class StaticHtmlGenerator
                 <meta property="og:description" content="{description}" />
                 <meta property="og:url" content="{url}" />
                 <meta property="og:site_name" content="HerePlatform.NET Docs" />
-                <meta property="og:image" content="{_baseUrl}/img/blazor-here-platform.svg" />
+                <meta property="og:image" content="{_baseUrl}/img/here-platform.svg" />
                 <meta name="twitter:card" content="summary" />
                 <meta name="twitter:title" content="{title} - HerePlatform.NET" />
                 <meta name="twitter:description" content="{description}" />
                 <script type="application/ld+json">{jsonLd}</script>
-                <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+                <link rel="icon" type="image/svg+xml" href="img/here-platform.svg" />
                 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
                       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
                 <link href="lib/prismjs/prism.css" rel="stylesheet" />
@@ -145,11 +145,11 @@ public class StaticHtmlGenerator
                 <meta property="og:description" content="{encodedDesc}" />
                 <meta property="og:url" content="{url}" />
                 <meta property="og:site_name" content="HerePlatform.NET Docs" />
-                <meta property="og:image" content="{_baseUrl}/img/blazor-here-platform.svg" />
+                <meta property="og:image" content="{_baseUrl}/img/here-platform.svg" />
                 <meta name="twitter:card" content="summary" />
                 <meta name="twitter:title" content="{encodedTitle} Demo - HerePlatform.NET" />
                 <meta name="twitter:description" content="{encodedDesc}" />
-                <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+                <link rel="icon" type="image/svg+xml" href="img/here-platform.svg" />
                 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
                       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
                 <link href="lib/prismjs/prism.css" rel="stylesheet" />
@@ -214,7 +214,7 @@ public class StaticHtmlGenerator
                 headline = entry.Title,
                 description = entry.Description,
                 url,
-                image = $"{_baseUrl}/img/blazor-here-platform.svg",
+                image = $"{_baseUrl}/img/here-platform.svg",
                 publisher = new { @type = "Organization", name = "HerePlatform.NET" }
             },
             new
@@ -237,7 +237,7 @@ public class StaticHtmlGenerator
                 <meta property="og:title" content="HerePlatform.NET Docs" />
                 <meta property="og:description" content="Blazor components and services for the HERE Maps JavaScript API. Build interactive maps with declarative Razor syntax." />
                 <meta property="og:site_name" content="HerePlatform.NET Docs" />
-                <meta property="og:image" content="{0}/img/blazor-here-platform.svg" />
+                <meta property="og:image" content="{0}/img/here-platform.svg" />
                 <meta name="twitter:card" content="summary" />
                 <meta name="twitter:title" content="HerePlatform.NET Docs" />
                 <meta name="twitter:description" content="Blazor components and services for the HERE Maps JavaScript API." />
