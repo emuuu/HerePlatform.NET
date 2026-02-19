@@ -23,7 +23,7 @@ public class RoutingServiceTests : ServiceTestBase
         };
         var encodedPolyline = FlexiblePolyline.Encode(testCoords);
 
-        MockJsResult("blazorHerePlatform.objectManager.calculateRoute", new RoutingResult
+        MockJsResult("herePlatform.objectManager.calculateRoute", new RoutingResult
         {
             Routes = new List<Route>
             {
@@ -70,7 +70,7 @@ public class RoutingServiceTests : ServiceTestBase
             new(52.5220, 13.4070)
         });
 
-        MockJsResult("blazorHerePlatform.objectManager.calculateRoute", new RoutingResult
+        MockJsResult("herePlatform.objectManager.calculateRoute", new RoutingResult
         {
             Routes = new List<Route>
             {
@@ -131,7 +131,7 @@ public class RoutingServiceTests : ServiceTestBase
     public void CalculateRouteAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<RoutingResult>(
-            "blazorHerePlatform.objectManager.calculateRoute",
+            "herePlatform.objectManager.calculateRoute",
             new JSException("Error: HERE_AUTH_ERROR:routing:HTTP 401"));
         var service = new RoutingService(JsRuntime);
 

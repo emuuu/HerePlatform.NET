@@ -14,7 +14,7 @@ public class GeocodingServiceTests : ServiceTestBase
     [Test]
     public async Task GeocodeAsync_WithResults_ReturnsItems()
     {
-        MockJsResult("blazorHerePlatform.objectManager.geocode", new GeocodeResult
+        MockJsResult("herePlatform.objectManager.geocode", new GeocodeResult
         {
             Items = new List<GeocodeItem>
             {
@@ -51,7 +51,7 @@ public class GeocodingServiceTests : ServiceTestBase
     [Test]
     public async Task ReverseGeocodeAsync_WithResult_ReturnsItem()
     {
-        MockJsResult("blazorHerePlatform.objectManager.reverseGeocode", new GeocodeResult
+        MockJsResult("herePlatform.objectManager.reverseGeocode", new GeocodeResult
         {
             Items = new List<GeocodeItem>
             {
@@ -90,7 +90,7 @@ public class GeocodingServiceTests : ServiceTestBase
     public void GeocodeAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<GeocodeResult>(
-            "blazorHerePlatform.objectManager.geocode",
+            "herePlatform.objectManager.geocode",
             new JSException("Error: HERE_AUTH_ERROR:geocoding:HTTP 401"));
         var service = new GeocodingService(JsRuntime);
 
@@ -104,7 +104,7 @@ public class GeocodingServiceTests : ServiceTestBase
     public void ReverseGeocodeAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<GeocodeResult>(
-            "blazorHerePlatform.objectManager.reverseGeocode",
+            "herePlatform.objectManager.reverseGeocode",
             new JSException("Error: HERE_AUTH_ERROR:reverse-geocoding:HTTP 403"));
         var service = new GeocodingService(JsRuntime);
 

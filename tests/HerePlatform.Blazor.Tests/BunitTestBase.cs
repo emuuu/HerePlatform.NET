@@ -22,7 +22,7 @@ public abstract class BunitTestBase : IDisposable
         // Map.CreateAsync expects a MapInitResult from JS — provide a valid one.
         // Must use InvocationMatcher to accept any arguments (mapDiv, opts).
         Context.JSInterop
-            .Setup<MapInitResult>("blazorHerePlatform.objectManager.createHereMap", _ => true)
+            .Setup<MapInitResult>("herePlatform.objectManager.createHereMap", _ => true)
             .SetResult(new MapInitResult
             {
                 MapGuid = Guid.NewGuid().ToString(),

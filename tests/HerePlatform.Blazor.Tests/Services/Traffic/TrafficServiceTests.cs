@@ -14,7 +14,7 @@ public class TrafficServiceTests : ServiceTestBase
     [Test]
     public async Task GetTrafficIncidentsAsync_WithIncidents_ReturnsTypesAndSeverities()
     {
-        MockJsResult("blazorHerePlatform.objectManager.getTrafficIncidents", new TrafficIncidentsResult
+        MockJsResult("herePlatform.objectManager.getTrafficIncidents", new TrafficIncidentsResult
         {
             Incidents = new List<TrafficIncident>
             {
@@ -63,7 +63,7 @@ public class TrafficServiceTests : ServiceTestBase
     [Test]
     public async Task GetTrafficFlowAsync_WithFlowData_ReturnsSpeedsAndJamFactor()
     {
-        MockJsResult("blazorHerePlatform.objectManager.getTrafficFlow", new TrafficFlowResult
+        MockJsResult("herePlatform.objectManager.getTrafficFlow", new TrafficFlowResult
         {
             Items = new List<TrafficFlowItem>
             {
@@ -101,7 +101,7 @@ public class TrafficServiceTests : ServiceTestBase
     public void GetTrafficIncidentsAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<TrafficIncidentsResult>(
-            "blazorHerePlatform.objectManager.getTrafficIncidents",
+            "herePlatform.objectManager.getTrafficIncidents",
             new JSException("Error: HERE_AUTH_ERROR:traffic-incidents:HTTP 401"));
         var service = new TrafficService(JsRuntime);
 
@@ -115,7 +115,7 @@ public class TrafficServiceTests : ServiceTestBase
     public void GetTrafficFlowAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<TrafficFlowResult>(
-            "blazorHerePlatform.objectManager.getTrafficFlow",
+            "herePlatform.objectManager.getTrafficFlow",
             new JSException("Error: HERE_AUTH_ERROR:traffic-flow:HTTP 401"));
         var service = new TrafficService(JsRuntime);
 

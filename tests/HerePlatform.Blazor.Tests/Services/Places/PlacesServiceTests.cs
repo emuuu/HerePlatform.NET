@@ -14,7 +14,7 @@ public class PlacesServiceTests : ServiceTestBase
     [Test]
     public async Task DiscoverAsync_WithResults_ReturnsPlaces()
     {
-        MockJsResult("blazorHerePlatform.objectManager.discoverPlaces", new PlacesResult
+        MockJsResult("herePlatform.objectManager.discoverPlaces", new PlacesResult
         {
             Items = new List<PlaceItem>
             {
@@ -65,7 +65,7 @@ public class PlacesServiceTests : ServiceTestBase
     [Test]
     public async Task BrowseAsync_WithCategoryFilter_ReturnsFilteredPlaces()
     {
-        MockJsResult("blazorHerePlatform.objectManager.browsePlaces", new PlacesResult
+        MockJsResult("herePlatform.objectManager.browsePlaces", new PlacesResult
         {
             Items = new List<PlaceItem>
             {
@@ -101,7 +101,7 @@ public class PlacesServiceTests : ServiceTestBase
     [Test]
     public async Task LookupAsync_WithPlaceId_ReturnsDetailedPlace()
     {
-        MockJsResult("blazorHerePlatform.objectManager.lookupPlace", new PlacesResult
+        MockJsResult("herePlatform.objectManager.lookupPlace", new PlacesResult
         {
             Items = new List<PlaceItem>
             {
@@ -140,7 +140,7 @@ public class PlacesServiceTests : ServiceTestBase
     public void DiscoverAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<PlacesResult>(
-            "blazorHerePlatform.objectManager.discoverPlaces",
+            "herePlatform.objectManager.discoverPlaces",
             new JSException("Error: HERE_AUTH_ERROR:discover-places:HTTP 401"));
         var service = new PlacesService(JsRuntime);
 

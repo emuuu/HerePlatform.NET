@@ -14,7 +14,7 @@ public class PublicTransitServiceTests : ServiceTestBase
     [Test]
     public async Task GetDeparturesAsync_WithDepartures_ReturnsTransitInfo()
     {
-        MockJsResult("blazorHerePlatform.objectManager.getTransitDepartures", new TransitDeparturesResult
+        MockJsResult("herePlatform.objectManager.getTransitDepartures", new TransitDeparturesResult
         {
             Departures = new List<TransitDeparture>
             {
@@ -60,7 +60,7 @@ public class PublicTransitServiceTests : ServiceTestBase
     [Test]
     public async Task SearchStationsAsync_WithStations_ReturnsStationData()
     {
-        MockJsResult("blazorHerePlatform.objectManager.searchTransitStations", new TransitStationsResult
+        MockJsResult("herePlatform.objectManager.searchTransitStations", new TransitStationsResult
         {
             Stations = new List<TransitStation>
             {
@@ -97,7 +97,7 @@ public class PublicTransitServiceTests : ServiceTestBase
     public void GetDeparturesAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<TransitDeparturesResult>(
-            "blazorHerePlatform.objectManager.getTransitDepartures",
+            "herePlatform.objectManager.getTransitDepartures",
             new JSException("Error: HERE_AUTH_ERROR:transit-departures:HTTP 401"));
         var service = new PublicTransitService(JsRuntime);
 
@@ -111,7 +111,7 @@ public class PublicTransitServiceTests : ServiceTestBase
     public void SearchStationsAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<TransitStationsResult>(
-            "blazorHerePlatform.objectManager.searchTransitStations",
+            "herePlatform.objectManager.searchTransitStations",
             new JSException("Error: HERE_AUTH_ERROR:transit-stations:HTTP 401"));
         var service = new PublicTransitService(JsRuntime);
 

@@ -14,7 +14,7 @@ public class MatrixRoutingServiceTests : ServiceTestBase
     [Test]
     public async Task CalculateMatrixAsync_2x2Matrix_ReturnsAllEntries()
     {
-        MockJsResult("blazorHerePlatform.objectManager.calculateMatrix", new MatrixRoutingResult
+        MockJsResult("herePlatform.objectManager.calculateMatrix", new MatrixRoutingResult
         {
             NumOrigins = 2,
             NumDestinations = 2,
@@ -73,7 +73,7 @@ public class MatrixRoutingServiceTests : ServiceTestBase
     public void CalculateMatrixAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<MatrixRoutingResult>(
-            "blazorHerePlatform.objectManager.calculateMatrix",
+            "herePlatform.objectManager.calculateMatrix",
             new JSException("Error: HERE_AUTH_ERROR:matrix-routing:HTTP 401"));
         var service = new MatrixRoutingService(JsRuntime);
 

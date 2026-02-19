@@ -15,7 +15,7 @@ public class IsolineServiceTests : ServiceTestBase
     [Test]
     public async Task CalculateIsolineAsync_WithPolygons_ReturnsIsolines()
     {
-        MockJsResult("blazorHerePlatform.objectManager.calculateIsoline", new IsolineResult
+        MockJsResult("herePlatform.objectManager.calculateIsoline", new IsolineResult
         {
             Isolines = new List<IsolinePolygon>
             {
@@ -75,7 +75,7 @@ public class IsolineServiceTests : ServiceTestBase
         };
         var encodedPolyline = FlexiblePolyline.Encode(testCoords);
 
-        MockJsResult("blazorHerePlatform.objectManager.calculateIsoline", new IsolineResult
+        MockJsResult("herePlatform.objectManager.calculateIsoline", new IsolineResult
         {
             Isolines = new List<IsolinePolygon>
             {
@@ -106,7 +106,7 @@ public class IsolineServiceTests : ServiceTestBase
     public void CalculateIsolineAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<IsolineResult>(
-            "blazorHerePlatform.objectManager.calculateIsoline",
+            "herePlatform.objectManager.calculateIsoline",
             new JSException("Error: HERE_AUTH_ERROR:isoline:HTTP 401"));
         var service = new IsolineService(JsRuntime);
 

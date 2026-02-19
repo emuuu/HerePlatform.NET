@@ -14,7 +14,7 @@ public class WaypointSequenceServiceTests : ServiceTestBase
     [Test]
     public async Task OptimizeSequenceAsync_WithWaypoints_ReturnsOptimizedOrder()
     {
-        MockJsResult("blazorHerePlatform.objectManager.optimizeWaypointSequence", new WaypointSequenceResult
+        MockJsResult("herePlatform.objectManager.optimizeWaypointSequence", new WaypointSequenceResult
         {
             OptimizedIndices = new List<int> { 2, 0, 1 },
             OptimizedWaypoints = new List<LatLngLiteral>
@@ -50,7 +50,7 @@ public class WaypointSequenceServiceTests : ServiceTestBase
     public void OptimizeSequenceAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<WaypointSequenceResult>(
-            "blazorHerePlatform.objectManager.optimizeWaypointSequence",
+            "herePlatform.objectManager.optimizeWaypointSequence",
             new JSException("Error: HERE_AUTH_ERROR:waypoint-sequence:HTTP 401"));
         var service = new WaypointSequenceService(JsRuntime);
 

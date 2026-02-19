@@ -2,7 +2,7 @@ namespace HerePlatform.Blazor;
 
 internal static class JsInteropIdentifiers
 {
-    private const string Prefix = "blazorHerePlatform.objectManager.";
+    private const string Prefix = "herePlatform.objectManager.";
 
     // Core object management
     internal const string CreateObject = Prefix + "createObject";
