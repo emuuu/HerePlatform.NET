@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HereAutosuggest - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Address and place autosuggest search component." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/components/autosuggest" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="HereAutosuggest - HerePlatform.NET" />
+    <meta property="og:description" content="Address and place autosuggest search component." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/components/autosuggest" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="HereAutosuggest - HerePlatform.NET" />
+    <meta name="twitter:description" content="Address and place autosuggest search component." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"HereAutosuggest","description":"Address and place autosuggest search component.","url":"https://emuuu.github.io/HerePlatform.NET/docs/components/autosuggest","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Components","item":"https://emuuu.github.io/HerePlatform.NET/docs/components"},{"type":"ListItem","position":3,"name":"HereAutosuggest","item":"https://emuuu.github.io/HerePlatform.NET/docs/components/autosuggest"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>HereAutosuggest</h1>
+            <p class="lead text-muted">Address and place autosuggest search component.</p>
+            <h2 id="basic-usage">Basic Usage</h2>
+<p><code>HereAutosuggest</code> is a standalone search input with autocomplete powered by the HERE Autosuggest API. It does not require an <code>AdvancedHereMap</code> parent -- it can be used anywhere on the page.</p>
+<pre><code class="language-csharp">@using HerePlatformComponents.Maps.Search
+@using HerePlatform.Core.Search
+
+&lt;HereAutosuggest Placeholder=&quot;Search for an address...&quot;
+                 OnItemSelected=&quot;HandleSelection&quot; /&gt;
+
+@code {
+    private void HandleSelection(AutosuggestItem item)
+    {
+        Console.WriteLine($&quot;Selected: {item.Title}&quot;);
+        Console.WriteLine($&quot;Position: {item.Position?.Lat}, {item.Position?.Lng}&quot;);
+        Console.WriteLine($&quot;Address: {item.Address?.Label}&quot;);
+    }
+}
+</code></pre>
+<p>The component initializes the HERE platform automatically if it has not been loaded yet.</p>
+<h2 id="customization-autosuggestoptions-autosuggestdesign">Customization (AutosuggestOptions, AutosuggestDesign)</h2>
+<p>Configure search behavior with <code>AutosuggestOptions</code> and visual style with <code>AutosuggestDesign</code>.</p>
+<pre><code class="language-csharp">&lt;HereAutosuggest Placeholder=&quot;Search...&quot;
+                 Options=&quot;_options&quot;
+                 Design=&quot;AutosuggestDesign.Rounded&quot;
+                 MinChars=&quot;2&quot;
+                 DebounceMs=&quot;200&quot;
+                 OnItemSelected=&quot;HandleSelection&quot; /&gt;
+
+@code {
+    private AutosuggestOptions _options = new()
+    {
+        Limit = 8,
+        Lang = &quot;en&quot;,
+        In = &quot;countryCode:USA&quot;,
+        At = new LatLngLiteral(40.7128, -74.006)
+    };
+}
+</code></pre>
+<h3 id="autosuggestdesign-variants">AutosuggestDesign Variants</h3>
+<table>
+<thead>
+<tr>
+<th>Variant</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Default</code></td>
+<td>Standard Bootstrap input with title and address in dropdown items.</td>
+</tr>
+<tr>
+<td><code>Compact</code></td>
+<td>Smaller font, reduced padding, title-only items.</td>
+</tr>
+<tr>
+<td><code>Filled</code></td>
+<td>Gray background, borderless until focused.</td>
+</tr>
+<tr>
+<td><code>Outlined</code></td>
+<td>Thicker border with accent color on focus.</td>
+</tr>
+<tr>
+<td><code>Rounded</code></td>
+<td>Pill-shaped input with rounded dropdown corners.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="component-parameters">Component Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Placeholder</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>Input placeholder text.</td>
+</tr>
+<tr>
+<td><code>CssClass</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>Additional CSS class on the wrapper div.</td>
+</tr>
+<tr>
+<td><code>Options</code></td>
+<td><code>AutosuggestOptions?</code></td>
+<td><code>null</code></td>
+<td>Search configuration (limit, language, country, bias).</td>
+</tr>
+<tr>
+<td><code>Design</code></td>
+<td><code>AutosuggestDesign</code></td>
+<td><code>Default</code></td>
+<td>Visual design variant.</td>
+</tr>
+<tr>
+<td><code>Disabled</code></td>
+<td><code>bool</code></td>
+<td><code>false</code></td>
+<td>Disables the input.</td>
+</tr>
+<tr>
+<td><code>Value</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>Current input text (two-way bindable via <code>@bind-Value</code>).</td>
+</tr>
+<tr>
+<td><code>MinChars</code></td>
+<td><code>int</code></td>
+<td><code>3</code></td>
+<td>Minimum characters before triggering search.</td>
+</tr>
+<tr>
+<td><code>DebounceMs</code></td>
+<td><code>int</code></td>
+<td><code>300</code></td>
+<td>Debounce delay in milliseconds.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="templates">Templates</h2>
+<p>Override the rendering of the input, individual items, or the entire dropdown list.</p>
+<p><strong>SuggestionItemTemplate</strong> -- replaces the content inside each <code>&lt;li&gt;</code>:</p>
+<pre><code class="language-csharp">&lt;HereAutosuggest OnItemSelected=&quot;HandleSelection&quot;&gt;
+    &lt;SuggestionItemTemplate&gt;
+        &lt;strong&gt;@context.Title&lt;/strong&gt;
+        &lt;br /&gt;
+        &lt;small&gt;@context.Address?.City, @context.Address?.CountryCode&lt;/small&gt;
+    &lt;/SuggestionItemTemplate&gt;
+&lt;/HereAutosuggest&gt;
+</code></pre>
+<p><strong>SuggestionListTemplate</strong> -- replaces the entire dropdown. Use <code>context.SelectItem</code> to wire up selection:</p>
+<pre><code class="language-csharp">&lt;HereAutosuggest OnItemSelected=&quot;HandleSelection&quot;&gt;
+    &lt;SuggestionListTemplate&gt;
+        &lt;div class=&quot;custom-dropdown&quot;&gt;
+            @foreach (var item in context.Items)
+            {
+                &lt;div @onmousedown=&quot;() =&gt; context.SelectItem(item)&quot;
+                     @onmousedown:preventDefault&gt;
+                    @item.Title
+                &lt;/div&gt;
+            }
+        &lt;/div&gt;
+    &lt;/SuggestionListTemplate&gt;
+&lt;/HereAutosuggest&gt;
+</code></pre>
+<p><strong>InputTemplate</strong> -- replaces the input element. Splat <code>context.InputAttributes</code> onto your custom input:</p>
+<pre><code class="language-csharp">&lt;HereAutosuggest OnItemSelected=&quot;HandleSelection&quot;&gt;
+    &lt;InputTemplate&gt;
+        &lt;input class=&quot;my-input&quot; @attributes=&quot;context.InputAttributes&quot; /&gt;
+    &lt;/InputTemplate&gt;
+&lt;/HereAutosuggest&gt;
+</code></pre>
+<h2 id="events">Events</h2>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OnItemSelected</code></td>
+<td><code>EventCallback&lt;AutosuggestItem&gt;</code></td>
+<td>Fires when a suggestion is selected.</td>
+</tr>
+<tr>
+<td><code>OnCleared</code></td>
+<td><code>EventCallback</code></td>
+<td>Fires when the input is cleared.</td>
+</tr>
+<tr>
+<td><code>ValueChanged</code></td>
+<td><code>EventCallback&lt;string&gt;</code></td>
+<td>Two-way binding callback for <code>Value</code>.</td>
+</tr>
+</tbody>
+</table>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

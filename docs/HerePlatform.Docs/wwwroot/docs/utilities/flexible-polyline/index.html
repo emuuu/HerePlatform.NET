@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flexible Polyline - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Encode and decode HERE flexible polyline format." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/utilities/flexible-polyline" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Flexible Polyline - HerePlatform.NET" />
+    <meta property="og:description" content="Encode and decode HERE flexible polyline format." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/utilities/flexible-polyline" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Flexible Polyline - HerePlatform.NET" />
+    <meta name="twitter:description" content="Encode and decode HERE flexible polyline format." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"Flexible Polyline","description":"Encode and decode HERE flexible polyline format.","url":"https://emuuu.github.io/HerePlatform.NET/docs/utilities/flexible-polyline","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Utilities","item":"https://emuuu.github.io/HerePlatform.NET/docs/utilities"},{"type":"ListItem","position":3,"name":"Flexible Polyline","item":"https://emuuu.github.io/HerePlatform.NET/docs/utilities/flexible-polyline"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>Flexible Polyline</h1>
+            <p class="lead text-muted">Encode and decode HERE flexible polyline format.</p>
+            <h2 id="encoding">Encoding</h2>
+<p><code>FlexiblePolyline</code> is a static utility class that implements the HERE Flexible Polyline codec in pure C#. Use <code>Encode</code> to compress a list of coordinates into a compact string representation.</p>
+<pre><code class="language-csharp">using HerePlatform.Core.Utilities;
+</code></pre>
+<pre><code class="language-csharp">var coordinates = new List&lt;LatLngLiteral&gt;
+{
+    new(52.5200, 13.4050),
+    new(52.5300, 13.4200),
+    new(52.5100, 13.3900)
+};
+
+string encoded = FlexiblePolyline.Encode(coordinates);
+</code></pre>
+<p>The default precision is 5 decimal places. Specify a custom precision when higher or lower accuracy is needed:</p>
+<pre><code class="language-csharp">// Higher precision (7 decimal places)
+string encoded = FlexiblePolyline.Encode(coordinates, precision: 7);
+
+// Lower precision for smaller payloads
+string encoded = FlexiblePolyline.Encode(coordinates, precision: 3);
+</code></pre>
+<h2 id="decoding">Decoding</h2>
+<p>Use <code>Decode</code> to convert a flexible polyline string back into coordinates. This is useful for processing route polylines returned by the Routing Service.</p>
+<pre><code class="language-csharp">List&lt;LatLngLiteral&gt; coordinates = FlexiblePolyline.Decode(encoded);
+
+foreach (var coord in coordinates)
+{
+    Console.WriteLine($&quot;{coord.Lat}, {coord.Lng}&quot;);
+}
+</code></pre>
+<p>Decoding handles the header format automatically, including version and precision metadata embedded in the encoded string.</p>
+<p><strong>Common use case -- decoding route section polylines:</strong></p>
+<pre><code class="language-csharp">@inject IRoutingService RoutingService
+
+var result = await RoutingService.CalculateRouteAsync(request);
+
+foreach (var section in result.Routes?.FirstOrDefault()?.Sections ?? [])
+{
+    // DecodedPolyline is populated automatically by the service,
+    // but you can also decode manually from the raw polyline string:
+    if (section.Polyline is not null)
+    {
+        var coords = FlexiblePolyline.Decode(section.Polyline);
+        Console.WriteLine($&quot;Decoded {coords.Count} points&quot;);
+    }
+}
+</code></pre>
+<p><strong>Empty or null input</strong> returns an empty list:</p>
+<pre><code class="language-csharp">var empty = FlexiblePolyline.Decode(&quot;&quot;);
+// empty.Count == 0
+
+var nullResult = FlexiblePolyline.Decode(null!);
+// returns empty list
+</code></pre>
+<p><strong>Invalid characters</strong> in the input string throw an <code>ArgumentException</code>:</p>
+<pre><code class="language-csharp">try
+{
+    FlexiblePolyline.Decode(&quot;invalid!chars&quot;);
+}
+catch (ArgumentException ex)
+{
+    Console.WriteLine(ex.Message);
+}
+</code></pre>
+<p>The codec is compatible with the <a href="https://github.com/heremaps/flexible-polyline">HERE Flexible Polyline specification</a> and interoperates with encodings produced by other HERE SDKs and APIs.</p>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

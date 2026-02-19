@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Intermodal Routing Service - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Route combining transit and walking segments." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/services/intermodal-routing" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Intermodal Routing Service - HerePlatform.NET" />
+    <meta property="og:description" content="Route combining transit and walking segments." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/services/intermodal-routing" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Intermodal Routing Service - HerePlatform.NET" />
+    <meta name="twitter:description" content="Route combining transit and walking segments." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"Intermodal Routing Service","description":"Route combining transit and walking segments.","url":"https://emuuu.github.io/HerePlatform.NET/docs/services/intermodal-routing","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Services","item":"https://emuuu.github.io/HerePlatform.NET/docs/services"},{"type":"ListItem","position":3,"name":"Intermodal Routing Service","item":"https://emuuu.github.io/HerePlatform.NET/docs/services/intermodal-routing"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>Intermodal Routing Service</h1>
+            <p class="lead text-muted">Route combining transit and walking segments.</p>
+            <h2 id="setup">Setup</h2>
+<p>Inject <code>IIntermodalRoutingService</code> into your component. It is registered automatically by <code>AddBlazorHerePlatform</code>.</p>
+<pre><code class="language-csharp">@inject IIntermodalRoutingService IntermodalRoutingService
+</code></pre>
+<h2 id="calculaterouteasync">CalculateRouteAsync</h2>
+<p>Calculate routes that combine public transit and pedestrian segments. Returns multi-section routes with departure/arrival times, transit line details, and polylines.</p>
+<pre><code class="language-csharp">var result = await IntermodalRoutingService.CalculateRouteAsync(new IntermodalRoutingRequest
+{
+    Origin = new LatLngLiteral(52.5200, 13.4050),
+    Destination = new LatLngLiteral(52.5400, 13.3600),
+    DepartAt = &quot;2025-01-15T08:00:00&quot;,
+    Lang = &quot;de&quot;
+});
+
+foreach (var route in result.Routes ?? [])
+{
+    foreach (var section in route.Sections ?? [])
+    {
+        var dep = section.Departure;
+        var arr = section.Arrival;
+        Console.WriteLine($&quot;[{section.Type}] {dep?.Name} → {arr?.Name}&quot;);
+        Console.WriteLine($&quot;  {dep?.Time} → {arr?.Time}&quot;);
+
+        if (section.Transport is { } t &amp;&amp; t.Mode != &quot;pedestrian&quot;)
+            Console.WriteLine($&quot;  Line: {t.ShortName} ({t.Mode}) → {t.Headsign}&quot;);
+
+        if (section.Summary is { } s)
+            Console.WriteLine($&quot;  {s.Duration / 60} min, {s.Length} m&quot;);
+    }
+}
+</code></pre>
+<h2 id="intermodalroutingrequest-options">IntermodalRoutingRequest Options</h2>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Origin</code></td>
+<td><code>LatLngLiteral</code></td>
+<td>--</td>
+<td>Start position (required).</td>
+</tr>
+<tr>
+<td><code>Destination</code></td>
+<td><code>LatLngLiteral</code></td>
+<td>--</td>
+<td>End position (required).</td>
+</tr>
+<tr>
+<td><code>DepartAt</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>Departure time (ISO 8601).</td>
+</tr>
+<tr>
+<td><code>ArriveAt</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>Desired arrival time (ISO 8601).</td>
+</tr>
+<tr>
+<td><code>Alternatives</code></td>
+<td><code>int</code></td>
+<td><code>0</code></td>
+<td>Number of alternative routes.</td>
+</tr>
+<tr>
+<td><code>ReturnPolyline</code></td>
+<td><code>bool</code></td>
+<td><code>true</code></td>
+<td>Include polyline geometry.</td>
+</tr>
+<tr>
+<td><code>ReturnActions</code></td>
+<td><code>bool</code></td>
+<td><code>false</code></td>
+<td>Include turn-by-turn actions.</td>
+</tr>
+<tr>
+<td><code>ReturnTravelSummary</code></td>
+<td><code>bool</code></td>
+<td><code>true</code></td>
+<td>Include duration and distance.</td>
+</tr>
+<tr>
+<td><code>Lang</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>Language for place names.</td>
+</tr>
+</tbody>
+</table>
+<p>Either <code>DepartAt</code> or <code>ArriveAt</code> may be set, but not both.</p>
+<h2 id="intermodalsection">IntermodalSection</h2>
+<p>Each route consists of alternating pedestrian and transit sections:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Type</code></td>
+<td><code>string?</code></td>
+<td><code>&quot;pedestrian&quot;</code> or <code>&quot;transit&quot;</code>.</td>
+</tr>
+<tr>
+<td><code>Departure</code></td>
+<td><code>IntermodalPlace?</code></td>
+<td>Departure stop/place with name, position, time.</td>
+</tr>
+<tr>
+<td><code>Arrival</code></td>
+<td><code>IntermodalPlace?</code></td>
+<td>Arrival stop/place with name, position, time.</td>
+</tr>
+<tr>
+<td><code>Summary</code></td>
+<td><code>IntermodalSummary?</code></td>
+<td>Duration (seconds) and length (meters).</td>
+</tr>
+<tr>
+<td><code>Transport</code></td>
+<td><code>IntermodalTransport?</code></td>
+<td>Transport mode and line details.</td>
+</tr>
+<tr>
+<td><code>Polyline</code></td>
+<td><code>string?</code></td>
+<td>Encoded flexible polyline.</td>
+</tr>
+<tr>
+<td><code>Geometry</code></td>
+<td><code>List&lt;LatLngLiteral&gt;?</code></td>
+<td>Decoded polyline coordinates.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="intermodaltransport">IntermodalTransport</h2>
+<p>Transit details for non-pedestrian sections:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Mode</code></td>
+<td><code>string?</code></td>
+<td><code>&quot;subway&quot;</code>, <code>&quot;bus&quot;</code>, <code>&quot;tram&quot;</code>, <code>&quot;train&quot;</code>, etc.</td>
+</tr>
+<tr>
+<td><code>Name</code></td>
+<td><code>string?</code></td>
+<td>Full line name (e.g. <code>&quot;U6&quot;</code>).</td>
+</tr>
+<tr>
+<td><code>ShortName</code></td>
+<td><code>string?</code></td>
+<td>Short line name.</td>
+</tr>
+<tr>
+<td><code>Headsign</code></td>
+<td><code>string?</code></td>
+<td>Direction/terminus (e.g. <code>&quot;Alt-Tegel&quot;</code>).</td>
+</tr>
+<tr>
+<td><code>Color</code></td>
+<td><code>string?</code></td>
+<td>Line color as hex (e.g. <code>&quot;#7B3F98&quot;</code>).</td>
+</tr>
+</tbody>
+</table>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

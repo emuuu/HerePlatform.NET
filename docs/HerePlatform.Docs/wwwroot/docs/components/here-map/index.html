@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HereMap - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Minimal HERE map component." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/components/here-map" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="HereMap - HerePlatform.NET" />
+    <meta property="og:description" content="Minimal HERE map component." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/components/here-map" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="HereMap - HerePlatform.NET" />
+    <meta name="twitter:description" content="Minimal HERE map component." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"HereMap","description":"Minimal HERE map component.","url":"https://emuuu.github.io/HerePlatform.NET/docs/components/here-map","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Components","item":"https://emuuu.github.io/HerePlatform.NET/docs/components"},{"type":"ListItem","position":3,"name":"HereMap","item":"https://emuuu.github.io/HerePlatform.NET/docs/components/here-map"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>HereMap</h1>
+            <p class="lead text-muted">Minimal HERE map component.</p>
+            <h2 id="basic-usage">Basic Usage</h2>
+<p><code>HereMap</code> renders a single HERE Maps container with minimal configuration. It creates the map on first render and manages its lifecycle.</p>
+<pre><code class="language-xml">&lt;HereMap Id=&quot;my-map&quot;
+         Height=&quot;400px&quot;
+         Options=&quot;@options&quot; /&gt;
+
+@code {
+    private MapOptions options = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 12,
+        LayerType = MapLayerType.VectorNormalMap
+    };
+}
+</code></pre>
+<p>The map suppresses Blazor re-renders (<code>ShouldRender</code> returns <code>false</code>) because visual state is managed entirely by the HERE Maps JS API. Use <code>ReInitializeAsync</code> to rebuild the map after option changes.</p>
+<h2 id="parameters">Parameters</h2>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Id</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>HTML <code>id</code> attribute for the map container.</td>
+</tr>
+<tr>
+<td><code>Options</code></td>
+<td><code>MapOptions?</code></td>
+<td><code>null</code></td>
+<td>Initial map configuration (center, zoom, layer type, UI options).</td>
+</tr>
+<tr>
+<td><code>Height</code></td>
+<td><code>string</code></td>
+<td><code>&quot;500px&quot;</code></td>
+<td>CSS height value applied as an inline style.</td>
+</tr>
+<tr>
+<td><code>CssClass</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>CSS class(es) applied to the map container div.</td>
+</tr>
+</tbody>
+</table>
+<p><code>MapOptions</code> supports the following properties:</p>
+<pre><code class="language-csharp">var options = new MapOptions
+{
+    Center = new LatLngLiteral(48.8566, 2.3522),
+    Zoom = 14,
+    LayerType = MapLayerType.RasterSatelliteMap,
+    EnableInteraction = true,
+    EnableUI = true,
+    MinZoom = 3,
+    MaxZoom = 18,
+    Tilt = 45,
+    Heading = 90,
+    UiLocale = &quot;de-DE&quot;,
+    PixelRatio = 2.0
+};
+</code></pre>
+<h2 id="events">Events</h2>
+<h3 id="onafterinit">OnAfterInit</h3>
+<p>Fires after the map has been initialized and is ready for interaction.</p>
+<pre><code class="language-xml">&lt;HereMap Options=&quot;@options&quot; OnAfterInit=&quot;@HandleMapReady&quot; /&gt;
+
+@code {
+    private async Task HandleMapReady()
+    {
+        Console.WriteLine(&quot;Map is ready.&quot;);
+    }
+}
+</code></pre>
+<h2 id="methods">Methods</h2>
+<h3 id="reinitializeasync">ReInitializeAsync</h3>
+<p>Disposes the current map and re-creates it with the provided (or current) <code>Options</code>. Use this when changing options that require a full map rebuild, such as <code>UiLocale</code>.</p>
+<pre><code class="language-csharp">@code {
+    private HereMap mapRef = default!;
+
+    private async Task ChangeLocale()
+    {
+        var newOptions = new MapOptions
+        {
+            Center = new LatLngLiteral(48.8566, 2.3522),
+            Zoom = 12,
+            UiLocale = &quot;fr-FR&quot;
+        };
+        await mapRef.ReInitializeAsync(newOptions);
+    }
+}
+</code></pre>
+<pre><code class="language-xml">&lt;HereMap @ref=&quot;mapRef&quot; Options=&quot;@options&quot; /&gt;
+&lt;button @onclick=&quot;ChangeLocale&quot;&gt;Switch to French&lt;/button&gt;
+</code></pre>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

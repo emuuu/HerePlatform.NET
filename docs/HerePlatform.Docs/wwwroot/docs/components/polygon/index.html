@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PolygonComponent - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Polygon shape for drawing filled areas." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/components/polygon" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="PolygonComponent - HerePlatform.NET" />
+    <meta property="og:description" content="Polygon shape for drawing filled areas." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/components/polygon" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="PolygonComponent - HerePlatform.NET" />
+    <meta name="twitter:description" content="Polygon shape for drawing filled areas." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"PolygonComponent","description":"Polygon shape for drawing filled areas.","url":"https://emuuu.github.io/HerePlatform.NET/docs/components/polygon","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Components","item":"https://emuuu.github.io/HerePlatform.NET/docs/components"},{"type":"ListItem","position":3,"name":"PolygonComponent","item":"https://emuuu.github.io/HerePlatform.NET/docs/components/polygon"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>PolygonComponent</h1>
+            <p class="lead text-muted">Polygon shape for drawing filled areas.</p>
+            <h2 id="basic-usage">Basic Usage</h2>
+<p><code>PolygonComponent</code> draws a filled polygon on the map. Place it inside an <code>AdvancedHereMap</code> and provide a list of coordinates defining the boundary.</p>
+<pre><code class="language-xml">&lt;AdvancedHereMap Options=&quot;@options&quot;&gt;
+    &lt;PolygonComponent Path=&quot;@path&quot;
+                      FillColor=&quot;rgba(52, 152, 219, 0.3)&quot;
+                      StrokeColor=&quot;#2980b9&quot;
+                      LineWidth=&quot;2&quot; /&gt;
+&lt;/AdvancedHereMap&gt;
+
+@code {
+    private MapOptions options = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 11
+    };
+
+    private List&lt;LatLngLiteral&gt; path = new()
+    {
+        new(52.54, 13.35),
+        new(52.54, 13.45),
+        new(52.50, 13.45),
+        new(52.50, 13.35)
+    };
+}
+</code></pre>
+<p>Parameters:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Path</code></td>
+<td><code>List&lt;LatLngLiteral&gt;?</code></td>
+<td><code>null</code></td>
+<td>Boundary coordinates. Two-way bindable via <code>@bind-Path</code>.</td>
+</tr>
+<tr>
+<td><code>FillColor</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>Fill color in CSS format.</td>
+</tr>
+<tr>
+<td><code>StrokeColor</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>Stroke color in CSS format.</td>
+</tr>
+<tr>
+<td><code>LineWidth</code></td>
+<td><code>double?</code></td>
+<td><code>null</code></td>
+<td>Border line width in pixels.</td>
+</tr>
+<tr>
+<td><code>LineCap</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>Cap style: <code>&quot;round&quot;</code>, <code>&quot;square&quot;</code>, or <code>&quot;butt&quot;</code>.</td>
+</tr>
+<tr>
+<td><code>LineJoin</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>Join style: <code>&quot;round&quot;</code>, <code>&quot;miter&quot;</code>, or <code>&quot;bevel&quot;</code>.</td>
+</tr>
+<tr>
+<td><code>LineDash</code></td>
+<td><code>double[]?</code></td>
+<td><code>null</code></td>
+<td>Dash pattern array.</td>
+</tr>
+<tr>
+<td><code>Holes</code></td>
+<td><code>List&lt;List&lt;LatLngLiteral&gt;&gt;?</code></td>
+<td><code>null</code></td>
+<td>Interior rings (holes) cut out of the polygon.</td>
+</tr>
+<tr>
+<td><code>ZIndex</code></td>
+<td><code>int?</code></td>
+<td><code>null</code></td>
+<td>Stacking order.</td>
+</tr>
+<tr>
+<td><code>Visible</code></td>
+<td><code>bool</code></td>
+<td><code>true</code></td>
+<td>Controls visibility.</td>
+</tr>
+<tr>
+<td><code>Clickable</code></td>
+<td><code>bool</code></td>
+<td><code>false</code></td>
+<td>Enables click events.</td>
+</tr>
+<tr>
+<td><code>Draggable</code></td>
+<td><code>bool</code></td>
+<td><code>false</code></td>
+<td>Allows dragging.</td>
+</tr>
+<tr>
+<td><code>Extrusion</code></td>
+<td><code>double?</code></td>
+<td><code>null</code></td>
+<td>3D extrusion height in meters (HARP engine).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="styling">Styling</h2>
+<p>Create polygons with holes to represent complex areas like parks with lakes:</p>
+<pre><code class="language-xml">&lt;PolygonComponent Path=&quot;@outerRing&quot;
+                  Holes=&quot;@holes&quot;
+                  FillColor=&quot;rgba(46, 204, 113, 0.4)&quot;
+                  StrokeColor=&quot;#27ae60&quot;
+                  LineWidth=&quot;2&quot;
+                  LineDash=&quot;new double[] { 6, 3 }&quot; /&gt;
+
+@code {
+    private List&lt;LatLngLiteral&gt; outerRing = new()
+    {
+        new(52.54, 13.35), new(52.54, 13.45),
+        new(52.50, 13.45), new(52.50, 13.35)
+    };
+
+    private List&lt;List&lt;LatLngLiteral&gt;&gt; holes = new()
+    {
+        new()
+        {
+            new(52.53, 13.38), new(52.53, 13.42),
+            new(52.51, 13.42), new(52.51, 13.38)
+        }
+    };
+}
+</code></pre>
+<p>For 3D extruded buildings (requires HARP engine):</p>
+<pre><code class="language-xml">&lt;PolygonComponent Path=&quot;@buildingFootprint&quot;
+                  FillColor=&quot;rgba(149, 165, 166, 0.8)&quot;
+                  Extrusion=&quot;50&quot;
+                  Elevation=&quot;0&quot; /&gt;
+</code></pre>
+<h2 id="events">Events</h2>
+<p>Enable <code>Clickable</code> or <code>Draggable</code> to receive events. Use <code>@bind-Path</code> to track geometry updates after dragging.</p>
+<pre><code class="language-xml">&lt;PolygonComponent @bind-Path=&quot;path&quot;
+                  FillColor=&quot;rgba(231, 76, 60, 0.3)&quot;
+                  StrokeColor=&quot;#c0392b&quot;
+                  LineWidth=&quot;2&quot;
+                  Clickable=&quot;true&quot;
+                  Draggable=&quot;true&quot;
+                  OnClick=&quot;@HandleClick&quot;
+                  OnDragEnd=&quot;@HandleDragEnd&quot; /&gt;
+
+@code {
+    private void HandleClick(MapPointerEventArgs e)
+    {
+        Console.WriteLine($&quot;Polygon clicked at {e.Position?.Lat}, {e.Position?.Lng}&quot;);
+    }
+
+    private void HandleDragEnd(MapDragEventArgs e)
+    {
+        Console.WriteLine(&quot;Polygon was dragged to a new position.&quot;);
+    }
+}
+</code></pre>
+<p>Available events: <code>OnClick</code>, <code>OnDoubleClick</code>, <code>OnLongPress</code>, <code>OnContextMenu</code>, <code>OnPointerDown</code>, <code>OnPointerUp</code>, <code>OnPointerMove</code>, <code>OnPointerEnter</code>, <code>OnPointerLeave</code>, <code>OnDragStart</code>, <code>OnDrag</code>, <code>OnDragEnd</code>.</p>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

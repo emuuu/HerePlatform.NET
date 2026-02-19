@@ -1,0 +1,175 @@
+@page "/rest-api/map-image"
+@inject IMapImageService MapImageService
+@inject IRestApiDocService DocService
+
+<PageTitle>Map Image — HerePlatform.NET Docs</PageTitle>
+
+<div class="doc-content">
+    <h1>IMapImageService</h1>
+    @if (_apiName is not null)
+    {
+        <span class="badge bg-info text-dark mb-2">@_apiName @_apiVersion</span>
+    }
+    <p class="lead">@_serviceDescription</p>
+    <ApiKeyWarning />
+
+    <h2>GetImageAsync</h2>
+    <p>@_methodDescription</p>
+    <ParamTable Parameters="@_params" />
+
+    <h5>Example Usage</h5>
+    <CodeBlock Language="csharp" Code="@_usageExample" />
+
+    <h3>Try It</h3>
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <label class="form-label">Latitude</label>
+                    <input type="number" step="any" class="form-control form-control-sm" @bind="_lat" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Longitude</label>
+                    <input type="number" step="any" class="form-control form-control-sm" @bind="_lng" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Zoom</label>
+                    <input type="number" class="form-control form-control-sm" @bind="_zoom" min="0" max="22" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Width</label>
+                    <input type="number" class="form-control form-control-sm" @bind="_width" min="64" max="2048" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Height</label>
+                    <input type="number" class="form-control form-control-sm" @bind="_height" min="64" max="2048" />
+                </div>
+            </div>
+            <div class="row g-2 mt-1">
+                <div class="col-md-3">
+                    <label class="form-label">Format</label>
+                    <select class="form-select form-select-sm" @bind="_format">
+                        <option value="@MapImageFormat.Png">PNG</option>
+                        <option value="@MapImageFormat.Jpeg">JPEG</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Style</label>
+                    <select class="form-select form-select-sm" @bind="_style">
+                        <option value="@MapImageStyle.Default">Default (Day)</option>
+                        <option value="@MapImageStyle.Night">Night</option>
+                        <option value="@MapImageStyle.Satellite">Satellite</option>
+                        <option value="@MapImageStyle.Lite">Lite</option>
+                        <option value="@MapImageStyle.LiteNight">Lite Night</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">PPI</label>
+                    <select class="form-select form-select-sm" @bind="_ppi">
+                        <option value="72">72</option>
+                        <option value="150">150</option>
+                        <option value="250">250</option>
+                        <option value="320">320</option>
+                        <option value="400">400</option>
+                        <option value="500">500</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-primary btn-sm w-100" @onclick="ExecuteGetImage" disabled="@_loading">
+                        @if (_loading)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1"></span>
+                        }
+                        Generate Image
+                    </button>
+                </div>
+            </div>
+
+            @if (_error is not null)
+            {
+                <div class="alert alert-danger mt-3">@_error</div>
+            }
+
+            @if (_imageDataUri is not null)
+            {
+                <div class="mt-3 text-center">
+                    <img src="@_imageDataUri" alt="Map Image" class="img-fluid border rounded" />
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private double _lat = 52.5308, _lng = 13.3847;
+    private int _zoom = 14;
+    private int _width = 512, _height = 384;
+    private MapImageFormat _format = MapImageFormat.Png;
+    private MapImageStyle _style = MapImageStyle.Default;
+    private int _ppi = 72;
+    private bool _loading;
+    private string? _imageDataUri;
+    private string? _error;
+
+    private async Task ExecuteGetImage()
+    {
+        _loading = true;
+        _error = null;
+        _imageDataUri = null;
+        StateHasChanged();
+
+        try
+        {
+            var bytes = await MapImageService.GetImageAsync(new MapImageRequest
+            {
+                Center = new LatLngLiteral(_lat, _lng),
+                Zoom = _zoom,
+                Width = _width,
+                Height = _height,
+                Format = _format,
+                Style = _style,
+                Ppi = _ppi
+            });
+
+            var mime = _format == MapImageFormat.Jpeg ? "image/jpeg" : "image/png";
+            _imageDataUri = $"data:{mime};base64,{Convert.ToBase64String(bytes)}";
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private string _serviceDescription = "";
+    private string _methodDescription = "";
+    private string? _apiName;
+    private string? _apiVersion;
+    private List<ParamDoc> _params = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await DocService.InitializeAsync();
+        var svc = DocService.GetService(nameof(IMapImageService));
+        _serviceDescription = svc?.Description ?? "";
+        _apiName = svc?.ApiName;
+        _apiVersion = svc?.ApiVersion;
+        _methodDescription = DocService.GetMethod(nameof(IMapImageService), nameof(IMapImageService.GetImageAsync))?.Description ?? "";
+        _params = DocService.GetMethodParams(nameof(IMapImageService), nameof(IMapImageService.GetImageAsync));
+    }
+
+    private const string _usageExample = @"var bytes = await MapImageService.GetImageAsync(new MapImageRequest
+{
+    Center = new LatLngLiteral(52.52, 13.405),
+    Zoom = 14,
+    Width = 800,
+    Height = 600,
+    Style = MapImageStyle.Default
+});
+
+var base64 = Convert.ToBase64String(bytes);
+var dataUri = $""data:image/png;base64,{base64}"";";
+}

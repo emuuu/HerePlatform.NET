@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Configuration - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Configure API loading options, map appearance, and API key management." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/getting-started/configuration" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Configuration - HerePlatform.NET" />
+    <meta property="og:description" content="Configure API loading options, map appearance, and API key management." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/getting-started/configuration" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Configuration - HerePlatform.NET" />
+    <meta name="twitter:description" content="Configure API loading options, map appearance, and API key management." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"Configuration","description":"Configure API loading options, map appearance, and API key management.","url":"https://emuuu.github.io/HerePlatform.NET/docs/getting-started/configuration","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Getting Started","item":"https://emuuu.github.io/HerePlatform.NET/docs/getting-started"},{"type":"ListItem","position":3,"name":"Configuration","item":"https://emuuu.github.io/HerePlatform.NET/docs/getting-started/configuration"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>Configuration</h1>
+            <p class="lead text-muted">Configure API loading options, map appearance, and API key management.</p>
+            <h2 id="addblazorhereplatform-overloads">AddBlazorHerePlatform Overloads</h2>
+<p>Three overloads are available for service registration:</p>
+<p><strong>String API key</strong> -- simplest form, uses default load options:</p>
+<pre><code class="language-csharp">builder.Services.AddBlazorHerePlatform(&quot;YOUR_API_KEY&quot;);
+</code></pre>
+<p><strong>HereApiLoadOptions</strong> -- full control over which HERE JS modules are loaded:</p>
+<pre><code class="language-csharp">builder.Services.AddBlazorHerePlatform(new HereApiLoadOptions(&quot;YOUR_API_KEY&quot;)
+{
+    Language = &quot;de&quot;,
+    LoadClustering = true,
+    LoadData = true
+});
+</code></pre>
+<p><strong>Custom IBlazorHerePlatformKeyService</strong> -- for dynamic key resolution or multi-tenant scenarios:</p>
+<pre><code class="language-csharp">builder.Services.AddBlazorHerePlatform(myCustomKeyService);
+</code></pre>
+<h2 id="hereapiloadoptions">HereApiLoadOptions</h2>
+<p>Controls how the HERE Maps JS API is loaded on the page.</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ApiKey</code></td>
+<td><code>string</code></td>
+<td>(required)</td>
+<td>Your HERE API key</td>
+</tr>
+<tr>
+<td><code>Version</code></td>
+<td><code>string</code></td>
+<td><code>&quot;3.1&quot;</code></td>
+<td>HERE JS API version</td>
+</tr>
+<tr>
+<td><code>BaseUrl</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>Custom CDN base URL</td>
+</tr>
+<tr>
+<td><code>LoadMapEvents</code></td>
+<td><code>bool</code></td>
+<td><code>true</code></td>
+<td>Load the mapevents module</td>
+</tr>
+<tr>
+<td><code>LoadUI</code></td>
+<td><code>bool</code></td>
+<td><code>true</code></td>
+<td>Load the default UI controls</td>
+</tr>
+<tr>
+<td><code>LoadClustering</code></td>
+<td><code>bool</code></td>
+<td><code>false</code></td>
+<td>Load the clustering module</td>
+</tr>
+<tr>
+<td><code>LoadData</code></td>
+<td><code>bool</code></td>
+<td><code>false</code></td>
+<td>Load the data module (GeoJSON, KML)</td>
+</tr>
+<tr>
+<td><code>UseHarpEngine</code></td>
+<td><code>bool</code></td>
+<td><code>true</code></td>
+<td>Use the HARP rendering engine</td>
+</tr>
+<tr>
+<td><code>Language</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>Map label language (e.g. <code>&quot;de&quot;</code>, <code>&quot;fr&quot;</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Set <code>LoadClustering = true</code> if you use <code>MarkerClusterComponent</code>. Set <code>LoadData = true</code> if you use <code>GeoJsonReaderComponent</code> or <code>KmlReaderComponent</code>.</p>
+<h2 id="mapoptions">MapOptions</h2>
+<p>Passed to the <code>HereMap</code> component via the <code>Options</code> parameter.</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Center</code></td>
+<td><code>LatLngLiteral?</code></td>
+<td><code>null</code></td>
+<td>Initial map center (lat, lng)</td>
+</tr>
+<tr>
+<td><code>Zoom</code></td>
+<td><code>double</code></td>
+<td><code>10</code></td>
+<td>Initial zoom level</td>
+</tr>
+<tr>
+<td><code>LayerType</code></td>
+<td><code>MapLayerType</code></td>
+<td><code>VectorNormalMap</code></td>
+<td>Base layer type</td>
+</tr>
+<tr>
+<td><code>EnableInteraction</code></td>
+<td><code>bool</code></td>
+<td><code>true</code></td>
+<td>Enable drag, pinch, scroll</td>
+</tr>
+<tr>
+<td><code>EnableUI</code></td>
+<td><code>bool</code></td>
+<td><code>true</code></td>
+<td>Show default UI controls</td>
+</tr>
+<tr>
+<td><code>MinZoom</code></td>
+<td><code>double?</code></td>
+<td><code>null</code></td>
+<td>Minimum allowed zoom</td>
+</tr>
+<tr>
+<td><code>MaxZoom</code></td>
+<td><code>double?</code></td>
+<td><code>null</code></td>
+<td>Maximum allowed zoom</td>
+</tr>
+<tr>
+<td><code>Tilt</code></td>
+<td><code>double?</code></td>
+<td><code>null</code></td>
+<td>3D tilt angle in degrees</td>
+</tr>
+<tr>
+<td><code>Heading</code></td>
+<td><code>double?</code></td>
+<td><code>null</code></td>
+<td>Map rotation in degrees</td>
+</tr>
+<tr>
+<td><code>Padding</code></td>
+<td><code>Padding?</code></td>
+<td><code>null</code></td>
+<td>Viewport padding</td>
+</tr>
+<tr>
+<td><code>AutoColor</code></td>
+<td><code>bool?</code></td>
+<td><code>null</code></td>
+<td>Auto UI color adaptation</td>
+</tr>
+<tr>
+<td><code>UiLocale</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>UI control locale (e.g. <code>&quot;de-DE&quot;</code>)</td>
+</tr>
+<tr>
+<td><code>PixelRatio</code></td>
+<td><code>double?</code></td>
+<td><code>null</code></td>
+<td>Pixel ratio for high-DPI displays</td>
+</tr>
+<tr>
+<td><code>FixedCenter</code></td>
+<td><code>bool?</code></td>
+<td><code>null</code></td>
+<td>Keep center fixed during resize</td>
+</tr>
+</tbody>
+</table>
+<p>Example with tilt and heading for a 3D perspective:</p>
+<pre><code class="language-csharp">var options = new MapOptions
+{
+    Center = new LatLngLiteral(52.52, 13.405),
+    Zoom = 16,
+    Tilt = 60,
+    Heading = 45,
+    LayerType = MapLayerType.VectorNormalMap
+};
+</code></pre>
+<h2 id="api-key-management">API Key Management</h2>
+<p>The <code>IBlazorHerePlatformKeyService</code> interface manages the API key lifecycle:</p>
+<pre><code class="language-csharp">public interface IBlazorHerePlatformKeyService
+{
+    Task&lt;HereApiLoadOptions&gt; GetApiOptions();
+    bool IsApiInitialized { get; }
+    void MarkApiInitialized();
+    void UpdateApiKey(string apiKey);
+}
+</code></pre>
+<p>The built-in <code>BlazorHerePlatformKeyService</code> stores the key in memory. Implement <code>IBlazorHerePlatformKeyService</code> yourself to load keys from a database, vault, or per-user configuration. Call <code>UpdateApiKey</code> to swap the key at runtime; this resets <code>IsApiInitialized</code>, so the next map render reloads the HERE JS API with the new key.</p>
+<h2 id="per-map-load-options-override">Per-Map Load Options Override</h2>
+<p>You can also attach <code>HereApiLoadOptions</code> directly to a specific map's <code>MapOptions</code>:</p>
+<pre><code class="language-csharp">var options = new MapOptions
+{
+    Center = new LatLngLiteral(52.52, 13.405),
+    Zoom = 12,
+    ApiLoadOptions = new HereApiLoadOptions(&quot;DIFFERENT_KEY&quot;)
+    {
+        LoadClustering = true
+    }
+};
+</code></pre>
+<p>When <code>ApiLoadOptions</code> is set on a <code>MapOptions</code> instance, it takes priority over the DI-registered key service.</p>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

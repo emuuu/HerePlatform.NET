@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Public Transit Service - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Public transit departures and stations." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/services/transit" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Public Transit Service - HerePlatform.NET" />
+    <meta property="og:description" content="Public transit departures and stations." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/services/transit" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Public Transit Service - HerePlatform.NET" />
+    <meta name="twitter:description" content="Public transit departures and stations." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"Public Transit Service","description":"Public transit departures and stations.","url":"https://emuuu.github.io/HerePlatform.NET/docs/services/transit","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Services","item":"https://emuuu.github.io/HerePlatform.NET/docs/services"},{"type":"ListItem","position":3,"name":"Public Transit Service","item":"https://emuuu.github.io/HerePlatform.NET/docs/services/transit"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>Public Transit Service</h1>
+            <p class="lead text-muted">Public transit departures and stations.</p>
+            <h2 id="departures">Departures</h2>
+<p>Retrieve upcoming departures from the nearest transit station to a given position.</p>
+<pre><code class="language-csharp">@inject IPublicTransitService TransitService
+</code></pre>
+<pre><code class="language-csharp">var position = new LatLngLiteral(52.5200, 13.4050);
+var result = await TransitService.GetDeparturesAsync(position);
+
+foreach (var departure in result.Departures ?? [])
+{
+    Console.WriteLine($&quot;{departure.LineName} -&gt; {departure.Direction}&quot;);
+    Console.WriteLine($&quot;Type: {departure.TransportType}&quot;);
+    Console.WriteLine($&quot;Departs: {departure.DepartureTime}&quot;);
+    Console.WriteLine($&quot;Station: {departure.StationName}&quot;);
+}
+</code></pre>
+<p>Each <code>TransitDeparture</code> contains:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>LineName</code></td>
+<td><code>string?</code></td>
+<td>Line name or number (e.g. <code>&quot;U2&quot;</code>, <code>&quot;Bus 100&quot;</code>).</td>
+</tr>
+<tr>
+<td><code>Direction</code></td>
+<td><code>string?</code></td>
+<td>Destination of the line.</td>
+</tr>
+<tr>
+<td><code>DepartureTime</code></td>
+<td><code>string?</code></td>
+<td>Departure time (ISO 8601).</td>
+</tr>
+<tr>
+<td><code>TransportType</code></td>
+<td><code>string?</code></td>
+<td>Transport type: <code>&quot;bus&quot;</code>, <code>&quot;subway&quot;</code>, <code>&quot;train&quot;</code>, <code>&quot;tram&quot;</code>.</td>
+</tr>
+<tr>
+<td><code>StationName</code></td>
+<td><code>string?</code></td>
+<td>Name of the departure station.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="stations">Stations</h2>
+<p>Search for transit stations near a position within a given radius.</p>
+<pre><code class="language-csharp">var position = new LatLngLiteral(52.5200, 13.4050);
+var result = await TransitService.SearchStationsAsync(position, radiusMeters: 1000);
+
+foreach (var station in result.Stations ?? [])
+{
+    Console.WriteLine($&quot;{station.Name} ({station.Distance:F0}m)&quot;);
+    Console.WriteLine($&quot;Position: {station.Position?.Lat}, {station.Position?.Lng}&quot;);
+    Console.WriteLine($&quot;Types: {string.Join(&quot;, &quot;, station.TransportTypes ?? [])}&quot;);
+}
+</code></pre>
+<p>Each <code>TransitStation</code> contains:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Name</code></td>
+<td><code>string?</code></td>
+<td>Station name.</td>
+</tr>
+<tr>
+<td><code>Position</code></td>
+<td><code>LatLngLiteral?</code></td>
+<td>Station coordinates.</td>
+</tr>
+<tr>
+<td><code>Distance</code></td>
+<td><code>double</code></td>
+<td>Distance from search center in meters.</td>
+</tr>
+<tr>
+<td><code>TransportTypes</code></td>
+<td><code>List&lt;string&gt;?</code></td>
+<td>Available transport types at this station.</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>radiusMeters</code> parameter defaults to <code>500</code> meters when omitted:</p>
+<pre><code class="language-csharp">// Default 500m radius
+var nearby = await TransitService.SearchStationsAsync(position);
+
+// Custom 2km radius
+var wider = await TransitService.SearchStationsAsync(position, 2000);
+</code></pre>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

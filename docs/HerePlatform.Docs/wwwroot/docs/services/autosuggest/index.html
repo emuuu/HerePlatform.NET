@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Autosuggest Service - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Type-ahead address and place suggestions." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/services/autosuggest" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Autosuggest Service - HerePlatform.NET" />
+    <meta property="og:description" content="Type-ahead address and place suggestions." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/services/autosuggest" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Autosuggest Service - HerePlatform.NET" />
+    <meta name="twitter:description" content="Type-ahead address and place suggestions." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"Autosuggest Service","description":"Type-ahead address and place suggestions.","url":"https://emuuu.github.io/HerePlatform.NET/docs/services/autosuggest","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Services","item":"https://emuuu.github.io/HerePlatform.NET/docs/services"},{"type":"ListItem","position":3,"name":"Autosuggest Service","item":"https://emuuu.github.io/HerePlatform.NET/docs/services/autosuggest"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>Autosuggest Service</h1>
+            <p class="lead text-muted">Type-ahead address and place suggestions.</p>
+            <h2 id="setup">Setup</h2>
+<p>Inject <code>IAutosuggestService</code> into your component. It is registered automatically by <code>AddBlazorHerePlatform</code>.</p>
+<pre><code class="language-csharp">@inject IAutosuggestService AutosuggestService
+</code></pre>
+<h2 id="suggestasync">SuggestAsync</h2>
+<p>Return rich place and address suggestions as the user types. Results include position coordinates and highlight ranges for matched text.</p>
+<pre><code class="language-csharp">var result = await AutosuggestService.SuggestAsync(&quot;Brandenburger&quot;, new AutosuggestOptions
+{
+    Limit = 5,
+    Lang = &quot;de&quot;,
+    In = &quot;countryCode:DEU&quot;,
+    At = new LatLngLiteral(52.52, 13.405)
+});
+
+foreach (var item in result.Items ?? [])
+{
+    Console.WriteLine($&quot;{item.Title} ({item.ResultType})&quot;);
+    Console.WriteLine($&quot;  Address: {item.Address?.Label}&quot;);
+    if (item.Position is { } pos)
+        Console.WriteLine($&quot;  Position: {pos.Lat}, {pos.Lng}&quot;);
+}
+</code></pre>
+<h2 id="autocompleteasync">AutocompleteAsync</h2>
+<p>Return lightweight address completions optimized for type-ahead input fields. Faster than <code>SuggestAsync</code> but returns fewer details.</p>
+<pre><code class="language-csharp">var result = await AutosuggestService.AutocompleteAsync(&quot;Invaliden&quot;, new AutosuggestOptions
+{
+    Limit = 5,
+    Lang = &quot;de&quot;,
+    In = &quot;countryCode:DEU&quot;
+});
+
+foreach (var item in result.Items ?? [])
+{
+    Console.WriteLine($&quot;{item.Title} — {item.Address?.Label}&quot;);
+}
+</code></pre>
+<h2 id="autosuggestoptions">AutosuggestOptions</h2>
+<p>Both methods accept an optional <code>AutosuggestOptions</code> parameter:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Limit</code></td>
+<td><code>int</code></td>
+<td><code>5</code></td>
+<td>Maximum number of results.</td>
+</tr>
+<tr>
+<td><code>Lang</code></td>
+<td><code>string?</code></td>
+<td><code>&quot;de&quot;</code></td>
+<td>Language for results (BCP 47).</td>
+</tr>
+<tr>
+<td><code>In</code></td>
+<td><code>string?</code></td>
+<td><code>&quot;countryCode:DEU&quot;</code></td>
+<td>Geographic filter (e.g. <code>countryCode:DEU</code>).</td>
+</tr>
+<tr>
+<td><code>At</code></td>
+<td><code>LatLngLiteral?</code></td>
+<td><code>null</code></td>
+<td>Bias results towards this location.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="result-types">Result Types</h2>
+<p><code>AutosuggestResult</code> and <code>AutocompleteResult</code> both contain a list of <code>AutosuggestItem</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Title</code></td>
+<td><code>string?</code></td>
+<td>Display name of the suggestion.</td>
+</tr>
+<tr>
+<td><code>Id</code></td>
+<td><code>string?</code></td>
+<td>HERE place ID.</td>
+</tr>
+<tr>
+<td><code>ResultType</code></td>
+<td><code>string?</code></td>
+<td><code>&quot;place&quot;</code>, <code>&quot;street&quot;</code>, <code>&quot;houseNumber&quot;</code>, <code>&quot;locality&quot;</code>, etc.</td>
+</tr>
+<tr>
+<td><code>Address</code></td>
+<td><code>AutosuggestAddress?</code></td>
+<td>Structured address with Label, City, Street, PostalCode, etc.</td>
+</tr>
+<tr>
+<td><code>Position</code></td>
+<td><code>LatLngLiteral?</code></td>
+<td>Geographic coordinates (may be null for autocomplete).</td>
+</tr>
+<tr>
+<td><code>Highlights</code></td>
+<td><code>AutosuggestHighlights?</code></td>
+<td>Matched character ranges for highlighting.</td>
+</tr>
+</tbody>
+</table>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

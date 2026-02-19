@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Matrix Routing Service - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Calculate distance/time matrices between multiple points." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/services/matrix-routing" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Matrix Routing Service - HerePlatform.NET" />
+    <meta property="og:description" content="Calculate distance/time matrices between multiple points." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/services/matrix-routing" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Matrix Routing Service - HerePlatform.NET" />
+    <meta name="twitter:description" content="Calculate distance/time matrices between multiple points." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"Matrix Routing Service","description":"Calculate distance/time matrices between multiple points.","url":"https://emuuu.github.io/HerePlatform.NET/docs/services/matrix-routing","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Services","item":"https://emuuu.github.io/HerePlatform.NET/docs/services"},{"type":"ListItem","position":3,"name":"Matrix Routing Service","item":"https://emuuu.github.io/HerePlatform.NET/docs/services/matrix-routing"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>Matrix Routing Service</h1>
+            <p class="lead text-muted">Calculate distance/time matrices between multiple points.</p>
+            <h2 id="basic-usage">Basic Usage</h2>
+<p>Calculate travel times and distances between multiple origins and destinations in a single request.</p>
+<pre><code class="language-csharp">@inject IMatrixRoutingService MatrixRoutingService
+</code></pre>
+<pre><code class="language-csharp">var request = new MatrixRoutingRequest
+{
+    Origins =
+    [
+        new LatLngLiteral(52.52, 13.405),    // Berlin
+        new LatLngLiteral(48.8566, 2.3522)   // Paris
+    ],
+    Destinations =
+    [
+        new LatLngLiteral(51.5074, -0.1278), // London
+        new LatLngLiteral(40.4168, -3.7038)  // Madrid
+    ],
+    TransportMode = TransportMode.Car
+};
+
+var result = await MatrixRoutingService.CalculateMatrixAsync(request);
+</code></pre>
+<h2 id="matrixroutingrequest">MatrixRoutingRequest</h2>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Origins</code></td>
+<td><code>List&lt;LatLngLiteral&gt;</code></td>
+<td><code>[]</code></td>
+<td>Origin positions.</td>
+</tr>
+<tr>
+<td><code>Destinations</code></td>
+<td><code>List&lt;LatLngLiteral&gt;</code></td>
+<td><code>[]</code></td>
+<td>Destination positions.</td>
+</tr>
+<tr>
+<td><code>TransportMode</code></td>
+<td><code>TransportMode</code></td>
+<td><code>Car</code></td>
+<td><code>Car</code>, <code>Truck</code>, <code>Pedestrian</code>, <code>Bicycle</code>, <code>Scooter</code>.</td>
+</tr>
+<tr>
+<td><code>RoutingMode</code></td>
+<td><code>RoutingMode</code></td>
+<td><code>Fast</code></td>
+<td><code>Fast</code> (time) or <code>Short</code> (distance).</td>
+</tr>
+<tr>
+<td><code>DepartureTime</code></td>
+<td><code>DateTime?</code></td>
+<td><code>null</code></td>
+<td>Departure time for time-aware routing.</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-csharp">var request = new MatrixRoutingRequest
+{
+    Origins = origins,
+    Destinations = destinations,
+    TransportMode = TransportMode.Truck,
+    RoutingMode = RoutingMode.Fast,
+    DepartureTime = DateTime.UtcNow
+};
+</code></pre>
+<h2 id="result-handling">Result Handling</h2>
+<p><code>MatrixRoutingResult</code> contains metadata and a flat list of <code>MatrixEntry</code> objects. Each entry maps an origin index to a destination index with duration and distance.</p>
+<pre><code class="language-csharp">var result = await MatrixRoutingService.CalculateMatrixAsync(request);
+
+Console.WriteLine($&quot;Matrix: {result.NumOrigins}x{result.NumDestinations}&quot;);
+
+foreach (var entry in result.Matrix)
+{
+    Console.WriteLine(
+        $&quot;Origin {entry.OriginIndex} -&gt; Dest {entry.DestinationIndex}: &quot; +
+        $&quot;{entry.Duration / 60} min, {entry.Length / 1000.0:F1} km&quot;);
+}
+</code></pre>
+<p>Each <code>MatrixEntry</code> contains:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OriginIndex</code></td>
+<td><code>int</code></td>
+<td>Index of the origin in the request list.</td>
+</tr>
+<tr>
+<td><code>DestinationIndex</code></td>
+<td><code>int</code></td>
+<td>Index of the destination in the request list.</td>
+</tr>
+<tr>
+<td><code>Duration</code></td>
+<td><code>int</code></td>
+<td>Travel duration in seconds.</td>
+</tr>
+<tr>
+<td><code>Length</code></td>
+<td><code>int</code></td>
+<td>Travel distance in meters.</td>
+</tr>
+</tbody>
+</table>
+<p>To build a 2D matrix from the flat list:</p>
+<pre><code class="language-csharp">var matrix = new int[result.NumOrigins, result.NumDestinations];
+foreach (var entry in result.Matrix)
+{
+    matrix[entry.OriginIndex, entry.DestinationIndex] = entry.Duration;
+}
+</code></pre>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

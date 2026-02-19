@@ -1,0 +1,125 @@
+@page "/rest-api/route-matching"
+@inject IRouteMatchingService RouteMatchingService
+@inject IRestApiDocService DocService
+
+<PageTitle>Route Matching — HerePlatform.NET Docs</PageTitle>
+
+<div class="doc-content">
+    <h1>IRouteMatchingService</h1>
+    @if (_apiName is not null)
+    {
+        <span class="badge bg-info text-dark mb-2">@_apiName @_apiVersion</span>
+    }
+    <p class="lead">@_serviceDescription</p>
+    <ApiKeyWarning />
+
+    <h2>MatchRouteAsync</h2>
+    <p>@_methodDescription</p>
+    <ParamTable Parameters="@_params" />
+
+    <h5>Example Response (Success)</h5>
+    <CodeBlock Language="json" Code="@_successExample" />
+
+    <TryItPanel TResult="RouteMatchingResult" OnExecute="ExecuteMatch">
+        <FormContent>
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <label class="form-label">Transport Mode</label>
+                    <select class="form-select form-select-sm" @bind="_transportMode">
+                        <option value="@TransportMode.Car">Car</option>
+                        <option value="@TransportMode.Truck">Truck</option>
+                        <option value="@TransportMode.Pedestrian">Pedestrian</option>
+                        <option value="@TransportMode.Bicycle">Bicycle</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mt-2">
+                <label class="form-label fw-semibold">Trace Points</label>
+                @for (int i = 0; i < _tracePoints.Count; i++)
+                {
+                    var idx = i;
+                    <div class="row g-1 mb-1">
+                        <div class="col-4">
+                            <input type="number" step="any" class="form-control form-control-sm" placeholder="Lat"
+                                   value="@_tracePoints[idx].lat"
+                                   @onchange="e => { if (double.TryParse(e.Value?.ToString(), CultureInfo.InvariantCulture, out var parsed)) { var v = _tracePoints[idx]; _tracePoints[idx] = (parsed, v.lng, v.ts); } }" />
+                        </div>
+                        <div class="col-4">
+                            <input type="number" step="any" class="form-control form-control-sm" placeholder="Lng"
+                                   value="@_tracePoints[idx].lng"
+                                   @onchange="e => { if (double.TryParse(e.Value?.ToString(), CultureInfo.InvariantCulture, out var parsed)) { var v = _tracePoints[idx]; _tracePoints[idx] = (v.lat, parsed, v.ts); } }" />
+                        </div>
+                        <div class="col-2">
+                            <input type="number" class="form-control form-control-sm" placeholder="Sec offset"
+                                   value="@_tracePoints[idx].ts"
+                                   @onchange="e => { if (int.TryParse(e.Value?.ToString(), out var parsed)) { var v = _tracePoints[idx]; _tracePoints[idx] = (v.lat, v.lng, parsed); } }" />
+                        </div>
+                        <div class="col-2">
+                            <button class="btn btn-sm btn-outline-danger w-100" @onclick="() => _tracePoints.RemoveAt(idx)">Remove</button>
+                        </div>
+                    </div>
+                }
+                <button class="btn btn-sm btn-outline-secondary" @onclick="() => _tracePoints.Add((52.52, 13.40, _tracePoints.Count * 10))">+ Add Point</button>
+            </div>
+        </FormContent>
+    </TryItPanel>
+</div>
+
+@code {
+    private TransportMode _transportMode = TransportMode.Car;
+    private List<(double lat, double lng, int ts)> _tracePoints =
+    [
+        (52.5308, 13.3847, 0),
+        (52.5280, 13.3860, 10),
+        (52.5250, 13.3880, 20),
+        (52.5200, 13.3900, 30)
+    ];
+
+    private Task<RouteMatchingResult> ExecuteMatch()
+    {
+        var baseTime = DateTimeOffset.UtcNow;
+        return RouteMatchingService.MatchRouteAsync(new RouteMatchingRequest
+        {
+            TransportMode = _transportMode,
+            TracePoints = _tracePoints.Select(tp => new TracePoint
+            {
+                Position = new LatLngLiteral(tp.lat, tp.lng),
+                Timestamp = baseTime.AddSeconds(tp.ts)
+            }).ToList()
+        });
+    }
+
+    private string _serviceDescription = "";
+    private string _methodDescription = "";
+    private string? _apiName;
+    private string? _apiVersion;
+    private List<ParamDoc> _params = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await DocService.InitializeAsync();
+        var svc = DocService.GetService(nameof(IRouteMatchingService));
+        _serviceDescription = svc?.Description ?? "";
+        _apiName = svc?.ApiName;
+        _apiVersion = svc?.ApiVersion;
+        _methodDescription = DocService.GetMethod(nameof(IRouteMatchingService), nameof(IRouteMatchingService.MatchRouteAsync))?.Description ?? "";
+        _params = DocService.GetMethodParams(nameof(IRouteMatchingService), nameof(IRouteMatchingService.MatchRouteAsync));
+    }
+
+    private const string _successExample = @"{
+  ""matchedLinks"": [
+    {
+      ""linkId"": ""here:cm:segment:123456789"",
+      ""confidence"": 0.95,
+      ""speedLimit"": 50.0,
+      ""functionalClass"": 2,
+      ""geometry"": [
+        { ""lat"": 52.5308, ""lng"": 13.3847 },
+        { ""lat"": 52.5280, ""lng"": 13.3860 }
+      ]
+    }
+  ],
+  ""warnings"": []
+}";
+}

@@ -1,0 +1,173 @@
+@inject IDocContentService ContentService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@implements IDisposable
+
+<div class="nav-menu p-3">
+    <div class="nav-filter mb-3">
+        <input type="text" class="form-control form-control-sm" placeholder="Filter..."
+               @bind="_filter" @bind:event="oninput" />
+    </div>
+
+    @foreach (var section in ContentService.GetNavSections())
+    {
+        var visibleItems = section.Items
+            .Where(i => Matches(i.Title))
+            .ToList();
+        if (visibleItems.Count == 0) continue;
+
+        <h6 class="nav-section-title text-uppercase fw-bold mt-3 mb-2">@(section.Category)</h6>
+        <ul class="nav flex-column">
+            @foreach (var item in visibleItems)
+            {
+                var href = $"docs/{item.Slug}";
+                <li class="nav-item">
+                    <NavLink class="nav-link py-1" href="@href" Match="NavLinkMatch.All"
+                             @onclick="() => OnNavigate.InvokeAsync()">
+                        @item.Title
+                    </NavLink>
+                </li>
+            }
+        </ul>
+    }
+
+    @{
+        var filteredGroups = _demoGroups
+            .Select((g, i) => (Title: _demoGroupTitles[i], Items: g.Where(x => Matches(x.Title)).ToList()))
+            .ToList();
+        var hasOverview = Matches("Overview");
+        var anyDemo = hasOverview || filteredGroups.Any(g => g.Items.Count > 0);
+    }
+
+    @if (anyDemo)
+    {
+        <h6 class="nav-section-title text-uppercase fw-bold mt-3 mb-2">Demos</h6>
+
+        @if (hasOverview)
+        {
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <NavLink class="nav-link py-1" href="demo" Match="NavLinkMatch.All"
+                             @onclick="() => OnNavigate.InvokeAsync()">
+                        Overview
+                    </NavLink>
+                </li>
+            </ul>
+        }
+
+        @foreach (var group in filteredGroups)
+        {
+            if (group.Items.Count == 0) continue;
+
+            <h6 class="nav-subsection-title text-muted fw-semibold mt-2 mb-1"
+                style="font-size:.75rem;padding-left:.5rem;">@group.Title</h6>
+            <ul class="nav flex-column">
+                @foreach (var item in group.Items)
+                {
+                    <li class="nav-item">
+                        <NavLink class="nav-link py-1" href="@item.Href"
+                                 @onclick="() => OnNavigate.InvokeAsync()">
+                            @item.Title
+                        </NavLink>
+                    </li>
+                }
+            </ul>
+        }
+    }
+
+    @* ── REST API Explorer ── *@
+    @{
+        var hasRestOverview = Matches("Overview");
+        var hasRestGettingStarted = Matches("Getting Started");
+        var filteredServices = ServiceDefinitions.All.Where(s => Matches(s.Title)).ToList();
+        var anyRest = hasRestOverview || hasRestGettingStarted || filteredServices.Count > 0;
+    }
+
+    @if (anyRest)
+    {
+        <hr class="my-3" />
+        <h6 class="nav-section-title text-uppercase fw-bold mt-3 mb-2">REST API Explorer</h6>
+        <ul class="nav flex-column">
+            @if (hasRestOverview)
+            {
+                <li class="nav-item">
+                    <NavLink class="nav-link py-1" href="rest-api" Match="NavLinkMatch.All"
+                             @onclick="() => OnNavigate.InvokeAsync()">Overview</NavLink>
+                </li>
+            }
+            @if (hasRestGettingStarted)
+            {
+                <li class="nav-item">
+                    <NavLink class="nav-link py-1" href="rest-api/getting-started"
+                             @onclick="() => OnNavigate.InvokeAsync()">Getting Started</NavLink>
+                </li>
+            }
+        </ul>
+
+        @if (filteredServices.Count > 0)
+        {
+            <h6 class="nav-subsection-title text-muted fw-semibold mt-2 mb-1"
+                style="font-size:.75rem;padding-left:.5rem;">API Services</h6>
+            <ul class="nav flex-column">
+                @foreach (var svc in filteredServices)
+                {
+                    <li class="nav-item">
+                        <NavLink class="nav-link py-1" href="@svc.Href"
+                                 @onclick="() => OnNavigate.InvokeAsync()">@svc.Title</NavLink>
+                    </li>
+                }
+            </ul>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public EventCallback OnNavigate { get; set; }
+
+    private string _filter = "";
+
+    private static readonly (string Title, string Href)[][] _demoGroups =
+    [
+        [("Basic Map", "demo/map-basic"), ("Map Controls", "demo/map-controls"), ("Enhancements", "demo/map-enhancements")],
+        [("Markers", "demo/map-markers"), ("Shapes", "demo/map-shapes"), ("InfoBubble", "demo/map-infobubble"), ("Groups", "demo/map-groups")],
+        [("Clustering", "demo/map-clustering"), ("Data Import", "demo/map-data"), ("Heatmap", "demo/map-heatmap"), ("Traffic", "demo/map-traffic")],
+        [("Routing", "demo/map-routing"), ("Geocoding", "demo/map-geocoding"), ("Autosuggest", "demo/map-autosuggest"), ("Matrix Routing", "demo/map-matrix-routing"), ("Error Handling", "demo/map-error-handling")],
+        [("UI Controls", "demo/map-ui-controls"), ("Utilities", "demo/map-utilities")]
+    ];
+
+    private static readonly string[] _demoGroupTitles =
+        ["Map Basics", "Map Objects", "Data & Visualization", "Services", "UI & Utilities"];
+
+    private bool Matches(string title) =>
+        string.IsNullOrWhiteSpace(_filter) ||
+        title.Contains(_filter.Trim(), StringComparison.OrdinalIgnoreCase);
+
+    private bool _needsScroll;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ContentService.InitializeAsync();
+        Navigation.LocationChanged += OnLocationChanged;
+        _needsScroll = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_needsScroll || firstRender)
+        {
+            _needsScroll = false;
+            await JS.InvokeVoidAsync("BlazorDocs.scrollNavToActive");
+        }
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        _needsScroll = true;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+}

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blazor Server Notes - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Important considerations when using BlazorHerePlatform in Blazor Server apps." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/getting-started/blazor-server" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Blazor Server Notes - HerePlatform.NET" />
+    <meta property="og:description" content="Important considerations when using BlazorHerePlatform in Blazor Server apps." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/getting-started/blazor-server" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Blazor Server Notes - HerePlatform.NET" />
+    <meta name="twitter:description" content="Important considerations when using BlazorHerePlatform in Blazor Server apps." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"Blazor Server Notes","description":"Important considerations when using BlazorHerePlatform in Blazor Server apps.","url":"https://emuuu.github.io/HerePlatform.NET/docs/getting-started/blazor-server","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Getting Started","item":"https://emuuu.github.io/HerePlatform.NET/docs/getting-started"},{"type":"ListItem","position":3,"name":"Blazor Server Notes","item":"https://emuuu.github.io/HerePlatform.NET/docs/getting-started/blazor-server"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>Blazor Server Notes</h1>
+            <p class="lead text-muted">Important considerations when using BlazorHerePlatform in Blazor Server apps.</p>
+            <h2 id="server-vs.webassembly">Server vs. WebAssembly</h2>
+<p>In Blazor WebAssembly, all code runs in the browser. In Blazor Server, C# runs on the server and DOM updates are sent over a SignalR connection. This has several implications for map components.</p>
+<p><strong>JS interop is asynchronous over the wire.</strong> Every call to the HERE Maps JS API crosses the SignalR connection. High-frequency operations (e.g., updating marker positions in a loop) will have noticeable latency compared to WASM.</p>
+<p><strong>Map rendering happens client-side.</strong> The HERE JS API still runs entirely in the browser. Only the Blazor component logic and event handlers execute on the server.</p>
+<h2 id="scoped-services">Scoped Services</h2>
+<p>All services registered by <code>AddBlazorHerePlatform</code> are <strong>scoped</strong>. In Blazor Server, a scope corresponds to a single circuit (user connection). Each user gets their own:</p>
+<ul>
+<li><code>IBlazorHerePlatformKeyService</code></li>
+<li><code>IRoutingService</code>, <code>IGeocodingService</code>, and other service instances</li>
+</ul>
+<p>This means <code>IsApiInitialized</code> state is tracked per circuit. When a user disconnects and reconnects, a new scope is created and the HERE JS API is re-initialized.</p>
+<h2 id="shared-key-service-instance">Shared Key Service Instance</h2>
+<p>When you pass a custom <code>IBlazorHerePlatformKeyService</code> instance directly:</p>
+<pre><code class="language-csharp">var keyService = new BlazorHerePlatformKeyService(&quot;YOUR_API_KEY&quot;);
+builder.Services.AddBlazorHerePlatform(keyService);
+</code></pre>
+<p>That <strong>same object</strong> is shared across all circuits. This means:</p>
+<ul>
+<li><code>IsApiInitialized</code> is shared -- one user marking it <code>true</code> affects all users.</li>
+<li><code>UpdateApiKey</code> changes the key for every connected user.</li>
+</ul>
+<p>If you need per-user key isolation, register a factory instead:</p>
+<pre><code class="language-csharp">builder.Services.AddScoped&lt;IBlazorHerePlatformKeyService&gt;(sp =&gt;
+    new BlazorHerePlatformKeyService(&quot;YOUR_API_KEY&quot;));
+</code></pre>
+<p>Or implement <code>IBlazorHerePlatformKeyService</code> with per-user logic and register it as scoped.</p>
+<h2 id="signalr-message-size">SignalR Message Size</h2>
+<p>Large JS interop payloads (GeoJSON data, routing responses, cluster data) can exceed the default SignalR message size limit. Increase it in <code>Program.cs</code>:</p>
+<pre><code class="language-csharp">builder.Services.Configure&lt;Microsoft.AspNetCore.SignalR.HubOptions&gt;(options =&gt;
+{
+    options.MaximumReceiveMessageSize = 512 * 1024; // 512 KB
+});
+</code></pre>
+<p>Adjust the value based on the largest payload your application handles.</p>
+<h2 id="prerendering">Prerendering</h2>
+<p>Blazor Server prerendering (<code>rendermode=&quot;ServerPrerendered&quot;</code>) runs component code on the server before the SignalR circuit is established. During prerendering, <code>IJSRuntime</code> is not available, so the map cannot be initialized.</p>
+<p><code>HereMap</code> handles this correctly -- it initializes in <code>OnAfterRenderAsync(firstRender: true)</code>, which only runs after the circuit is connected. No special action is required.</p>
+<p>However, if you access <code>_map.InteropObject</code> outside of <code>OnAfterInit</code>, guard against <code>null</code>:</p>
+<pre><code class="language-csharp">private async Task MoveToLocation(LatLngLiteral position)
+{
+    if (_map.InteropObject is null)
+        return; // Not yet initialized (prerender phase)
+
+    await _map.InteropObject.SetCenterAsync(position);
+}
+</code></pre>
+<h2 id="circuit-disconnection">Circuit Disconnection</h2>
+<p>When a Blazor Server circuit disconnects (browser tab closed, network drop), the component's <code>DisposeAsync</code> is called. <code>MapComponent</code> handles disposal gracefully, catching <code>TaskCanceledException</code> and <code>ObjectDisposedException</code> that occur when the JS runtime is no longer reachable.</p>
+<p>No special cleanup code is needed in your components. If you hold references to <code>InteropObject</code> in your own services, check for null after reconnection.</p>
+<h2 id="recommendations">Recommendations</h2>
+<ul>
+<li>Prefer <strong>Blazor WebAssembly</strong> or <strong>Auto</strong> render mode for map-heavy applications to reduce SignalR overhead.</li>
+<li>Keep JS interop calls batched where possible -- use single operations like <code>AddMarkersAsync</code> over looping <code>AddMarkerAsync</code>.</li>
+<li>Set <code>MaximumReceiveMessageSize</code> based on your data needs.</li>
+<li>Use <code>OnAfterInit</code> to safely interact with the map after it is fully initialized.</li>
+</ul>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

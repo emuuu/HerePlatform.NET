@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MarkerComponent - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Standard HERE marker with drag, click, and InfoBubble support." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/components/marker" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="MarkerComponent - HerePlatform.NET" />
+    <meta property="og:description" content="Standard HERE marker with drag, click, and InfoBubble support." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/components/marker" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="MarkerComponent - HerePlatform.NET" />
+    <meta name="twitter:description" content="Standard HERE marker with drag, click, and InfoBubble support." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"MarkerComponent","description":"Standard HERE marker with drag, click, and InfoBubble support.","url":"https://emuuu.github.io/HerePlatform.NET/docs/components/marker","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Components","item":"https://emuuu.github.io/HerePlatform.NET/docs/components"},{"type":"ListItem","position":3,"name":"MarkerComponent","item":"https://emuuu.github.io/HerePlatform.NET/docs/components/marker"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>MarkerComponent</h1>
+            <p class="lead text-muted">Standard HERE marker with drag, click, and InfoBubble support.</p>
+            <h2 id="basic-usage">Basic Usage</h2>
+<p>Place <code>MarkerComponent</code> inside an <code>AdvancedHereMap</code> to add a marker at the specified coordinates.</p>
+<pre><code class="language-xml">&lt;AdvancedHereMap Options=&quot;@options&quot;&gt;
+    &lt;MarkerComponent Lat=&quot;52.52&quot; Lng=&quot;13.405&quot; /&gt;
+&lt;/AdvancedHereMap&gt;
+</code></pre>
+<p>Common parameters:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Lat</code></td>
+<td><code>double</code></td>
+<td><code>0</code></td>
+<td>Latitude in degrees. Two-way bindable via <code>@bind-Lat</code>.</td>
+</tr>
+<tr>
+<td><code>Lng</code></td>
+<td><code>double</code></td>
+<td><code>0</code></td>
+<td>Longitude in degrees. Two-way bindable via <code>@bind-Lng</code>.</td>
+</tr>
+<tr>
+<td><code>Clickable</code></td>
+<td><code>bool</code></td>
+<td><code>false</code></td>
+<td>Enables tap/click events.</td>
+</tr>
+<tr>
+<td><code>Draggable</code></td>
+<td><code>bool</code></td>
+<td><code>false</code></td>
+<td>Allows the user to drag the marker.</td>
+</tr>
+<tr>
+<td><code>Title</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>Tooltip text for accessibility.</td>
+</tr>
+<tr>
+<td><code>Visible</code></td>
+<td><code>bool</code></td>
+<td><code>true</code></td>
+<td>Controls marker visibility.</td>
+</tr>
+<tr>
+<td><code>Opacity</code></td>
+<td><code>double?</code></td>
+<td><code>null</code></td>
+<td>Opacity from 0 to 1.</td>
+</tr>
+<tr>
+<td><code>ZIndex</code></td>
+<td><code>int?</code></td>
+<td><code>null</code></td>
+<td>Stacking order.</td>
+</tr>
+<tr>
+<td><code>MinZoom</code></td>
+<td><code>double?</code></td>
+<td><code>null</code></td>
+<td>Minimum zoom level for visibility.</td>
+</tr>
+<tr>
+<td><code>MaxZoom</code></td>
+<td><code>double?</code></td>
+<td><code>null</code></td>
+<td>Maximum zoom level for visibility.</td>
+</tr>
+<tr>
+<td><code>IconUrl</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>URL or inline SVG for a custom icon.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="dragging">Dragging</h2>
+<p>Enable <code>Draggable</code> and use two-way binding to track the marker position as the user drags it.</p>
+<pre><code class="language-xml">&lt;AdvancedHereMap Options=&quot;@options&quot;&gt;
+    &lt;MarkerComponent @bind-Lat=&quot;lat&quot; @bind-Lng=&quot;lng&quot; Draggable=&quot;true&quot; /&gt;
+&lt;/AdvancedHereMap&gt;
+
+&lt;p&gt;Position: @lat, @lng&lt;/p&gt;
+
+@code {
+    private double lat = 52.52;
+    private double lng = 13.405;
+    private MapOptions options = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 12
+    };
+}
+</code></pre>
+<p>The <code>LatChanged</code> and <code>LngChanged</code> callbacks fire when the drag ends.</p>
+<h2 id="custom-icons">Custom Icons</h2>
+<p>Set <code>IconUrl</code> to a URL pointing to an image or an inline SVG string.</p>
+<pre><code class="language-xml">&lt;MarkerComponent Lat=&quot;48.8566&quot; Lng=&quot;2.3522&quot;
+                 IconUrl=&quot;/images/pin-blue.png&quot; /&gt;
+</code></pre>
+<p>Using inline SVG:</p>
+<pre><code class="language-csharp">private string svgIcon = &quot;&quot;&quot;
+    &lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;24&quot; height=&quot;24&quot;&gt;
+        &lt;circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;10&quot; fill=&quot;red&quot; stroke=&quot;white&quot; stroke-width=&quot;2&quot;/&gt;
+    &lt;/svg&gt;
+    &quot;&quot;&quot;;
+</code></pre>
+<pre><code class="language-xml">&lt;MarkerComponent Lat=&quot;48.8566&quot; Lng=&quot;2.3522&quot; IconUrl=&quot;@svgIcon&quot; /&gt;
+</code></pre>
+<h2 id="infobubble-via-childcontent">InfoBubble via ChildContent</h2>
+<p>Provide <code>ChildContent</code> to show an InfoBubble when the marker is tapped. The content is rendered as static HTML inside the bubble.</p>
+<pre><code class="language-xml">&lt;MarkerComponent Lat=&quot;52.52&quot; Lng=&quot;13.405&quot; Clickable=&quot;true&quot;&gt;
+    &lt;h3&gt;Berlin&lt;/h3&gt;
+    &lt;p&gt;Capital of Germany&lt;/p&gt;
+&lt;/MarkerComponent&gt;
+</code></pre>
+<h2 id="events">Events</h2>
+<p>All map object events from <code>MapObjectComponentBase</code> are available:</p>
+<pre><code class="language-xml">&lt;MarkerComponent Lat=&quot;52.52&quot; Lng=&quot;13.405&quot;
+                 Clickable=&quot;true&quot;
+                 OnClick=&quot;@HandleTap&quot;
+                 OnDragEnd=&quot;@HandleDragEnd&quot; /&gt;
+
+@code {
+    private void HandleTap(MapPointerEventArgs e)
+    {
+        Console.WriteLine($&quot;Marker tapped at {e.Position?.Lat}, {e.Position?.Lng}&quot;);
+    }
+
+    private void HandleDragEnd(MapDragEventArgs e)
+    {
+        Console.WriteLine($&quot;Dragged to {e.Position?.Lat}, {e.Position?.Lng}&quot;);
+    }
+}
+</code></pre>
+<p>Available events: <code>OnClick</code>, <code>OnDoubleClick</code>, <code>OnLongPress</code>, <code>OnContextMenu</code>, <code>OnPointerDown</code>, <code>OnPointerUp</code>, <code>OnPointerMove</code>, <code>OnPointerEnter</code>, <code>OnPointerLeave</code>, <code>OnDragStart</code>, <code>OnDrag</code>, <code>OnDragEnd</code>.</p>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

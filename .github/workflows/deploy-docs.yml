@@ -3,10 +3,11 @@ on:
   push:
     branches: [main]
     paths:
-      - 'docs/BlazorHerePlatform.Docs/**'
-      - 'docs/BlazorHerePlatform.Docs.Generator/**'
+      - 'docs/HerePlatform.Docs/**'
+      - 'docs/HerePlatform.Docs.Generator/**'
       - 'HerePlatformComponents/**'
       - 'HerePlatform.Core/**'
+      - 'HerePlatform.RestClient/**'
   workflow_dispatch:
 
 permissions:
@@ -30,7 +31,7 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - name: Publish docs app
-        run: dotnet publish docs/BlazorHerePlatform.Docs/BlazorHerePlatform.Docs.csproj -c Release -o output
+        run: dotnet publish docs/HerePlatform.Docs/HerePlatform.Docs.csproj -c Release -o output
       - name: Rewrite base href
         run: |
           sed -i 's|<base href="/" />|<base href="/HerePlatform.NET/" />|g' output/wwwroot/index.html

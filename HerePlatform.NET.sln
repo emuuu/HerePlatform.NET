@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.3.11426.168
@@ -11,19 +11,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{B8A1C5F0-1
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HerePlatformComponents.Tests", "tests\HerePlatformComponents.Tests\HerePlatformComponents.Tests.csproj", "{3FCC3A69-159E-AB75-04FD-01CD488662F6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorHerePlatform.Docs", "docs\BlazorHerePlatform.Docs\BlazorHerePlatform.Docs.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF0123456789}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HerePlatform.Docs", "docs\HerePlatform.Docs\HerePlatform.Docs.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF0123456789}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorHerePlatform.Docs.Generator", "docs\BlazorHerePlatform.Docs.Generator\BlazorHerePlatform.Docs.Generator.csproj", "{F1E2D3C4-B5A6-9870-FEDC-BA9876543210}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HerePlatform.Docs.Generator", "docs\HerePlatform.Docs.Generator\HerePlatform.Docs.Generator.csproj", "{F1E2D3C4-B5A6-9870-FEDC-BA9876543210}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HerePlatform.Core", "HerePlatform.Core\HerePlatform.Core.csproj", "{F7236DC4-BD2C-4987-B6BC-16C71DD0FA6F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HerePlatform.RestClient", "HerePlatform.RestClient\HerePlatform.RestClient.csproj", "{EB52FC73-F6E3-4222-9C0E-920F2DDFE608}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HerePlatform.RestClient.Tests", "tests\HerePlatform.RestClient.Tests\HerePlatform.RestClient.Tests.csproj", "{2527E39C-5A1E-462F-A2EF-647D5AEE33D3}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HerePlatform.RestClient.Docs", "docs\HerePlatform.RestClient.Docs\HerePlatform.RestClient.Docs.csproj", "{DD727826-DF3C-48A6-A87C-80D3500E250F}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HerePlatform.RestClient.Docs.Generator", "docs\HerePlatform.RestClient.Docs.Generator\HerePlatform.RestClient.Docs.Generator.csproj", "{D17E7981-2CBD-1BBC-B787-FCE82A3BAF6D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -119,30 +115,6 @@ Global
 		{2527E39C-5A1E-462F-A2EF-647D5AEE33D3}.Release|x64.Build.0 = Release|Any CPU
 		{2527E39C-5A1E-462F-A2EF-647D5AEE33D3}.Release|x86.ActiveCfg = Release|Any CPU
 		{2527E39C-5A1E-462F-A2EF-647D5AEE33D3}.Release|x86.Build.0 = Release|Any CPU
-		{DD727826-DF3C-48A6-A87C-80D3500E250F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DD727826-DF3C-48A6-A87C-80D3500E250F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DD727826-DF3C-48A6-A87C-80D3500E250F}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{DD727826-DF3C-48A6-A87C-80D3500E250F}.Debug|x64.Build.0 = Debug|Any CPU
-		{DD727826-DF3C-48A6-A87C-80D3500E250F}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{DD727826-DF3C-48A6-A87C-80D3500E250F}.Debug|x86.Build.0 = Debug|Any CPU
-		{DD727826-DF3C-48A6-A87C-80D3500E250F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DD727826-DF3C-48A6-A87C-80D3500E250F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DD727826-DF3C-48A6-A87C-80D3500E250F}.Release|x64.ActiveCfg = Release|Any CPU
-		{DD727826-DF3C-48A6-A87C-80D3500E250F}.Release|x64.Build.0 = Release|Any CPU
-		{DD727826-DF3C-48A6-A87C-80D3500E250F}.Release|x86.ActiveCfg = Release|Any CPU
-		{DD727826-DF3C-48A6-A87C-80D3500E250F}.Release|x86.Build.0 = Release|Any CPU
-		{D17E7981-2CBD-1BBC-B787-FCE82A3BAF6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D17E7981-2CBD-1BBC-B787-FCE82A3BAF6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D17E7981-2CBD-1BBC-B787-FCE82A3BAF6D}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{D17E7981-2CBD-1BBC-B787-FCE82A3BAF6D}.Debug|x64.Build.0 = Debug|Any CPU
-		{D17E7981-2CBD-1BBC-B787-FCE82A3BAF6D}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{D17E7981-2CBD-1BBC-B787-FCE82A3BAF6D}.Debug|x86.Build.0 = Debug|Any CPU
-		{D17E7981-2CBD-1BBC-B787-FCE82A3BAF6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D17E7981-2CBD-1BBC-B787-FCE82A3BAF6D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D17E7981-2CBD-1BBC-B787-FCE82A3BAF6D}.Release|x64.ActiveCfg = Release|Any CPU
-		{D17E7981-2CBD-1BBC-B787-FCE82A3BAF6D}.Release|x64.Build.0 = Release|Any CPU
-		{D17E7981-2CBD-1BBC-B787-FCE82A3BAF6D}.Release|x86.ActiveCfg = Release|Any CPU
-		{D17E7981-2CBD-1BBC-B787-FCE82A3BAF6D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -152,8 +124,6 @@ Global
 		{A1B2C3D4-E5F6-7890-ABCD-EF0123456789} = {B8A1C5F0-1234-4567-89AB-CDEF01234567}
 		{F1E2D3C4-B5A6-9870-FEDC-BA9876543210} = {B8A1C5F0-1234-4567-89AB-CDEF01234567}
 		{2527E39C-5A1E-462F-A2EF-647D5AEE33D3} = {90F5DE15-41A8-41FF-8773-61C25F5F91E1}
-		{DD727826-DF3C-48A6-A87C-80D3500E250F} = {B8A1C5F0-1234-4567-89AB-CDEF01234567}
-		{D17E7981-2CBD-1BBC-B787-FCE82A3BAF6D} = {B8A1C5F0-1234-4567-89AB-CDEF01234567}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {631CEE94-77D6-4F14-B8C6-4E51C2A924AE}

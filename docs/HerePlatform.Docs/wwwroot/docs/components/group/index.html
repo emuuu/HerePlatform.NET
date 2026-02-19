@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GroupComponent - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Group container for organizing map objects." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/components/group" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="GroupComponent - HerePlatform.NET" />
+    <meta property="og:description" content="Group container for organizing map objects." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/components/group" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="GroupComponent - HerePlatform.NET" />
+    <meta name="twitter:description" content="Group container for organizing map objects." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"GroupComponent","description":"Group container for organizing map objects.","url":"https://emuuu.github.io/HerePlatform.NET/docs/components/group","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Components","item":"https://emuuu.github.io/HerePlatform.NET/docs/components"},{"type":"ListItem","position":3,"name":"GroupComponent","item":"https://emuuu.github.io/HerePlatform.NET/docs/components/group"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>GroupComponent</h1>
+            <p class="lead text-muted">Group container for organizing map objects.</p>
+            <h2 id="basic-usage">Basic Usage</h2>
+<p><code>GroupComponent</code> is a container that organizes map objects (markers, polylines, polygons, etc.) into a logical group. Place it inside an <code>AdvancedHereMap</code> and nest child components within it.</p>
+<pre><code class="language-csharp">@using HerePlatformComponents.Maps
+
+&lt;AdvancedHereMap Options=&quot;_options&quot; Height=&quot;500px&quot;&gt;
+    &lt;GroupComponent @ref=&quot;_group&quot;&gt;
+        &lt;MarkerComponent Position=&quot;new LatLngLiteral(52.52, 13.405)&quot; /&gt;
+        &lt;MarkerComponent Position=&quot;new LatLngLiteral(52.53, 13.41)&quot; /&gt;
+    &lt;/GroupComponent&gt;
+&lt;/AdvancedHereMap&gt;
+
+@code {
+    private GroupComponent _group = default!;
+
+    private readonly MapOptions _options = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 12
+    };
+}
+</code></pre>
+<p>The group cascades itself as <code>HereGroup</code> so child components automatically register with it.</p>
+<h2 id="nesting">Nesting</h2>
+<p>Groups can be nested to create a hierarchy. Each level manages its own visibility and z-index independently.</p>
+<pre><code class="language-csharp">&lt;AdvancedHereMap Options=&quot;_options&quot; Height=&quot;500px&quot;&gt;
+    &lt;GroupComponent ZIndex=&quot;1&quot;&gt;
+        &lt;MarkerComponent Position=&quot;new LatLngLiteral(52.52, 13.405)&quot; /&gt;
+
+        &lt;GroupComponent ZIndex=&quot;2&quot;&gt;
+            &lt;PolylineComponent Path=&quot;_path&quot; StrokeColor=&quot;#FF0000&quot; /&gt;
+        &lt;/GroupComponent&gt;
+    &lt;/GroupComponent&gt;
+&lt;/AdvancedHereMap&gt;
+</code></pre>
+<p>Use <code>GetBoundsAsync()</code> on a group reference to retrieve the bounding box of all objects it contains:</p>
+<pre><code class="language-csharp">var bounds = await _group.GetBoundsAsync();
+</code></pre>
+<h2 id="visibility-toggle">Visibility Toggle</h2>
+<p>Control the visibility of an entire group (and all its children) with the <code>Visible</code> parameter. Toggle it dynamically to show or hide sets of map objects at once.</p>
+<pre><code class="language-csharp">&lt;AdvancedHereMap Options=&quot;_options&quot; Height=&quot;500px&quot;&gt;
+    &lt;GroupComponent Visible=&quot;@_showMarkers&quot;&gt;
+        &lt;MarkerComponent Position=&quot;new LatLngLiteral(48.8566, 2.3522)&quot; /&gt;
+        &lt;MarkerComponent Position=&quot;new LatLngLiteral(48.8584, 2.2945)&quot; /&gt;
+    &lt;/GroupComponent&gt;
+&lt;/AdvancedHereMap&gt;
+
+&lt;button @onclick=&quot;() =&gt; _showMarkers = !_showMarkers&quot;&gt;
+    Toggle Markers
+&lt;/button&gt;
+
+@code {
+    private bool _showMarkers = true;
+
+    private readonly MapOptions _options = new()
+    {
+        Center = new LatLngLiteral(48.8566, 2.3522),
+        Zoom = 13
+    };
+}
+</code></pre>
+<h3 id="parameters">Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Visible</code></td>
+<td><code>bool</code></td>
+<td><code>true</code></td>
+<td>Controls visibility of the group and all children.</td>
+</tr>
+<tr>
+<td><code>ZIndex</code></td>
+<td><code>int?</code></td>
+<td><code>null</code></td>
+<td>Stacking order for the group.</td>
+</tr>
+<tr>
+<td><code>Data</code></td>
+<td><code>object?</code></td>
+<td><code>null</code></td>
+<td>Arbitrary data associated with the group.</td>
+</tr>
+<tr>
+<td><code>ChildContent</code></td>
+<td><code>RenderFragment?</code></td>
+<td>--</td>
+<td>Child map components.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="methods">Methods</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Returns</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AddObjectAsync(Guid)</code></td>
+<td><code>Task</code></td>
+<td>Adds a map object to the group by its GUID.</td>
+</tr>
+<tr>
+<td><code>RemoveObjectAsync(Guid)</code></td>
+<td><code>Task</code></td>
+<td>Removes a map object from the group by its GUID.</td>
+</tr>
+<tr>
+<td><code>GetBoundsAsync()</code></td>
+<td><code>Task&lt;GeoRect?&gt;</code></td>
+<td>Returns the bounding box of all objects in the group.</td>
+</tr>
+</tbody>
+</table>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

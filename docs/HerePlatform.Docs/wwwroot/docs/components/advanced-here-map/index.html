@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AdvancedHereMap - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Full-featured declarative map with child components and two-way binding." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/components/advanced-here-map" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="AdvancedHereMap - HerePlatform.NET" />
+    <meta property="og:description" content="Full-featured declarative map with child components and two-way binding." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/components/advanced-here-map" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="AdvancedHereMap - HerePlatform.NET" />
+    <meta name="twitter:description" content="Full-featured declarative map with child components and two-way binding." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"AdvancedHereMap","description":"Full-featured declarative map with child components and two-way binding.","url":"https://emuuu.github.io/HerePlatform.NET/docs/components/advanced-here-map","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Components","item":"https://emuuu.github.io/HerePlatform.NET/docs/components"},{"type":"ListItem","position":3,"name":"AdvancedHereMap","item":"https://emuuu.github.io/HerePlatform.NET/docs/components/advanced-here-map"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>AdvancedHereMap</h1>
+            <p class="lead text-muted">Full-featured declarative map with child components and two-way binding.</p>
+            <h2 id="basic-usage">Basic Usage</h2>
+<p><code>AdvancedHereMap</code> wraps <code>HereMap</code> and adds declarative child component support, two-way binding for view properties, and a comprehensive event system.</p>
+<pre><code class="language-xml">&lt;AdvancedHereMap Id=&quot;advanced-map&quot;
+                 Options=&quot;@options&quot;
+                 Height=&quot;500px&quot;
+                 OnAfterInit=&quot;@OnMapReady&quot;&gt;
+    &lt;MarkerComponent Lat=&quot;52.52&quot; Lng=&quot;13.405&quot; /&gt;
+&lt;/AdvancedHereMap&gt;
+
+@code {
+    private MapOptions options = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 12
+    };
+
+    private Task OnMapReady() =&gt; Task.CompletedTask;
+}
+</code></pre>
+<p>Child components are rendered inside a <code>CascadingValue</code> and are only mounted after the underlying map is initialized.</p>
+<h2 id="two-way-binding">Two-Way Binding</h2>
+<p>Bind map view properties directly to C# fields. Values update automatically when the user pans, zooms, tilts, or rotates the map.</p>
+<pre><code class="language-xml">&lt;AdvancedHereMap Options=&quot;@options&quot;
+                 @bind-Center=&quot;center&quot;
+                 @bind-Zoom=&quot;zoom&quot;
+                 @bind-Tilt=&quot;tilt&quot;
+                 @bind-Heading=&quot;heading&quot;&gt;
+&lt;/AdvancedHereMap&gt;
+
+&lt;p&gt;Center: @center?.Lat, @center?.Lng&lt;/p&gt;
+&lt;p&gt;Zoom: @zoom | Tilt: @tilt | Heading: @heading&lt;/p&gt;
+
+@code {
+    private MapOptions options = new() { Zoom = 10 };
+    private LatLngLiteral? center = new(48.8566, 2.3522);
+    private double? zoom = 10;
+    private double? tilt = 0;
+    private double? heading = 0;
+}
+</code></pre>
+<p>Setting a bound property programmatically pushes the change to the JS map. Set <code>Animate=&quot;true&quot;</code> to animate programmatic center and zoom changes.</p>
+<h2 id="layer-types">Layer Types</h2>
+<p>Configure the base layer via <code>MapOptions.LayerType</code>. Common options:</p>
+<table>
+<thead>
+<tr>
+<th>LayerType</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>VectorNormalMap</code></td>
+<td>Default vector map (day)</td>
+</tr>
+<tr>
+<td><code>VectorNormalMapNight</code></td>
+<td>Dark-themed vector map</td>
+</tr>
+<tr>
+<td><code>RasterSatelliteMap</code></td>
+<td>Satellite imagery</td>
+</tr>
+<tr>
+<td><code>RasterTerrainMap</code></td>
+<td>Terrain map</td>
+</tr>
+<tr>
+<td><code>HybridDayRaster</code></td>
+<td>Satellite + road overlay</td>
+</tr>
+</tbody>
+</table>
+<p>Add or remove overlay layers at runtime:</p>
+<pre><code class="language-csharp">await mapRef.AddLayerAsync(&quot;vector.normal.traffic&quot;);
+await mapRef.RemoveLayerAsync(&quot;vector.normal.traffic&quot;);
+</code></pre>
+<h2 id="child-components">Child Components</h2>
+<p>Nest any of these components inside <code>AdvancedHereMap</code>:</p>
+<ul>
+<li><code>MarkerComponent</code> -- standard markers</li>
+<li><code>DomMarkerComponent</code> -- DOM-based markers with custom HTML</li>
+<li><code>PolylineComponent</code> -- line shapes</li>
+<li><code>PolygonComponent</code> -- filled area shapes</li>
+<li><code>CircleComponent</code> -- circles with center and radius</li>
+<li><code>RectComponent</code> -- rectangles defined by geographic bounds</li>
+<li><code>InfoBubbleComponent</code> -- popup bubbles</li>
+<li><code>GroupComponent</code> -- logical grouping of map objects</li>
+<li><code>MarkerClusterComponent</code> -- marker clustering</li>
+</ul>
+<h2 id="events">Events</h2>
+<p><code>AdvancedHereMap</code> exposes pointer, drag, view change, and collection events:</p>
+<pre><code class="language-xml">&lt;AdvancedHereMap Options=&quot;@options&quot;
+                 OnClick=&quot;@HandleClick&quot;
+                 OnMapViewChangeEnd=&quot;@HandleViewChanged&quot;
+                 OnMarkersChanged=&quot;@HandleMarkersChanged&quot;&gt;
+&lt;/AdvancedHereMap&gt;
+
+@code {
+    private void HandleClick(MapPointerEventArgs e)
+    {
+        Console.WriteLine($&quot;Clicked at {e.Position?.Lat}, {e.Position?.Lng}&quot;);
+    }
+
+    private void HandleViewChanged(MapViewChangeEventArgs e)
+    {
+        Console.WriteLine($&quot;Zoom: {e.Zoom}&quot;);
+    }
+
+    private void HandleMarkersChanged() { }
+}
+</code></pre>
+<p>Key event groups:</p>
+<ul>
+<li><strong>Pointer</strong>: <code>OnClick</code>, <code>OnDoubleClick</code>, <code>OnLongPress</code>, <code>OnContextMenu</code>, <code>OnPointerDown</code>, <code>OnPointerUp</code>, <code>OnPointerMove</code>, <code>OnPointerEnter</code>, <code>OnPointerLeave</code></li>
+<li><strong>Drag</strong>: <code>OnDragStart</code>, <code>OnDrag</code>, <code>OnDragEnd</code></li>
+<li><strong>View</strong>: <code>OnMapViewChange</code>, <code>OnMapViewChangeStart</code>, <code>OnMapViewChangeEnd</code></li>
+<li><strong>Other</strong>: <code>OnBaseLayerChange</code>, <code>OnEngineStateChange</code>, <code>OnResize</code>, <code>OnWheel</code></li>
+<li><strong>Collections</strong>: <code>OnMarkersChanged</code>, <code>OnPolygonsChanged</code>, <code>OnPolylinesChanged</code>, <code>OnCirclesChanged</code>, <code>OnRectsChanged</code>, <code>OnDomMarkersChanged</code></li>
+</ul>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

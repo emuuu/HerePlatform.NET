@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tour Planning Service - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Optimize vehicle tours for deliveries and pickups." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/services/tour-planning" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Tour Planning Service - HerePlatform.NET" />
+    <meta property="og:description" content="Optimize vehicle tours for deliveries and pickups." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/services/tour-planning" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Tour Planning Service - HerePlatform.NET" />
+    <meta name="twitter:description" content="Optimize vehicle tours for deliveries and pickups." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"Tour Planning Service","description":"Optimize vehicle tours for deliveries and pickups.","url":"https://emuuu.github.io/HerePlatform.NET/docs/services/tour-planning","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Services","item":"https://emuuu.github.io/HerePlatform.NET/docs/services"},{"type":"ListItem","position":3,"name":"Tour Planning Service","item":"https://emuuu.github.io/HerePlatform.NET/docs/services/tour-planning"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>Tour Planning Service</h1>
+            <p class="lead text-muted">Optimize vehicle tours for deliveries and pickups.</p>
+            <h2 id="setup">Setup</h2>
+<p>Inject <code>ITourPlanningService</code> into your component. It is registered automatically by <code>AddBlazorHerePlatform</code>.</p>
+<pre><code class="language-csharp">@inject ITourPlanningService TourPlanningService
+</code></pre>
+<h2 id="solveasync">SolveAsync</h2>
+<p>Solve a vehicle routing problem with jobs (deliveries/pickups) and a fleet of vehicles. The optimizer assigns jobs to vehicles and determines the optimal stop sequence.</p>
+<pre><code class="language-csharp">var problem = new TourPlanningProblem
+{
+    Plan = new TourPlan
+    {
+        Jobs =
+        [
+            new TourJob
+            {
+                Id = &quot;delivery-1&quot;,
+                Places = new TourJobPlaces
+                {
+                    Deliveries =
+                    [
+                        new TourJobPlace
+                        {
+                            Location = new LatLngLiteral(52.5163, 13.3777),
+                            Duration = 300
+                        }
+                    ]
+                }
+            },
+            new TourJob
+            {
+                Id = &quot;delivery-2&quot;,
+                Places = new TourJobPlaces
+                {
+                    Deliveries =
+                    [
+                        new TourJobPlace
+                        {
+                            Location = new LatLngLiteral(52.5200, 13.4050),
+                            Duration = 600
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    Fleet = new TourFleet
+    {
+        Types =
+        [
+            new TourVehicleType
+            {
+                Id = &quot;van-1&quot;,
+                Profile = &quot;car&quot;,
+                Amount = 1,
+                Capacity = [20],
+                Costs = new TourVehicleCosts { Fixed = 10, Distance = 0.001, Time = 0.01 },
+                Shifts =
+                [
+                    new TourVehicleShift
+                    {
+                        Start = new TourShiftEnd
+                        {
+                            Location = new LatLngLiteral(52.53, 13.38),
+                            Time = &quot;2025-01-15T08:00:00Z&quot;
+                        },
+                        End = new TourShiftEnd
+                        {
+                            Location = new LatLngLiteral(52.53, 13.38),
+                            Time = &quot;2025-01-15T18:00:00Z&quot;
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+};
+
+var result = await TourPlanningService.SolveAsync(problem);
+
+foreach (var tour in result.Tours ?? [])
+{
+    Console.WriteLine($&quot;Vehicle: {tour.VehicleId}&quot;);
+    Console.WriteLine($&quot;  Cost: {tour.Statistic?.Cost}, Distance: {tour.Statistic?.Distance} m&quot;);
+    foreach (var stop in tour.Stops ?? [])
+    {
+        foreach (var act in stop.Activities ?? [])
+            Console.WriteLine($&quot;  [{act.Type}] {act.JobId}&quot;);
+    }
+}
+
+if (result.UnassignedJobs is { Count: &gt; 0 } unassigned)
+    Console.WriteLine($&quot;Unassigned: {string.Join(&quot;, &quot;, unassigned)}&quot;);
+</code></pre>
+<h2 id="problem-structure">Problem Structure</h2>
+<h3 id="tourplan">TourPlan</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Jobs</code></td>
+<td><code>List&lt;TourJob&gt;?</code></td>
+<td>Jobs to be assigned to vehicles.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tourjob">TourJob</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Id</code></td>
+<td><code>string?</code></td>
+<td>Unique job identifier.</td>
+</tr>
+<tr>
+<td><code>Places</code></td>
+<td><code>TourJobPlaces?</code></td>
+<td>Delivery and/or pickup locations.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tourjobplace">TourJobPlace</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Location</code></td>
+<td><code>LatLngLiteral</code></td>
+<td>Job location (required).</td>
+</tr>
+<tr>
+<td><code>Duration</code></td>
+<td><code>int</code></td>
+<td>Service time in seconds.</td>
+</tr>
+<tr>
+<td><code>Times</code></td>
+<td><code>List&lt;List&lt;string&gt;&gt;?</code></td>
+<td>Time windows as <code>[start, end]</code> ISO 8601 pairs.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tourfleet">TourFleet</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Types</code></td>
+<td><code>List&lt;TourVehicleType&gt;?</code></td>
+<td>Vehicle type definitions.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tourvehicletype">TourVehicleType</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Id</code></td>
+<td><code>string?</code></td>
+<td>Vehicle type identifier.</td>
+</tr>
+<tr>
+<td><code>Profile</code></td>
+<td><code>string?</code></td>
+<td>Routing profile (<code>&quot;car&quot;</code>, <code>&quot;truck&quot;</code>).</td>
+</tr>
+<tr>
+<td><code>Costs</code></td>
+<td><code>TourVehicleCosts?</code></td>
+<td>Cost parameters.</td>
+</tr>
+<tr>
+<td><code>Shifts</code></td>
+<td><code>List&lt;TourVehicleShift&gt;?</code></td>
+<td>Work shifts with start/end locations and times.</td>
+</tr>
+<tr>
+<td><code>Capacity</code></td>
+<td><code>List&lt;int&gt;?</code></td>
+<td>Vehicle capacity dimensions.</td>
+</tr>
+<tr>
+<td><code>Amount</code></td>
+<td><code>int</code></td>
+<td>Number of vehicles of this type.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="tourvehiclecosts">TourVehicleCosts</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Fixed</code></td>
+<td><code>double</code></td>
+<td>Fixed cost per vehicle.</td>
+</tr>
+<tr>
+<td><code>Distance</code></td>
+<td><code>double</code></td>
+<td>Cost per meter.</td>
+</tr>
+<tr>
+<td><code>Time</code></td>
+<td><code>double</code></td>
+<td>Cost per second.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="result-structure">Result Structure</h2>
+<p><code>TourPlanningResult</code> contains:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Tours</code></td>
+<td><code>List&lt;Tour&gt;?</code></td>
+<td>Planned vehicle tours.</td>
+</tr>
+<tr>
+<td><code>UnassignedJobs</code></td>
+<td><code>List&lt;string&gt;?</code></td>
+<td>Job IDs that could not be assigned.</td>
+</tr>
+<tr>
+<td><code>Statistic</code></td>
+<td><code>TourStatistic?</code></td>
+<td>Overall cost, distance, and duration.</td>
+</tr>
+</tbody>
+</table>
+<p>Each <code>Tour</code> includes <code>VehicleId</code>, a list of <code>TourStop</code> entries, and a <code>TourStatistic</code>. Each stop contains <code>Activities</code> with <code>Type</code> (<code>&quot;departure&quot;</code>, <code>&quot;delivery&quot;</code>, <code>&quot;pickup&quot;</code>, <code>&quot;arrival&quot;</code>) and <code>JobId</code>.</p>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DistanceMeasurementComponent - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Interactive distance measurement tool." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/components/distance-measurement" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="DistanceMeasurementComponent - HerePlatform.NET" />
+    <meta property="og:description" content="Interactive distance measurement tool." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/components/distance-measurement" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="DistanceMeasurementComponent - HerePlatform.NET" />
+    <meta name="twitter:description" content="Interactive distance measurement tool." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"DistanceMeasurementComponent","description":"Interactive distance measurement tool.","url":"https://emuuu.github.io/HerePlatform.NET/docs/components/distance-measurement","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Components","item":"https://emuuu.github.io/HerePlatform.NET/docs/components"},{"type":"ListItem","position":3,"name":"DistanceMeasurementComponent","item":"https://emuuu.github.io/HerePlatform.NET/docs/components/distance-measurement"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>DistanceMeasurementComponent</h1>
+            <p class="lead text-muted">Interactive distance measurement tool.</p>
+            <h2 id="basic-usage">Basic Usage</h2>
+<p><code>DistanceMeasurementComponent</code> adds an interactive distance measurement tool to the map. Users click points on the map to measure distances between them.</p>
+<pre><code class="language-csharp">@using HerePlatformComponents.Maps
+@using HerePlatformComponents.Maps.UI
+
+&lt;AdvancedHereMap Options=&quot;_options&quot; Height=&quot;500px&quot;&gt;
+    &lt;DistanceMeasurementComponent Active=&quot;@_measuring&quot;
+                                  OnMeasured=&quot;HandleMeasured&quot; /&gt;
+&lt;/AdvancedHereMap&gt;
+
+&lt;button @onclick=&quot;() =&gt; _measuring = !_measuring&quot;&gt;
+    @(_measuring ? &quot;Stop Measuring&quot; : &quot;Start Measuring&quot;)
+&lt;/button&gt;
+
+@if (_lastDistance &gt; 0)
+{
+    &lt;p&gt;Distance: @(_lastDistance / 1000.0):F2 km&lt;/p&gt;
+}
+
+@code {
+    private bool _measuring;
+    private double _lastDistance;
+
+    private readonly MapOptions _options = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 12
+    };
+
+    private void HandleMeasured(double distanceMeters)
+    {
+        _lastDistance = distanceMeters;
+    }
+}
+</code></pre>
+<h3 id="parameters">Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Active</code></td>
+<td><code>bool</code></td>
+<td><code>false</code></td>
+<td>Activates or deactivates the measurement tool.</td>
+</tr>
+<tr>
+<td><code>Alignment</code></td>
+<td><code>UIAlignment</code></td>
+<td><code>TopRight</code></td>
+<td>Position of the UI control on the map.</td>
+</tr>
+<tr>
+<td><code>OnMeasured</code></td>
+<td><code>EventCallback&lt;double&gt;</code></td>
+<td>--</td>
+<td>Fires when measurement completes, with distance in meters.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="integration-with-advancedheremap">Integration with AdvancedHereMap</h2>
+<p>The component must be a child of <code>AdvancedHereMap</code>. It registers as a UI control and appears at the position specified by <code>Alignment</code>.</p>
+<pre><code class="language-csharp">&lt;AdvancedHereMap Options=&quot;_options&quot; Height=&quot;500px&quot;&gt;
+    &lt;DistanceMeasurementComponent Active=&quot;true&quot;
+                                  Alignment=&quot;UIAlignment.BottomLeft&quot; /&gt;
+&lt;/AdvancedHereMap&gt;
+</code></pre>
+<p>Available alignment positions:</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Position</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TopLeft</code></td>
+<td>Top-left corner</td>
+</tr>
+<tr>
+<td><code>TopCenter</code></td>
+<td>Top center</td>
+</tr>
+<tr>
+<td><code>TopRight</code></td>
+<td>Top-right corner (default)</td>
+</tr>
+<tr>
+<td><code>LeftTop</code></td>
+<td>Left side, near top</td>
+</tr>
+<tr>
+<td><code>LeftMiddle</code></td>
+<td>Left side, middle</td>
+</tr>
+<tr>
+<td><code>LeftBottom</code></td>
+<td>Left side, near bottom</td>
+</tr>
+<tr>
+<td><code>RightTop</code></td>
+<td>Right side, near top</td>
+</tr>
+<tr>
+<td><code>RightMiddle</code></td>
+<td>Right side, middle</td>
+</tr>
+<tr>
+<td><code>RightBottom</code></td>
+<td>Right side, near bottom</td>
+</tr>
+<tr>
+<td><code>BottomLeft</code></td>
+<td>Bottom-left corner</td>
+</tr>
+<tr>
+<td><code>BottomCenter</code></td>
+<td>Bottom center</td>
+</tr>
+<tr>
+<td><code>BottomRight</code></td>
+<td>Bottom-right corner</td>
+</tr>
+</tbody>
+</table>
+<p>Toggle <code>Active</code> to enable or disable the measurement mode programmatically. When deactivated, any in-progress measurement is cancelled.</p>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

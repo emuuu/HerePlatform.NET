@@ -1,0 +1,107 @@
+@page "/rest-api/weather"
+@inject IWeatherService WeatherService
+@inject IRestApiDocService DocService
+
+<PageTitle>Weather — HerePlatform.NET Docs</PageTitle>
+
+<div class="doc-content">
+    <h1>IWeatherService</h1>
+    @if (_apiName is not null)
+    {
+        <span class="badge bg-info text-dark mb-2">@_apiName @_apiVersion</span>
+    }
+    <p class="lead">@_serviceDescription</p>
+    <ApiKeyWarning />
+
+    <h2>GetWeatherAsync</h2>
+    <p>@_methodDescription</p>
+    <ParamTable Parameters="@_params" />
+
+    <h5>Example Response (Success)</h5>
+    <CodeBlock Language="json" Code="@_successExample" />
+
+    <TryItPanel TResult="WeatherResult" OnExecute="ExecuteWeather">
+        <FormContent>
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <label class="form-label">Latitude</label>
+                    <input type="number" step="any" class="form-control form-control-sm" @bind="_lat" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Longitude</label>
+                    <input type="number" step="any" class="form-control form-control-sm" @bind="_lng" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Product</label>
+                    <select class="form-select form-select-sm" @bind="_product">
+                        <option value="@WeatherProduct.Observation">Observation</option>
+                        <option value="@WeatherProduct.Forecast7Days">Forecast 7 Days</option>
+                        <option value="@WeatherProduct.Forecast7DaysSimple">Forecast 7 Days Simple</option>
+                        <option value="@WeatherProduct.ForecastHourly">Forecast Hourly</option>
+                        <option value="@WeatherProduct.ForecastAstronomy">Forecast Astronomy</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Lang</label>
+                    <input class="form-control form-control-sm" @bind="_lang" placeholder="de" />
+                </div>
+            </div>
+        </FormContent>
+    </TryItPanel>
+</div>
+
+@code {
+    private double _lat = 52.5308, _lng = 13.3847;
+    private WeatherProduct _product = WeatherProduct.Observation;
+    private string? _lang;
+
+    private Task<WeatherResult> ExecuteWeather() =>
+        WeatherService.GetWeatherAsync(new WeatherRequest
+        {
+            Location = new LatLngLiteral(_lat, _lng),
+            Products = [_product],
+            Lang = string.IsNullOrWhiteSpace(_lang) ? null : _lang
+        });
+
+    private string _serviceDescription = "";
+    private string _methodDescription = "";
+    private string? _apiName;
+    private string? _apiVersion;
+    private List<ParamDoc> _params = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await DocService.InitializeAsync();
+        var svc = DocService.GetService(nameof(IWeatherService));
+        _serviceDescription = svc?.Description ?? "";
+        _apiName = svc?.ApiName;
+        _apiVersion = svc?.ApiVersion;
+        _methodDescription = DocService.GetMethod(nameof(IWeatherService), nameof(IWeatherService.GetWeatherAsync))?.Description ?? "";
+        _params = DocService.GetMethodParams(nameof(IWeatherService), nameof(IWeatherService.GetWeatherAsync));
+    }
+
+    private const string _successExample = @"{
+  ""observations"": [
+    {
+      ""temperature"": 15.2,
+      ""humidity"": 65,
+      ""windSpeed"": 12.5,
+      ""windDirection"": ""NW"",
+      ""description"": ""Partly cloudy"",
+      ""icon"": ""partly_cloudy"",
+      ""timestamp"": ""2025-01-15T12:00:00Z""
+    }
+  ],
+  ""forecasts"": [
+    {
+      ""date"": ""2025-01-16"",
+      ""temperatureHigh"": 18.0,
+      ""temperatureLow"": 5.5,
+      ""description"": ""Sunny"",
+      ""icon"": ""sunny"",
+      ""humidity"": 45,
+      ""windSpeed"": 8.0
+    }
+  ]
+}";
+}

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Layer Types - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Understanding HERE map layer types." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/guides/layer-types" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Layer Types - HerePlatform.NET" />
+    <meta property="og:description" content="Understanding HERE map layer types." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/guides/layer-types" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Layer Types - HerePlatform.NET" />
+    <meta name="twitter:description" content="Understanding HERE map layer types." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"Layer Types","description":"Understanding HERE map layer types.","url":"https://emuuu.github.io/HerePlatform.NET/docs/guides/layer-types","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Guides","item":"https://emuuu.github.io/HerePlatform.NET/docs/guides"},{"type":"ListItem","position":3,"name":"Layer Types","item":"https://emuuu.github.io/HerePlatform.NET/docs/guides/layer-types"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>Layer Types</h1>
+            <p class="lead text-muted">Understanding HERE map layer types.</p>
+            <h2 id="normal">Normal</h2>
+<p>Standard vector map layers rendered with the HARP engine. Best for general-purpose maps.</p>
+<pre><code class="language-csharp">var options = new MapOptions
+{
+    LayerType = MapLayerType.VectorNormalMap,  // Default day mode
+    Center = new LatLngLiteral(52.52, 13.405),
+    Zoom = 12
+};
+</code></pre>
+<p>Night variants are available for dark themes:</p>
+<pre><code class="language-csharp">options.LayerType = MapLayerType.VectorNormalMapNight;
+</code></pre>
+<h2 id="satellite">Satellite</h2>
+<p>Raster satellite imagery. Provides aerial/satellite photography without road labels.</p>
+<pre><code class="language-csharp">options.LayerType = MapLayerType.RasterSatelliteMap;
+</code></pre>
+<h2 id="hybrid">Hybrid</h2>
+<p>Hybrid layers combine satellite imagery with vector road overlays. These are composites of multiple layers:</p>
+<ul>
+<li><code>HybridDayRaster</code> -- satellite imagery base (set as base layer)</li>
+<li><code>HybridDayVector</code> -- roads and labels overlay (added on top)</li>
+<li><code>HybridDayTraffic</code> -- traffic overlay (added on top)</li>
+</ul>
+<pre><code class="language-csharp">// Set satellite as base, add road labels as overlay
+var options = new MapOptions
+{
+    LayerType = MapLayerType.HybridDayRaster
+};
+</code></pre>
+<p>Night and lite variants are also available: <code>HybridNightRaster</code>, <code>HybridLiteDayRaster</code>, <code>HybridLiteNightRaster</code>, each with corresponding vector and traffic overlays.</p>
+<h2 id="terrain">Terrain</h2>
+<p>Raster terrain map showing elevation and topographic features.</p>
+<pre><code class="language-csharp">options.LayerType = MapLayerType.RasterTerrainMap;
+</code></pre>
+<h2 id="traffic-layers">Traffic Layers</h2>
+<p>Add real-time traffic as a vector overlay on top of any base layer:</p>
+<pre><code class="language-csharp">// Via MapLayerType (as base, not recommended alone)
+options.LayerType = MapLayerType.VectorTrafficMap;
+
+// Better: add as overlay via AdvancedHereMap
+await mapRef.AddLayerAsync(&quot;vector.traffic.map&quot;);
+
+// Remove when no longer needed
+await mapRef.RemoveLayerAsync(&quot;vector.traffic.map&quot;);
+</code></pre>
+<h2 id="maplayertype-enum-values">MapLayerType Enum Values</h2>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>VectorNormalMap</code></td>
+<td>Standard vector map (day).</td>
+</tr>
+<tr>
+<td><code>VectorNormalMapNight</code></td>
+<td>Standard vector map (night).</td>
+</tr>
+<tr>
+<td><code>VectorNormalLite</code></td>
+<td>Simplified vector map (day).</td>
+</tr>
+<tr>
+<td><code>VectorNormalLiteNight</code></td>
+<td>Simplified vector map (night).</td>
+</tr>
+<tr>
+<td><code>VectorNormalLogistics</code></td>
+<td>Logistics-optimized map (day).</td>
+</tr>
+<tr>
+<td><code>VectorNormalLogisticsNight</code></td>
+<td>Logistics-optimized map (night).</td>
+</tr>
+<tr>
+<td><code>VectorNormalRoadNetwork</code></td>
+<td>Road network only (day).</td>
+</tr>
+<tr>
+<td><code>VectorNormalRoadNetworkNight</code></td>
+<td>Road network only (night).</td>
+</tr>
+<tr>
+<td><code>VectorNormalTopo</code></td>
+<td>Topographic vector map (day).</td>
+</tr>
+<tr>
+<td><code>VectorNormalTopoNight</code></td>
+<td>Topographic vector map (night).</td>
+</tr>
+<tr>
+<td><code>VectorTrafficMap</code></td>
+<td>Traffic vector overlay.</td>
+</tr>
+<tr>
+<td><code>RasterNormalMap</code></td>
+<td>Raster map (day).</td>
+</tr>
+<tr>
+<td><code>RasterNormalMapNight</code></td>
+<td>Raster map (night).</td>
+</tr>
+<tr>
+<td><code>RasterSatelliteMap</code></td>
+<td>Satellite imagery.</td>
+</tr>
+<tr>
+<td><code>RasterTerrainMap</code></td>
+<td>Terrain/elevation map.</td>
+</tr>
+<tr>
+<td><code>HybridDayRaster</code></td>
+<td>Satellite base (day).</td>
+</tr>
+<tr>
+<td><code>HybridDayVector</code></td>
+<td>Road labels overlay (day).</td>
+</tr>
+<tr>
+<td><code>HybridDayTraffic</code></td>
+<td>Traffic overlay on satellite (day).</td>
+</tr>
+<tr>
+<td><code>HybridNightRaster</code></td>
+<td>Satellite base (night).</td>
+</tr>
+<tr>
+<td><code>HybridNightVector</code></td>
+<td>Road labels overlay (night).</td>
+</tr>
+<tr>
+<td><code>HybridNightTraffic</code></td>
+<td>Traffic overlay on satellite (night).</td>
+</tr>
+<tr>
+<td><code>HybridLiteDayRaster</code></td>
+<td>Satellite base, lite labels (day).</td>
+</tr>
+<tr>
+<td><code>HybridLiteDayVector</code></td>
+<td>Lite road labels overlay (day).</td>
+</tr>
+<tr>
+<td><code>HybridLiteDayTraffic</code></td>
+<td>Lite traffic overlay (day).</td>
+</tr>
+<tr>
+<td><code>HybridLiteNightRaster</code></td>
+<td>Satellite base, lite labels (night).</td>
+</tr>
+<tr>
+<td><code>HybridLiteNightVector</code></td>
+<td>Lite road labels overlay (night).</td>
+</tr>
+<tr>
+<td><code>HybridLiteNightTraffic</code></td>
+<td>Lite traffic overlay (night).</td>
+</tr>
+</tbody>
+</table>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

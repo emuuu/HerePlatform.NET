@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quick Start - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Display a HERE map in your Blazor app in under five minutes." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/getting-started/quick-start" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Quick Start - HerePlatform.NET" />
+    <meta property="og:description" content="Display a HERE map in your Blazor app in under five minutes." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/getting-started/quick-start" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Quick Start - HerePlatform.NET" />
+    <meta name="twitter:description" content="Display a HERE map in your Blazor app in under five minutes." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"Quick Start","description":"Display a HERE map in your Blazor app in under five minutes.","url":"https://emuuu.github.io/HerePlatform.NET/docs/getting-started/quick-start","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Getting Started","item":"https://emuuu.github.io/HerePlatform.NET/docs/getting-started"},{"type":"ListItem","position":3,"name":"Quick Start","item":"https://emuuu.github.io/HerePlatform.NET/docs/getting-started/quick-start"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>Quick Start</h1>
+            <p class="lead text-muted">Display a HERE map in your Blazor app in under five minutes.</p>
+            <h2 id="prerequisites">Prerequisites</h2>
+<p>You need a <strong>HERE API key</strong>. Sign up at the <a href="https://developer.here.com/">HERE Developer Portal</a> to get a free key.</p>
+<h2 id="register-services">Register Services</h2>
+<p>In your <code>Program.cs</code>, call <code>AddBlazorHerePlatform</code> with your API key:</p>
+<pre><code class="language-csharp">using HerePlatformComponents;
+
+builder.Services.AddBlazorHerePlatform(&quot;YOUR_API_KEY&quot;);
+</code></pre>
+<p>Never hard-code your key in source. Use configuration or user secrets instead:</p>
+<pre><code class="language-csharp">var apiKey = builder.Configuration[&quot;HerePlatform:ApiKey&quot;]
+    ?? throw new InvalidOperationException(&quot;HERE API key not configured.&quot;);
+
+builder.Services.AddBlazorHerePlatform(apiKey);
+</code></pre>
+<h2 id="add-the-map-component">Add the Map Component</h2>
+<p>In any <code>.razor</code> page or component, add a <code>HereMap</code>:</p>
+<pre><code class="language-csharp">@using HerePlatformComponents
+@using HerePlatformComponents.Maps
+@using HerePlatformComponents.Maps.Coordinates
+
+&lt;HereMap @ref=&quot;_map&quot; Options=&quot;_options&quot; Height=&quot;600px&quot; /&gt;
+
+@code {
+    private HereMap _map = default!;
+
+    private readonly MapOptions _options = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405), // Berlin
+        Zoom = 12,
+        LayerType = MapLayerType.VectorNormalMap
+    };
+}
+</code></pre>
+<p>This renders an interactive vector map centered on Berlin at zoom level 12. The default height is <code>500px</code>; the example above overrides it to <code>600px</code>.</p>
+<h2 id="run-after-init">Run After Init</h2>
+<p>Use the <code>OnAfterInit</code> callback to run code once the map is ready:</p>
+<pre><code class="language-csharp">&lt;HereMap @ref=&quot;_map&quot; Options=&quot;_options&quot; OnAfterInit=&quot;OnMapReady&quot; /&gt;
+
+@code {
+    private HereMap _map = default!;
+
+    private readonly MapOptions _options = new()
+    {
+        Center = new LatLngLiteral(48.8566, 2.3522), // Paris
+        Zoom = 14
+    };
+
+    private async Task OnMapReady()
+    {
+        // The map's InteropObject is now available.
+        var map = _map.InteropObject!;
+        await map.AddMarkerAsync(new MarkerOptions
+        {
+            Position = new LatLngLiteral(48.8584, 2.2945) // Eiffel Tower
+        });
+    }
+}
+</code></pre>
+<h2 id="add-child-components">Add Child Components</h2>
+<p>Map entities like markers, polylines, and polygons can also be declared as child components of <code>AdvancedHereMap</code>. For details, see the Components section.</p>
+<h2 id="satellite-view">Satellite View</h2>
+<p>Switch to a satellite base layer by changing <code>LayerType</code>:</p>
+<pre><code class="language-csharp">private readonly MapOptions _options = new()
+{
+    Center = new LatLngLiteral(40.6892, -74.0445),
+    Zoom = 16,
+    LayerType = MapLayerType.RasterSatelliteMap
+};
+</code></pre>
+<h2 id="next-steps">Next Steps</h2>
+<ul>
+<li><strong>Configuration</strong> -- learn about <code>HereApiLoadOptions</code>, custom key services, and all <code>MapOptions</code> properties.</li>
+<li><strong>Blazor Server Notes</strong> -- important differences when running server-side.</li>
+<li><strong>Components</strong> -- markers, polylines, polygons, clustering, and more.</li>
+</ul>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

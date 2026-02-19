@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Places Service - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Search for places and points of interest." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/services/places" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Places Service - HerePlatform.NET" />
+    <meta property="og:description" content="Search for places and points of interest." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/services/places" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Places Service - HerePlatform.NET" />
+    <meta name="twitter:description" content="Search for places and points of interest." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"Places Service","description":"Search for places and points of interest.","url":"https://emuuu.github.io/HerePlatform.NET/docs/services/places","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Services","item":"https://emuuu.github.io/HerePlatform.NET/docs/services"},{"type":"ListItem","position":3,"name":"Places Service","item":"https://emuuu.github.io/HerePlatform.NET/docs/services/places"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>Places Service</h1>
+            <p class="lead text-muted">Search for places and points of interest.</p>
+            <h2 id="search">Search</h2>
+<p><code>IPlacesService</code> provides three search methods corresponding to the HERE Places API:</p>
+<ul>
+<li><strong>DiscoverAsync</strong> -- free-text search for places.</li>
+<li><strong>BrowseAsync</strong> -- browse places by category near a position.</li>
+<li><strong>LookupAsync</strong> -- look up a single place by HERE Place ID.</li>
+</ul>
+<pre><code class="language-csharp">@inject IPlacesService PlacesService
+</code></pre>
+<pre><code class="language-csharp">// Free-text search
+var result = await PlacesService.DiscoverAsync(new PlacesRequest
+{
+    Query = &quot;coffee&quot;,
+    At = new LatLngLiteral(52.52, 13.405),
+    Limit = 10
+});
+
+foreach (var item in result.Items ?? [])
+{
+    Console.WriteLine($&quot;{item.Title} ({item.Distance}m)&quot;);
+    Console.WriteLine($&quot;Address: {item.Address}&quot;);
+    Console.WriteLine($&quot;Categories: {string.Join(&quot;, &quot;, item.Categories ?? [])}&quot;);
+}
+
+// Browse by category
+var restaurants = await PlacesService.BrowseAsync(new PlacesRequest
+{
+    At = new LatLngLiteral(52.52, 13.405),
+    Categories = [&quot;100-1000-0000&quot;],
+    Limit = 20
+});
+
+// Lookup by Place ID
+var detail = await PlacesService.LookupAsync(new PlacesRequest
+{
+    Id = &quot;here:pds:place:276u33db-abcdef&quot;
+});
+</code></pre>
+<h2 id="placesrequest">PlacesRequest</h2>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Query</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>Free-text search query (used by <code>DiscoverAsync</code>).</td>
+</tr>
+<tr>
+<td><code>At</code></td>
+<td><code>LatLngLiteral?</code></td>
+<td><code>null</code></td>
+<td>Center position for proximity search.</td>
+</tr>
+<tr>
+<td><code>BoundingBox</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>Bounding box filter: <code>&quot;south,west,north,east&quot;</code>.</td>
+</tr>
+<tr>
+<td><code>Categories</code></td>
+<td><code>List&lt;string&gt;?</code></td>
+<td><code>null</code></td>
+<td>Category filter IDs.</td>
+</tr>
+<tr>
+<td><code>Limit</code></td>
+<td><code>int</code></td>
+<td><code>20</code></td>
+<td>Maximum number of results.</td>
+</tr>
+<tr>
+<td><code>Lang</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>Language code (e.g. <code>&quot;en&quot;</code>, <code>&quot;de&quot;</code>).</td>
+</tr>
+<tr>
+<td><code>Id</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>HERE Place ID (used by <code>LookupAsync</code>).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="placesresult">PlacesResult</h2>
+<p>Each <code>PlaceItem</code> in the result contains:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Title</code></td>
+<td><code>string?</code></td>
+<td>Display name of the place.</td>
+</tr>
+<tr>
+<td><code>Position</code></td>
+<td><code>LatLngLiteral?</code></td>
+<td>Geographic coordinates.</td>
+</tr>
+<tr>
+<td><code>Address</code></td>
+<td><code>string?</code></td>
+<td>Formatted address.</td>
+</tr>
+<tr>
+<td><code>Categories</code></td>
+<td><code>List&lt;string&gt;?</code></td>
+<td>Category names.</td>
+</tr>
+<tr>
+<td><code>OpeningHours</code></td>
+<td><code>string?</code></td>
+<td>Opening hours text.</td>
+</tr>
+<tr>
+<td><code>Contacts</code></td>
+<td><code>List&lt;PlaceContact&gt;?</code></td>
+<td>Contact info (phone, website, email).</td>
+</tr>
+<tr>
+<td><code>Distance</code></td>
+<td><code>int?</code></td>
+<td>Distance from search center in meters.</td>
+</tr>
+<tr>
+<td><code>PlaceId</code></td>
+<td><code>string?</code></td>
+<td>HERE Place ID for subsequent <code>LookupAsync</code> calls.</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-csharp">var place = result.Items?.FirstOrDefault();
+if (place?.Contacts is { } contacts)
+{
+    foreach (var contact in contacts)
+    {
+        Console.WriteLine($&quot;{contact.Type}: {contact.Value}&quot;);
+    }
+}
+</code></pre>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

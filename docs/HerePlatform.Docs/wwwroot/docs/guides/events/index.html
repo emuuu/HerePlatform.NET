@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Events - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Handling map and object events." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/guides/events" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Events - HerePlatform.NET" />
+    <meta property="og:description" content="Handling map and object events." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/guides/events" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Events - HerePlatform.NET" />
+    <meta name="twitter:description" content="Handling map and object events." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"Events","description":"Handling map and object events.","url":"https://emuuu.github.io/HerePlatform.NET/docs/guides/events","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Guides","item":"https://emuuu.github.io/HerePlatform.NET/docs/guides"},{"type":"ListItem","position":3,"name":"Events","item":"https://emuuu.github.io/HerePlatform.NET/docs/guides/events"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>Events</h1>
+            <p class="lead text-muted">Handling map and object events.</p>
+            <h2 id="map-events-onclick-ondrag-onmapviewchange-onresize">Map Events (OnClick, OnDrag, OnMapViewChange, OnResize)</h2>
+<p><code>AdvancedHereMap</code> exposes map-level events as Blazor <code>EventCallback</code> parameters. These fire when the user interacts with the map background (not on map objects).</p>
+<pre><code class="language-xml">&lt;AdvancedHereMap Options=&quot;@options&quot;
+                 OnClick=&quot;@HandleClick&quot;
+                 OnDragEnd=&quot;@HandleDragEnd&quot;
+                 OnMapViewChangeEnd=&quot;@HandleViewChange&quot;
+                 OnResize=&quot;@HandleResize&quot;&gt;
+&lt;/AdvancedHereMap&gt;
+
+@code {
+    private MapOptions options = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 12
+    };
+
+    private void HandleClick(MapPointerEventArgs e)
+    {
+        Console.WriteLine($&quot;Clicked at: {e.Position?.Lat}, {e.Position?.Lng}&quot;);
+    }
+
+    private void HandleDragEnd(MapDragEventArgs e)
+    {
+        Console.WriteLine($&quot;Drag ended at: {e.Position?.Lat}, {e.Position?.Lng}&quot;);
+    }
+
+    private void HandleViewChange(MapViewChangeEventArgs e)
+    {
+        Console.WriteLine($&quot;View: center={e.Center}, zoom={e.Zoom}&quot;);
+    }
+
+    private void HandleResize(MapResizeEventArgs e)
+    {
+        Console.WriteLine($&quot;Resized to: {e.Width}x{e.Height}&quot;);
+    }
+}
+</code></pre>
+<p><strong>All map-level pointer events:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>EventArgs</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OnClick</code></td>
+<td><code>MapPointerEventArgs</code></td>
+<td>Tap/click on the map background.</td>
+</tr>
+<tr>
+<td><code>OnDoubleClick</code></td>
+<td><code>MapPointerEventArgs</code></td>
+<td>Double-tap/double-click.</td>
+</tr>
+<tr>
+<td><code>OnLongPress</code></td>
+<td><code>MapPointerEventArgs</code></td>
+<td>Long press.</td>
+</tr>
+<tr>
+<td><code>OnContextMenu</code></td>
+<td><code>MapPointerEventArgs</code></td>
+<td>Right-click.</td>
+</tr>
+<tr>
+<td><code>OnPointerDown</code></td>
+<td><code>MapPointerEventArgs</code></td>
+<td>Pointer touches the map.</td>
+</tr>
+<tr>
+<td><code>OnPointerUp</code></td>
+<td><code>MapPointerEventArgs</code></td>
+<td>Pointer leaves the surface.</td>
+</tr>
+<tr>
+<td><code>OnPointerMove</code></td>
+<td><code>MapPointerEventArgs</code></td>
+<td>Pointer moves over the map.</td>
+</tr>
+<tr>
+<td><code>OnDragStart</code></td>
+<td><code>MapDragEventArgs</code></td>
+<td>Drag operation starts.</td>
+</tr>
+<tr>
+<td><code>OnDrag</code></td>
+<td><code>MapDragEventArgs</code></td>
+<td>Continuous during drag.</td>
+</tr>
+<tr>
+<td><code>OnDragEnd</code></td>
+<td><code>MapDragEventArgs</code></td>
+<td>Drag operation ends.</td>
+</tr>
+<tr>
+<td><code>OnMapViewChange</code></td>
+<td><code>MapViewChangeEventArgs</code></td>
+<td>Continuous during view change.</td>
+</tr>
+<tr>
+<td><code>OnMapViewChangeStart</code></td>
+<td><code>MapViewChangeEventArgs</code></td>
+<td>View change starts.</td>
+</tr>
+<tr>
+<td><code>OnMapViewChangeEnd</code></td>
+<td><code>MapViewChangeEventArgs</code></td>
+<td>View change ends.</td>
+</tr>
+<tr>
+<td><code>OnResize</code></td>
+<td><code>MapResizeEventArgs</code></td>
+<td>Map container resized.</td>
+</tr>
+<tr>
+<td><code>OnBaseLayerChange</code></td>
+<td><code>BaseLayerChangeEventArgs</code></td>
+<td>Base layer changed.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="marker-events">Marker Events</h2>
+<p>All map object components (<code>MarkerComponent</code>, <code>PolygonComponent</code>, <code>PolylineComponent</code>, <code>CircleComponent</code>, <code>RectComponent</code>) inherit the same event set from <code>MapObjectComponentBase</code>.</p>
+<pre><code class="language-xml">&lt;MarkerComponent Lat=&quot;52.52&quot; Lng=&quot;13.405&quot;
+                 Clickable=&quot;true&quot;
+                 Draggable=&quot;true&quot;
+                 OnClick=&quot;@HandleMarkerClick&quot;
+                 OnDragEnd=&quot;@HandleMarkerDrag&quot; /&gt;
+
+@code {
+    private void HandleMarkerClick(MapPointerEventArgs e)
+    {
+        Console.WriteLine(&quot;Marker clicked&quot;);
+    }
+
+    private void HandleMarkerDrag(MapDragEventArgs e)
+    {
+        Console.WriteLine($&quot;Dragged to: {e.Position?.Lat}, {e.Position?.Lng}&quot;);
+    }
+}
+</code></pre>
+<h2 id="shape-events">Shape Events</h2>
+<p>Polygon, polyline, circle, and rect components support the same events as markers. Set <code>Clickable=&quot;true&quot;</code> or <code>Draggable=&quot;true&quot;</code> to enable interaction.</p>
+<pre><code class="language-xml">&lt;PolygonComponent Path=&quot;@polygonPath&quot;
+                  Clickable=&quot;true&quot;
+                  OnClick=&quot;@HandleShapeClick&quot;
+                  OnPointerEnter=&quot;@HandleEnter&quot;
+                  OnPointerLeave=&quot;@HandleLeave&quot; /&gt;
+</code></pre>
+<p><strong>Shared object-level events:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>EventArgs</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OnClick</code></td>
+<td><code>MapPointerEventArgs</code></td>
+<td>Tap/click on the object.</td>
+</tr>
+<tr>
+<td><code>OnDoubleClick</code></td>
+<td><code>MapPointerEventArgs</code></td>
+<td>Double-tap.</td>
+</tr>
+<tr>
+<td><code>OnLongPress</code></td>
+<td><code>MapPointerEventArgs</code></td>
+<td>Long press.</td>
+</tr>
+<tr>
+<td><code>OnContextMenu</code></td>
+<td><code>MapPointerEventArgs</code></td>
+<td>Right-click.</td>
+</tr>
+<tr>
+<td><code>OnPointerEnter</code></td>
+<td><code>MapPointerEventArgs</code></td>
+<td>Pointer enters the object.</td>
+</tr>
+<tr>
+<td><code>OnPointerLeave</code></td>
+<td><code>MapPointerEventArgs</code></td>
+<td>Pointer leaves the object.</td>
+</tr>
+<tr>
+<td><code>OnDragStart</code></td>
+<td><code>MapDragEventArgs</code></td>
+<td>Drag starts.</td>
+</tr>
+<tr>
+<td><code>OnDrag</code></td>
+<td><code>MapDragEventArgs</code></td>
+<td>Continuous during drag.</td>
+</tr>
+<tr>
+<td><code>OnDragEnd</code></td>
+<td><code>MapDragEventArgs</code></td>
+<td>Drag ends.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="eventargs-classes">EventArgs Classes</h2>
+<p><strong><code>MapPointerEventArgs</code></strong> -- pointer/interaction events:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ViewportX</code></td>
+<td><code>double</code></td>
+<td>X coordinate in pixels.</td>
+</tr>
+<tr>
+<td><code>ViewportY</code></td>
+<td><code>double</code></td>
+<td>Y coordinate in pixels.</td>
+</tr>
+<tr>
+<td><code>Position</code></td>
+<td><code>LatLngLiteral?</code></td>
+<td>Geographic position.</td>
+</tr>
+<tr>
+<td><code>Button</code></td>
+<td><code>int</code></td>
+<td>Mouse button (0=left, 1=middle, 2=right).</td>
+</tr>
+<tr>
+<td><code>PointerType</code></td>
+<td><code>string?</code></td>
+<td><code>&quot;mouse&quot;</code>, <code>&quot;touch&quot;</code>, or <code>&quot;pen&quot;</code>.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>MapDragEventArgs</code></strong> -- drag events:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ViewportX</code></td>
+<td><code>double</code></td>
+<td>X coordinate in pixels.</td>
+</tr>
+<tr>
+<td><code>ViewportY</code></td>
+<td><code>double</code></td>
+<td>Y coordinate in pixels.</td>
+</tr>
+<tr>
+<td><code>Position</code></td>
+<td><code>LatLngLiteral?</code></td>
+<td>Geographic position of the drag point.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>MapViewChangeEventArgs</code></strong> -- view change events:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Center</code></td>
+<td><code>LatLngLiteral?</code></td>
+<td>Current map center.</td>
+</tr>
+<tr>
+<td><code>Zoom</code></td>
+<td><code>double</code></td>
+<td>Current zoom level.</td>
+</tr>
+<tr>
+<td><code>Tilt</code></td>
+<td><code>double</code></td>
+<td>Current tilt angle in degrees.</td>
+</tr>
+<tr>
+<td><code>Heading</code></td>
+<td><code>double</code></td>
+<td>Current heading in degrees.</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>MapResizeEventArgs</code></strong> -- container resize:</p>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Width</code></td>
+<td><code>double</code></td>
+<td>New width in pixels.</td>
+</tr>
+<tr>
+<td><code>Height</code></td>
+<td><code>double</code></td>
+<td>New height in pixels.</td>
+</tr>
+</tbody>
+</table>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GeoJSON Exporter - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Export map objects to GeoJSON format." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/utilities/geojson-exporter" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="GeoJSON Exporter - HerePlatform.NET" />
+    <meta property="og:description" content="Export map objects to GeoJSON format." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/utilities/geojson-exporter" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="GeoJSON Exporter - HerePlatform.NET" />
+    <meta name="twitter:description" content="Export map objects to GeoJSON format." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"GeoJSON Exporter","description":"Export map objects to GeoJSON format.","url":"https://emuuu.github.io/HerePlatform.NET/docs/utilities/geojson-exporter","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Utilities","item":"https://emuuu.github.io/HerePlatform.NET/docs/utilities"},{"type":"ListItem","position":3,"name":"GeoJSON Exporter","item":"https://emuuu.github.io/HerePlatform.NET/docs/utilities/geojson-exporter"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>GeoJSON Exporter</h1>
+            <p class="lead text-muted">Export map objects to GeoJSON format.</p>
+            <h2 id="export-features">Export Features</h2>
+<p><code>GeoJsonExporter</code> is a static utility class that converts coordinates into GeoJSON Feature strings. All methods return raw JSON strings.</p>
+<pre><code class="language-csharp">using HerePlatform.Core.Utilities;
+</code></pre>
+<p><strong>Point Feature:</strong></p>
+<pre><code class="language-csharp">var json = GeoJsonExporter.ToGeoJsonFeature(
+    new LatLngLiteral(52.52, 13.405));
+// {&quot;type&quot;:&quot;Feature&quot;,&quot;geometry&quot;:{&quot;type&quot;:&quot;Point&quot;,&quot;coordinates&quot;:[13.405,52.52]},&quot;properties&quot;:{}}
+</code></pre>
+<p><strong>Point with properties:</strong></p>
+<pre><code class="language-csharp">var props = new Dictionary&lt;string, object&gt;
+{
+    { &quot;name&quot;, &quot;Berlin&quot; },
+    { &quot;population&quot;, 3645000 }
+};
+
+var json = GeoJsonExporter.ToGeoJsonFeature(
+    new LatLngLiteral(52.52, 13.405), props);
+</code></pre>
+<p><strong>LineString Feature:</strong></p>
+<pre><code class="language-csharp">var route = new List&lt;LatLngLiteral&gt;
+{
+    new(52.52, 13.405),
+    new(52.53, 13.42),
+    new(52.50, 13.39)
+};
+
+var json = GeoJsonExporter.ToLineStringFeature(route,
+    new Dictionary&lt;string, object&gt; { { &quot;name&quot;, &quot;Route A&quot; } });
+</code></pre>
+<p><strong>Polygon Feature:</strong></p>
+<pre><code class="language-csharp">var exterior = new List&lt;LatLngLiteral&gt;
+{
+    new(52.53, 13.38), new(52.53, 13.42),
+    new(52.50, 13.42), new(52.50, 13.38),
+    new(52.53, 13.38) // closed ring
+};
+
+var json = GeoJsonExporter.ToPolygonFeature(exterior);
+</code></pre>
+<p><strong>Polygon with holes:</strong></p>
+<pre><code class="language-csharp">var hole = new List&lt;LatLngLiteral&gt;
+{
+    new(52.52, 13.39), new(52.52, 13.41),
+    new(52.51, 13.41), new(52.51, 13.39),
+    new(52.52, 13.39)
+};
+
+var json = GeoJsonExporter.ToPolygonFeature(exterior, holes: [hole]);
+</code></pre>
+<h2 id="export-featurecollection">Export FeatureCollection</h2>
+<p>Combine multiple feature JSON strings into a GeoJSON FeatureCollection.</p>
+<pre><code class="language-csharp">var point = GeoJsonExporter.ToGeoJsonFeature(new LatLngLiteral(52.52, 13.405));
+var line = GeoJsonExporter.ToLineStringFeature(route);
+var polygon = GeoJsonExporter.ToPolygonFeature(exterior);
+
+var collection = GeoJsonExporter.ToFeatureCollection([point, line, polygon]);
+// {&quot;type&quot;:&quot;FeatureCollection&quot;,&quot;features&quot;:[...]}
+</code></pre>
+<p>All coordinate output follows the GeoJSON specification: <code>[longitude, latitude]</code>. Property values support <code>string</code>, <code>bool</code>, <code>int</code>, <code>double</code>, and <code>null</code> types. Other types are serialized via <code>ToString()</code>.</p>
+<pre><code class="language-csharp">var props = new Dictionary&lt;string, object&gt;
+{
+    { &quot;label&quot;, &quot;Warehouse&quot; },
+    { &quot;active&quot;, true },
+    { &quot;capacity&quot;, 500 },
+    { &quot;rating&quot;, 4.7 }
+};
+
+var json = GeoJsonExporter.ToGeoJsonFeature(
+    new LatLngLiteral(52.52, 13.405), props);
+</code></pre>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

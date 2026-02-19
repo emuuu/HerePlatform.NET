@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RouteComponent - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Display calculated routes on the map." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/components/route-component" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="RouteComponent - HerePlatform.NET" />
+    <meta property="og:description" content="Display calculated routes on the map." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/components/route-component" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="RouteComponent - HerePlatform.NET" />
+    <meta name="twitter:description" content="Display calculated routes on the map." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"RouteComponent","description":"Display calculated routes on the map.","url":"https://emuuu.github.io/HerePlatform.NET/docs/components/route-component","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Components","item":"https://emuuu.github.io/HerePlatform.NET/docs/components"},{"type":"ListItem","position":3,"name":"RouteComponent","item":"https://emuuu.github.io/HerePlatform.NET/docs/components/route-component"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>RouteComponent</h1>
+            <p class="lead text-muted">Display calculated routes on the map.</p>
+            <h2 id="basic-usage">Basic Usage</h2>
+<p><code>RouteComponent</code> calculates a route between an origin and destination using the HERE Routing API, then renders it as a polyline on the map. It requires <code>IRoutingService</code> to be registered:</p>
+<pre><code class="language-csharp">builder.Services.AddBlazorHerePlatform(&quot;YOUR_KEY&quot;);
+</code></pre>
+<p>Place it inside an <code>AdvancedHereMap</code>:</p>
+<pre><code class="language-csharp">@using HerePlatformComponents.Maps
+@using HerePlatformComponents.Maps.Services.Routing
+
+&lt;AdvancedHereMap Options=&quot;_options&quot; Height=&quot;500px&quot;&gt;
+    &lt;RouteComponent Origin=&quot;new LatLngLiteral(52.52, 13.405)&quot;
+                    Destination=&quot;new LatLngLiteral(48.8566, 2.3522)&quot;
+                    OnRouteCalculated=&quot;HandleRoute&quot; /&gt;
+&lt;/AdvancedHereMap&gt;
+
+@code {
+    private readonly MapOptions _options = new()
+    {
+        Center = new LatLngLiteral(50.0, 8.0),
+        Zoom = 6
+    };
+
+    private void HandleRoute(RoutingResult result)
+    {
+        var section = result.Routes?[0]?.Sections?[0]?.Summary;
+        if (section is not null)
+        {
+            Console.WriteLine($&quot;Distance: {section.Length / 1000.0:F1} km&quot;);
+            Console.WriteLine($&quot;Duration: {section.Duration / 60} min&quot;);
+        }
+    }
+}
+</code></pre>
+<h2 id="route-visualization">Route Visualization</h2>
+<p>Customize the route line appearance with <code>StrokeColor</code> and <code>LineWidth</code>. Add via waypoints with the <code>Via</code> parameter.</p>
+<pre><code class="language-csharp">&lt;RouteComponent Origin=&quot;_origin&quot;
+                Destination=&quot;_destination&quot;
+                Via=&quot;_viaPoints&quot;
+                StrokeColor=&quot;#00AA44&quot;
+                LineWidth=&quot;6&quot;
+                TransportMode=&quot;TransportMode.Pedestrian&quot;
+                RoutingMode=&quot;RoutingMode.Short&quot;
+                Visible=&quot;@_showRoute&quot; /&gt;
+
+@code {
+    private LatLngLiteral _origin = new(52.52, 13.405);
+    private LatLngLiteral _destination = new(52.50, 13.45);
+
+    private List&lt;LatLngLiteral&gt; _viaPoints = new()
+    {
+        new(52.51, 13.42)
+    };
+
+    private bool _showRoute = true;
+}
+</code></pre>
+<h3 id="parameters">Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Origin</code></td>
+<td><code>LatLngLiteral</code></td>
+<td>--</td>
+<td>Route start position.</td>
+</tr>
+<tr>
+<td><code>Destination</code></td>
+<td><code>LatLngLiteral</code></td>
+<td>--</td>
+<td>Route end position.</td>
+</tr>
+<tr>
+<td><code>Via</code></td>
+<td><code>List&lt;LatLngLiteral&gt;?</code></td>
+<td><code>null</code></td>
+<td>Optional intermediate waypoints.</td>
+</tr>
+<tr>
+<td><code>TransportMode</code></td>
+<td><code>TransportMode</code></td>
+<td><code>Car</code></td>
+<td>Transport mode (Car, Pedestrian, Truck, etc.).</td>
+</tr>
+<tr>
+<td><code>RoutingMode</code></td>
+<td><code>RoutingMode</code></td>
+<td><code>Fast</code></td>
+<td>Optimization mode (Fast or Short).</td>
+</tr>
+<tr>
+<td><code>Avoid</code></td>
+<td><code>RoutingAvoidFeature</code></td>
+<td><code>None</code></td>
+<td>Features to avoid (tolls, highways, ferries).</td>
+</tr>
+<tr>
+<td><code>StrokeColor</code></td>
+<td><code>string</code></td>
+<td><code>#0066FF</code></td>
+<td>Polyline color in CSS format.</td>
+</tr>
+<tr>
+<td><code>LineWidth</code></td>
+<td><code>double</code></td>
+<td><code>5</code></td>
+<td>Polyline width in pixels.</td>
+</tr>
+<tr>
+<td><code>Visible</code></td>
+<td><code>bool</code></td>
+<td><code>true</code></td>
+<td>Controls polyline visibility.</td>
+</tr>
+<tr>
+<td><code>OnRouteCalculated</code></td>
+<td><code>EventCallback&lt;RoutingResult&gt;</code></td>
+<td>--</td>
+<td>Fires when the route is calculated.</td>
+</tr>
+<tr>
+<td><code>OnError</code></td>
+<td><code>EventCallback&lt;Exception&gt;</code></td>
+<td>--</td>
+<td>Fires if route calculation fails.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="combined-with-routing-service">Combined with Routing Service</h2>
+<p>For more control, use <code>IRoutingService</code> directly and render the result with a <code>PolylineComponent</code>. The <code>RouteComponent</code> is a convenience wrapper that combines both steps.</p>
+<pre><code class="language-csharp">@inject IRoutingService RoutingService
+
+@code {
+    private async Task CalculateManually()
+    {
+        var result = await RoutingService.CalculateRouteAsync(new RoutingRequest
+        {
+            Origin = new LatLngLiteral(52.52, 13.405),
+            Destination = new LatLngLiteral(48.8566, 2.3522),
+            TransportMode = TransportMode.Car,
+            ReturnPolyline = true
+        });
+
+        // Access result.Routes[0].Sections for polyline data and summaries
+    }
+}
+</code></pre>
+<p>The <code>RouteComponent.Result</code> property and <code>IsCalculating</code> flag are available on the component reference for status checks.</p>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

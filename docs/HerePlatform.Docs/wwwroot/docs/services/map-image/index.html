@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Map Image Service - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Generate static map images." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/services/map-image" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="Map Image Service - HerePlatform.NET" />
+    <meta property="og:description" content="Generate static map images." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/services/map-image" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Map Image Service - HerePlatform.NET" />
+    <meta name="twitter:description" content="Generate static map images." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"Map Image Service","description":"Generate static map images.","url":"https://emuuu.github.io/HerePlatform.NET/docs/services/map-image","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Services","item":"https://emuuu.github.io/HerePlatform.NET/docs/services"},{"type":"ListItem","position":3,"name":"Map Image Service","item":"https://emuuu.github.io/HerePlatform.NET/docs/services/map-image"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>Map Image Service</h1>
+            <p class="lead text-muted">Generate static map images.</p>
+            <h2 id="setup">Setup</h2>
+<p>Inject <code>IMapImageService</code> into your component. It is registered automatically by <code>AddBlazorHerePlatform</code>.</p>
+<pre><code class="language-csharp">@inject IMapImageService MapImageService
+</code></pre>
+<h2 id="getimageasync">GetImageAsync</h2>
+<p>Generate a static map image centered on a location. Returns raw image bytes that can be displayed directly or saved to disk.</p>
+<pre><code class="language-csharp">var imageBytes = await MapImageService.GetImageAsync(new MapImageRequest
+{
+    Center = new LatLngLiteral(52.5200, 13.4050),
+    Zoom = 14,
+    Width = 800,
+    Height = 600,
+    Format = MapImageFormat.Png,
+    Style = MapImageStyle.Default
+});
+
+// Display in Blazor as a data URI
+var base64 = Convert.ToBase64String(imageBytes);
+var dataUri = $&quot;data:image/png;base64,{base64}&quot;;
+</code></pre>
+<pre><code class="language-html">&lt;img src=&quot;@dataUri&quot; alt=&quot;Map&quot; /&gt;
+</code></pre>
+<h2 id="mapimagerequest-options">MapImageRequest Options</h2>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Center</code></td>
+<td><code>LatLngLiteral</code></td>
+<td>--</td>
+<td>Map center (required).</td>
+</tr>
+<tr>
+<td><code>Zoom</code></td>
+<td><code>int</code></td>
+<td><code>12</code></td>
+<td>Zoom level (0–22).</td>
+</tr>
+<tr>
+<td><code>Width</code></td>
+<td><code>int</code></td>
+<td><code>512</code></td>
+<td>Image width in pixels.</td>
+</tr>
+<tr>
+<td><code>Height</code></td>
+<td><code>int</code></td>
+<td><code>512</code></td>
+<td>Image height in pixels.</td>
+</tr>
+<tr>
+<td><code>Format</code></td>
+<td><code>MapImageFormat</code></td>
+<td><code>Png</code></td>
+<td>Output format.</td>
+</tr>
+<tr>
+<td><code>Style</code></td>
+<td><code>MapImageStyle</code></td>
+<td><code>Default</code></td>
+<td>Map style/theme.</td>
+</tr>
+<tr>
+<td><code>Ppi</code></td>
+<td><code>int</code></td>
+<td><code>72</code></td>
+<td>Pixels per inch (72, 150, 250, 320, 400, 500).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="mapimageformat-enum">MapImageFormat Enum</h2>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Png</code></td>
+<td>PNG format (lossless).</td>
+</tr>
+<tr>
+<td><code>Jpeg</code></td>
+<td>JPEG format (smaller file size).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="mapimagestyle-enum">MapImageStyle Enum</h2>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Wire Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Default</code></td>
+<td><code>explore.day</code></td>
+<td>Standard day map.</td>
+</tr>
+<tr>
+<td><code>Night</code></td>
+<td><code>explore.night</code></td>
+<td>Dark theme.</td>
+</tr>
+<tr>
+<td><code>Satellite</code></td>
+<td><code>explore.satellite.day</code></td>
+<td>Satellite imagery.</td>
+</tr>
+<tr>
+<td><code>Lite</code></td>
+<td><code>lite.day</code></td>
+<td>Simplified day map.</td>
+</tr>
+<tr>
+<td><code>LiteNight</code></td>
+<td><code>lite.night</code></td>
+<td>Simplified dark map.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="displaying-images">Displaying Images</h2>
+<p>The service returns <code>byte[]</code> directly. Convert to a Base64 data URI for inline display, or stream to a file:</p>
+<pre><code class="language-csharp">// Save to file
+await File.WriteAllBytesAsync(&quot;map.png&quot;, imageBytes);
+</code></pre>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

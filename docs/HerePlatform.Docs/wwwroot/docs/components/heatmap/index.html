@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HeatmapComponent - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Heatmap visualization for geographic data density." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/components/heatmap" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="HeatmapComponent - HerePlatform.NET" />
+    <meta property="og:description" content="Heatmap visualization for geographic data density." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/components/heatmap" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="HeatmapComponent - HerePlatform.NET" />
+    <meta name="twitter:description" content="Heatmap visualization for geographic data density." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"HeatmapComponent","description":"Heatmap visualization for geographic data density.","url":"https://emuuu.github.io/HerePlatform.NET/docs/components/heatmap","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Components","item":"https://emuuu.github.io/HerePlatform.NET/docs/components"},{"type":"ListItem","position":3,"name":"HeatmapComponent","item":"https://emuuu.github.io/HerePlatform.NET/docs/components/heatmap"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>HeatmapComponent</h1>
+            <p class="lead text-muted">Heatmap visualization for geographic data density.</p>
+            <h2 id="basic-usage">Basic Usage</h2>
+<p><code>HeatmapComponent</code> renders a heatmap layer on the map. Place it inside an <code>AdvancedHereMap</code> and provide a list of <code>HeatmapDataPoint</code> objects.</p>
+<pre><code class="language-csharp">@using HerePlatformComponents.Maps
+@using HerePlatformComponents.Maps.Data
+
+&lt;AdvancedHereMap Options=&quot;_options&quot; Height=&quot;500px&quot;&gt;
+    &lt;HeatmapComponent DataPoints=&quot;_points&quot; /&gt;
+&lt;/AdvancedHereMap&gt;
+
+@code {
+    private readonly MapOptions _options = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 11
+    };
+
+    private List&lt;HeatmapDataPoint&gt; _points = new()
+    {
+        new(52.52, 13.405, 1.0),
+        new(52.53, 13.41, 0.8),
+        new(52.51, 13.39, 1.5),
+        new(52.525, 13.40, 2.0)
+    };
+}
+</code></pre>
+<h2 id="data-points">Data Points</h2>
+<p>Each <code>HeatmapDataPoint</code> has <code>Lat</code>, <code>Lng</code>, and a <code>Value</code> that controls the intensity at that location. Higher values produce a stronger heat signal.</p>
+<pre><code class="language-csharp">var points = new List&lt;HeatmapDataPoint&gt;
+{
+    new() { Lat = 48.8566, Lng = 2.3522, Value = 5.0 },
+    new() { Lat = 48.8584, Lng = 2.2945, Value = 3.0 },
+    new() { Lat = 48.8530, Lng = 2.3499, Value = 1.0 },
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Lat</code></td>
+<td><code>double</code></td>
+<td>--</td>
+<td>Latitude of the data point.</td>
+</tr>
+<tr>
+<td><code>Lng</code></td>
+<td><code>double</code></td>
+<td>--</td>
+<td>Longitude of the data point.</td>
+</tr>
+<tr>
+<td><code>Value</code></td>
+<td><code>double</code></td>
+<td><code>1</code></td>
+<td>Intensity value (higher = more heat).</td>
+</tr>
+</tbody>
+</table>
+<p>Update the <code>DataPoints</code> list and the heatmap re-renders automatically on the next parameter change cycle.</p>
+<h2 id="customization">Customization</h2>
+<p>Control appearance with <code>Opacity</code>, <code>Colors</code> (gradient stops), <code>SampleDepth</code>, and <code>Visible</code>.</p>
+<pre><code class="language-csharp">&lt;HeatmapComponent DataPoints=&quot;_points&quot;
+                  Opacity=&quot;0.8&quot;
+                  Colors=&quot;_gradient&quot;
+                  SampleDepth=&quot;8&quot;
+                  Visible=&quot;@_showHeatmap&quot; /&gt;
+
+@code {
+    private bool _showHeatmap = true;
+
+    private Dictionary&lt;double, string&gt; _gradient = new()
+    {
+        [0.0] = &quot;rgba(0, 0, 255, 0)&quot;,
+        [0.3] = &quot;blue&quot;,
+        [0.5] = &quot;green&quot;,
+        [0.7] = &quot;yellow&quot;,
+        [1.0] = &quot;red&quot;
+    };
+}
+</code></pre>
+<h3 id="parameters">Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DataPoints</code></td>
+<td><code>List&lt;HeatmapDataPoint&gt;?</code></td>
+<td><code>null</code></td>
+<td>Data points for the heatmap.</td>
+</tr>
+<tr>
+<td><code>Opacity</code></td>
+<td><code>double</code></td>
+<td><code>0.6</code></td>
+<td>Layer opacity from 0 (transparent) to 1 (opaque).</td>
+</tr>
+<tr>
+<td><code>Colors</code></td>
+<td><code>Dictionary&lt;double, string&gt;?</code></td>
+<td><code>null</code></td>
+<td>Gradient color stops. Keys are 0--1 thresholds, values are CSS colors.</td>
+</tr>
+<tr>
+<td><code>SampleDepth</code></td>
+<td><code>int?</code></td>
+<td><code>null</code></td>
+<td>Sampling depth for the heatmap calculation.</td>
+</tr>
+<tr>
+<td><code>Visible</code></td>
+<td><code>bool</code></td>
+<td><code>true</code></td>
+<td>Controls layer visibility.</td>
+</tr>
+</tbody>
+</table>
+<p>Toggle <code>Visible</code> to show or hide the heatmap without removing data. Combine with a <code>GroupComponent</code> to layer multiple heatmaps and toggle them independently.</p>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

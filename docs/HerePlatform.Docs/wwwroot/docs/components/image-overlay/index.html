@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ImageOverlayComponent - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Overlay a static image on the map." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/components/image-overlay" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="ImageOverlayComponent - HerePlatform.NET" />
+    <meta property="og:description" content="Overlay a static image on the map." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/components/image-overlay" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="ImageOverlayComponent - HerePlatform.NET" />
+    <meta name="twitter:description" content="Overlay a static image on the map." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"ImageOverlayComponent","description":"Overlay a static image on the map.","url":"https://emuuu.github.io/HerePlatform.NET/docs/components/image-overlay","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Components","item":"https://emuuu.github.io/HerePlatform.NET/docs/components"},{"type":"ListItem","position":3,"name":"ImageOverlayComponent","item":"https://emuuu.github.io/HerePlatform.NET/docs/components/image-overlay"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>ImageOverlayComponent</h1>
+            <p class="lead text-muted">Overlay a static image on the map.</p>
+            <h2 id="basic-usage">Basic Usage</h2>
+<p><code>ImageOverlayComponent</code> stretches a static image (PNG, JPEG, or SVG) over a geographic bounding box on the map. Place it inside an <code>AdvancedHereMap</code>.</p>
+<pre><code class="language-csharp">@using HerePlatformComponents.Maps
+
+&lt;AdvancedHereMap Options=&quot;_options&quot; Height=&quot;500px&quot;&gt;
+    &lt;ImageOverlayComponent ImageUrl=&quot;images/floor-plan.png&quot;
+                           Top=&quot;52.525&quot;
+                           Left=&quot;13.40&quot;
+                           Bottom=&quot;52.515&quot;
+                           Right=&quot;13.42&quot;
+                           Opacity=&quot;0.75&quot; /&gt;
+&lt;/AdvancedHereMap&gt;
+
+@code {
+    private readonly MapOptions _options = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.41),
+        Zoom = 15
+    };
+}
+</code></pre>
+<p>The image is projected onto the map and scales with zoom. This is useful for floor plans, historical maps, or custom overlays tied to specific geographic coordinates.</p>
+<h2 id="bounds-configuration">Bounds Configuration</h2>
+<p>The overlay bounds are defined by four parameters that form a geographic rectangle:</p>
+<pre><code>Top (north latitude)    +-----------+
+                        |           |
+                        |   image   |
+                        |           |
+Bottom (south latitude) +-----------+
+                   Left            Right
+              (west longitude)  (east longitude)
+</code></pre>
+<pre><code class="language-csharp">&lt;ImageOverlayComponent ImageUrl=&quot;@_imageUrl&quot;
+                       Top=&quot;48.86&quot;
+                       Left=&quot;2.29&quot;
+                       Bottom=&quot;48.85&quot;
+                       Right=&quot;2.30&quot;
+                       Opacity=&quot;@_opacity&quot;
+                       Visible=&quot;@_showOverlay&quot; /&gt;
+
+&lt;input type=&quot;range&quot; min=&quot;0&quot; max=&quot;1&quot; step=&quot;0.05&quot;
+       @bind=&quot;_opacity&quot; @bind:event=&quot;oninput&quot; /&gt;
+
+&lt;button @onclick=&quot;() =&gt; _showOverlay = !_showOverlay&quot;&gt;
+    Toggle Overlay
+&lt;/button&gt;
+
+@code {
+    private string _imageUrl = &quot;images/historic-map.png&quot;;
+    private double _opacity = 0.8;
+    private bool _showOverlay = true;
+}
+</code></pre>
+<p>Both HTTP URLs and data URIs are supported for <code>ImageUrl</code>. For example, you can use a base64-encoded image:</p>
+<pre><code class="language-csharp">private string _imageUrl = &quot;data:image/png;base64,iVBORw0KGgo...&quot;;
+</code></pre>
+<h3 id="parameters">Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ImageUrl</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>URL of the image (HTTP URL or data URI).</td>
+</tr>
+<tr>
+<td><code>Top</code></td>
+<td><code>double</code></td>
+<td><code>0</code></td>
+<td>North latitude of the bounding box.</td>
+</tr>
+<tr>
+<td><code>Left</code></td>
+<td><code>double</code></td>
+<td><code>0</code></td>
+<td>West longitude of the bounding box.</td>
+</tr>
+<tr>
+<td><code>Bottom</code></td>
+<td><code>double</code></td>
+<td><code>0</code></td>
+<td>South latitude of the bounding box.</td>
+</tr>
+<tr>
+<td><code>Right</code></td>
+<td><code>double</code></td>
+<td><code>0</code></td>
+<td>East longitude of the bounding box.</td>
+</tr>
+<tr>
+<td><code>Opacity</code></td>
+<td><code>double</code></td>
+<td><code>1.0</code></td>
+<td>Overlay opacity from 0 (transparent) to 1 (opaque).</td>
+</tr>
+<tr>
+<td><code>Visible</code></td>
+<td><code>bool</code></td>
+<td><code>true</code></td>
+<td>Controls overlay visibility.</td>
+</tr>
+</tbody>
+</table>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CustomTileLayerComponent - HerePlatform.NET Docs</title>
+    <base href="/" />
+    <meta name="description" content="Custom tile layer for external tile providers." />
+    <link rel="canonical" href="https://emuuu.github.io/HerePlatform.NET/docs/components/custom-tile-layer" />
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content="CustomTileLayerComponent - HerePlatform.NET" />
+    <meta property="og:description" content="Custom tile layer for external tile providers." />
+    <meta property="og:url" content="https://emuuu.github.io/HerePlatform.NET/docs/components/custom-tile-layer" />
+    <meta property="og:site_name" content="HerePlatform.NET Docs" />
+    <meta property="og:image" content="https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="CustomTileLayerComponent - HerePlatform.NET" />
+    <meta name="twitter:description" content="Custom tile layer for external tile providers." />
+    <script type="application/ld+json">[{"context":"https://schema.org","type":"TechArticle","headline":"CustomTileLayerComponent","description":"Custom tile layer for external tile providers.","url":"https://emuuu.github.io/HerePlatform.NET/docs/components/custom-tile-layer","image":"https://emuuu.github.io/HerePlatform.NET/img/blazor-here-platform.svg","publisher":{"type":"Organization","name":"HerePlatform.NET"}},{"context":"https://schema.org","type":"BreadcrumbList","itemListElement":[{"type":"ListItem","position":1,"name":"Docs","item":"https://emuuu.github.io/HerePlatform.NET/"},{"type":"ListItem","position":2,"name":"Components","item":"https://emuuu.github.io/HerePlatform.NET/docs/components"},{"type":"ListItem","position":3,"name":"CustomTileLayerComponent","item":"https://emuuu.github.io/HerePlatform.NET/docs/components/custom-tile-layer"}]}]</script>
+    <link rel="icon" type="image/svg+xml" href="img/blazor-here-platform.svg" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+    <link href="lib/prismjs/prism.css" rel="stylesheet" />
+    <link href="css/app.css" rel="stylesheet" />
+    <link href="HerePlatform.Docs.styles.css" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <article style="max-width:800px;margin:2rem auto;padding:0 1rem;">
+            <h1>CustomTileLayerComponent</h1>
+            <p class="lead text-muted">Custom tile layer for external tile providers.</p>
+            <h2 id="basic-usage">Basic Usage</h2>
+<p><code>CustomTileLayerComponent</code> overlays raster tiles from an external tile provider on top of the HERE base map. Place it inside an <code>AdvancedHereMap</code> and provide a URL pattern.</p>
+<pre><code class="language-csharp">@using HerePlatformComponents.Maps
+
+&lt;AdvancedHereMap Options=&quot;_options&quot; Height=&quot;500px&quot;&gt;
+    &lt;CustomTileLayerComponent UrlPattern=&quot;@_tileUrl&quot;
+                              Opacity=&quot;0.7&quot; /&gt;
+&lt;/AdvancedHereMap&gt;
+
+@code {
+    private readonly MapOptions _options = new()
+    {
+        Center = new LatLngLiteral(52.52, 13.405),
+        Zoom = 10
+    };
+
+    private string _tileUrl =
+        &quot;https://tile.openweathermap.org/map/temp_new/{z}/{x}/{y}.png?appid=YOUR_OWM_KEY&quot;;
+}
+</code></pre>
+<h2 id="tile-url-template">Tile URL Template</h2>
+<p>The <code>UrlPattern</code> string must include <code>{x}</code>, <code>{y}</code>, and <code>{z}</code> placeholders. These are replaced at runtime with the tile column, row, and zoom level values respectively.</p>
+<p>Common tile provider examples:</p>
+<pre><code class="language-csharp">// OpenStreetMap
+var osmUrl = &quot;https://tile.openstreetmap.org/{z}/{x}/{y}.png&quot;;
+
+// Stamen Toner
+var stamenUrl = &quot;https://tiles.stadiamaps.com/tiles/stamen_toner/{z}/{x}/{y}.png&quot;;
+
+// Custom tile server
+var customUrl = &quot;https://tiles.example.com/overlay/{z}/{x}/{y}.png&quot;;
+</code></pre>
+<p>Configure the zoom range and tile size to match the provider's specifications:</p>
+<pre><code class="language-csharp">&lt;CustomTileLayerComponent UrlPattern=&quot;@_tileUrl&quot;
+                          Min=&quot;2&quot;
+                          Max=&quot;18&quot;
+                          TileSize=&quot;256&quot;
+                          Opacity=&quot;0.5&quot;
+                          Visible=&quot;@_showOverlay&quot; /&gt;
+
+&lt;button @onclick=&quot;() =&gt; _showOverlay = !_showOverlay&quot;&gt;Toggle Overlay&lt;/button&gt;
+
+@code {
+    private bool _showOverlay = true;
+}
+</code></pre>
+<h3 id="parameters">Parameters</h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>UrlPattern</code></td>
+<td><code>string?</code></td>
+<td><code>null</code></td>
+<td>URL with <code>{x}</code>, <code>{y}</code>, <code>{z}</code> placeholders.</td>
+</tr>
+<tr>
+<td><code>Min</code></td>
+<td><code>int</code></td>
+<td><code>0</code></td>
+<td>Minimum zoom level for the tile layer.</td>
+</tr>
+<tr>
+<td><code>Max</code></td>
+<td><code>int</code></td>
+<td><code>20</code></td>
+<td>Maximum zoom level for the tile layer.</td>
+</tr>
+<tr>
+<td><code>TileSize</code></td>
+<td><code>int</code></td>
+<td><code>256</code></td>
+<td>Tile size in pixels.</td>
+</tr>
+<tr>
+<td><code>Opacity</code></td>
+<td><code>double</code></td>
+<td><code>1.0</code></td>
+<td>Layer opacity from 0 (transparent) to 1 (opaque).</td>
+</tr>
+<tr>
+<td><code>Visible</code></td>
+<td><code>bool</code></td>
+<td><code>true</code></td>
+<td>Controls layer visibility.</td>
+</tr>
+</tbody>
+</table>
+<p>The custom tile layer renders on top of the base map. Adjust <code>Opacity</code> to blend with the underlying map, or set <code>Visible</code> to <code>false</code> to hide it without removing the component.</p>
+
+        </article>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">X</a>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="lib/prismjs/prism.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="_content/BlazorHerePlatform/js/objectManager.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+</html>
