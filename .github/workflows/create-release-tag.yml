@@ -51,13 +51,14 @@ jobs:
             echo "::error::Tag ${{ steps.tag.outputs.TAG_NAME }} already exists"
             exit 1
           fi
-      - name: Verify CI passed on main
+      - name: Verify CI passed on current HEAD
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          RESULT=$(gh run list --branch main --workflow ci.yml --status success --limit 1 --json conclusion -q '.[0].conclusion')
+          HEAD_SHA=$(git rev-parse HEAD)
+          RESULT=$(gh run list --branch main --workflow ci.yml --commit "$HEAD_SHA" --status success --limit 1 --json conclusion -q '.[0].conclusion')
           if [ "$RESULT" != "success" ]; then
-            echo "::error::No successful CI run found on main. Please ensure CI passes before creating a release."
+            echo "::error::No successful CI run found for commit $HEAD_SHA. Please ensure CI passes before creating a release."
             exit 1
           fi
       - name: Create and push tag

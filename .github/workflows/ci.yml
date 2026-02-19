@@ -54,3 +54,37 @@ jobs:
         working-directory: tests/HerePlatform.RestClient.Tests
       - run: dotnet test -c Release -f ${{ matrix.target-framework }} --no-build
         working-directory: tests/HerePlatform.RestClient.Tests
+
+  core-change-check:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Check for unreleased Core changes
+        run: |
+          check_package() {
+            local PACKAGE=$1
+            local PACKAGE_DIR=$2
+            local TAG_PREFIX=$3
+
+            LATEST_TAG=$(git tag -l "${TAG_PREFIX}/v*" --sort=-v:refname | head -n 1)
+            if [ -z "$LATEST_TAG" ]; then
+              echo "No release tag found for ${PACKAGE}, skipping core-change check."
+              return
+            fi
+
+            CORE_CHANGED=$(git diff --name-only "$LATEST_TAG"..HEAD -- HerePlatform.Core/ | head -n 1)
+            if [ -z "$CORE_CHANGED" ]; then
+              return
+            fi
+
+            PKG_CHANGED=$(git diff --name-only "$LATEST_TAG"..HEAD -- "$PACKAGE_DIR/" | head -n 1)
+            if [ -z "$PKG_CHANGED" ]; then
+              echo "::warning::HerePlatform.Core has changed since ${LATEST_TAG} but ${PACKAGE_DIR} has not been released."
+            fi
+          }
+
+          check_package "Blazor" "HerePlatform.Blazor" "blazor"
+          check_package "RestClient" "HerePlatform.RestClient" "restclient"
