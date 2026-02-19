@@ -4,6 +4,9 @@ on:
     tags: ['restclient/v*']
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   release:
     uses: ./.github/workflows/release-package.yml
