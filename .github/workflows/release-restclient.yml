@@ -2,6 +2,7 @@ name: Release RestClient
 on:
   push:
     tags: ['restclient/v*']
+  workflow_dispatch:
 
 jobs:
   release:

@@ -2,6 +2,7 @@ name: Release Blazor
 on:
   push:
     tags: ['blazor/v*']
+  workflow_dispatch:
 
 jobs:
   release:
