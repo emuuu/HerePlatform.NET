@@ -113,6 +113,10 @@
                 @onclick="@(() => _transportMode = TransportMode.Bicycle)">Bicycle</button>
             <button class="btn btn-sm @(_transportMode == TransportMode.Truck ? "btn-primary" : "btn-outline-primary")"
                 @onclick="@(() => _transportMode = TransportMode.Truck)">Truck</button>
+            <button class="btn btn-sm @(_transportMode == TransportMode.Scooter ? "btn-primary" : "btn-outline-primary")"
+                @onclick="@(() => _transportMode = TransportMode.Scooter)">Scooter</button>
+            <button class="btn btn-sm @(_transportMode == TransportMode.Taxi ? "btn-primary" : "btn-outline-primary")"
+                @onclick="@(() => _transportMode = TransportMode.Taxi)">Taxi</button>
         </div>
     </div>
 

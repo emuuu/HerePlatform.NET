@@ -39,7 +39,7 @@ var result = await MatrixRoutingService.CalculateMatrixAsync(request);
 |----------|------|---------|-------------|
 | `Origins` | `List<LatLngLiteral>` | `[]` | Origin positions. |
 | `Destinations` | `List<LatLngLiteral>` | `[]` | Destination positions. |
-| `TransportMode` | `TransportMode` | `Car` | `Car`, `Truck`, `Pedestrian`, `Bicycle`, `Scooter`. |
+| `TransportMode` | `TransportMode` | `Car` | `Car`, `Truck`, `Pedestrian`, `Bicycle`, `Scooter`, `Taxi`. |
 | `RoutingMode` | `RoutingMode` | `Fast` | `Fast` (time) or `Short` (distance). |
 | `DepartureTime` | `DateTime?` | `null` | Departure time for time-aware routing. |
 
