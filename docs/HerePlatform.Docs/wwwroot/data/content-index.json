@@ -547,7 +547,7 @@
       "MatrixRoutingRequest",
       "Result Handling"
     ],
-    "searchText": "Basic Usage Calculate travel times and distances between multiple origins and destinations in a single request. MatrixRoutingRequest | Property | Type | Default | Description | |----------|------|---------|-------------| | Origins | List\u003CLatLngLiteral\u003E | [] | Origin positions. | | Destinations | List\u003CLatLngLiteral\u003E | [] | Destination positions. | | TransportMode | TransportMode | Car | Car, Truck, Pedestrian, Bicycle, Scooter. | | RoutingMode | RoutingMode | Fast | Fast (time) or Short (distance"
+    "searchText": "Basic Usage Calculate travel times and distances between multiple origins and destinations in a single request. MatrixRoutingRequest | Property | Type | Default | Description | |----------|------|---------|-------------| | Origins | List\u003CLatLngLiteral\u003E | [] | Origin positions. | | Destinations | List\u003CLatLngLiteral\u003E | [] | Destination positions. | | TransportMode | TransportMode | Car | Car, Truck, Pedestrian, Bicycle, Scooter, Taxi. | | RoutingMode | RoutingMode | Fast | Fast (time) or Short (di"
   },
   {
     "slug": "services/waypoint-sequence",
