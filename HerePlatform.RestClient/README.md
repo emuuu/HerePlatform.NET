@@ -1,10 +1,6 @@
-![HerePlatform.NET](https://raw.githubusercontent.com/emuuu/HerePlatform.NET/main/here-platform.png)
-
 # HerePlatform.NET.RestClient
 
 Standalone .NET REST client for the [HERE Platform](https://developer.here.com/) APIs — usable from any .NET app (console, API, Worker, etc.) without Blazor. Targets .NET 8, 9, and 10.
-
-[![NuGet](https://img.shields.io/nuget/v/HerePlatform.NET.RestClient.svg)](https://www.nuget.org/packages/HerePlatform.NET.RestClient)
 
 ## Installation
 

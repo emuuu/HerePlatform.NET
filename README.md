@@ -1,6 +1,8 @@
-![HerePlatform.NET](https://raw.githubusercontent.com/emuuu/HerePlatform.NET/main/here-platform.png)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/emuuu/HerePlatform.NET/main/here-platform.png" alt="HerePlatform.NET" width="128" />
+</p>
 
-# HerePlatform.NET
+<h1 align="center">HerePlatform.NET</h1>
 
 .NET libraries for the [HERE Platform](https://developer.here.com/) APIs — targeting .NET 8, 9, and 10.
 

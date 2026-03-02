@@ -1,10 +1,6 @@
-![HerePlatform.NET](https://raw.githubusercontent.com/emuuu/HerePlatform.NET/main/here-platform.png)
-
 # HerePlatform.NET.Blazor
 
 Blazor components for the [HERE Maps JS API](https://developer.here.com/) — interactive maps, markers, shapes, routing, clustering, and more. Includes all REST services from the RestClient package. Targets .NET 8, 9, and 10.
-
-[![NuGet](https://img.shields.io/nuget/v/HerePlatform.NET.Blazor.svg)](https://www.nuget.org/packages/HerePlatform.NET.Blazor)
 
 ## Installation
 
