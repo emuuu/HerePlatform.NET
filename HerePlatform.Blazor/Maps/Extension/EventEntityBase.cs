@@ -1,3 +1,4 @@
+using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -102,17 +103,25 @@ public abstract class EventEntityBase
 
     protected virtual async ValueTask DisposeAsyncCore()
     {
-        foreach (var eventListener in EventListeners.SelectMany(listener => listener.Value))
+        // Snapshot: prevent InvalidOperationException if AddListener/ClearListeners
+        // mutates the dictionary concurrently with the await below.
+        var listenersSnapshot = EventListeners.SelectMany(kvp => kvp.Value).ToList();
+        EventListeners.Clear();
+
+        foreach (var eventListener in listenersSnapshot)
         {
             if (eventListener.IsRemoved)
             {
                 continue;
             }
 
-            await eventListener.DisposeAsync();
+            try { await eventListener.DisposeAsync(); }
+            catch (JSDisconnectedException) { }
+            catch (OperationCanceledException) { }
         }
 
-        EventListeners.Clear();
-        await _jsObjectRef.DisposeAsync();
+        try { await _jsObjectRef.DisposeAsync(); }
+        catch (JSDisconnectedException) { }
+        catch (OperationCanceledException) { }
     }
 }

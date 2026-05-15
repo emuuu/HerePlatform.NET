@@ -46,6 +46,7 @@ public partial class ZoomRectangleComponent : IAsyncDisposable
     {
         if (firstRender)
         {
+            MapRef?.RegisterAuxComponent(_guid, MarkDisposed);
             _hasRendered = true;
             await UpdateOptions();
         }
@@ -89,15 +90,23 @@ public partial class ZoomRectangleComponent : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (_isDisposed) return;
+        if (_isDisposed)
+        {
+            // Parent map already marked us. Skip JS call.
+            MapRef?.UnregisterAuxComponent(_guid);
+            GC.SuppressFinalize(this);
+            return;
+        }
         _isDisposed = true;
+
+        MapRef?.UnregisterAuxComponent(_guid);
 
         try
         {
             await Js.InvokeVoidAsync(JsInteropIdentifiers.DisposeZoomRectangle, Guid);
         }
         catch (JSDisconnectedException) { }
-        catch (InvalidOperationException) { }
+        catch (OperationCanceledException) { }
 
         GC.SuppressFinalize(this);
     }

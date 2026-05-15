@@ -129,7 +129,7 @@ public partial class GeoJsonReaderComponent : IAsyncDisposable
             await Js.InvokeVoidAsync(JsInteropIdentifiers.DisposeGeoJsonReaderComponent, Guid);
         }
         catch (JSDisconnectedException) { }
-        catch (InvalidOperationException) { }
+        catch (OperationCanceledException) { }
 
         GC.SuppressFinalize(this);
     }

@@ -65,6 +65,7 @@ public partial class HeatmapComponent : IAsyncDisposable
     {
         if (firstRender)
         {
+            MapRef?.RegisterAuxComponent(_guid, MarkDisposed);
             _hasRendered = true;
             await UpdateOptions();
         }
@@ -114,15 +115,22 @@ public partial class HeatmapComponent : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (_isDisposed) return;
+        if (_isDisposed)
+        {
+            MapRef?.UnregisterAuxComponent(_guid);
+            GC.SuppressFinalize(this);
+            return;
+        }
         _isDisposed = true;
+
+        MapRef?.UnregisterAuxComponent(_guid);
 
         try
         {
             await Js.InvokeVoidAsync(JsInteropIdentifiers.DisposeHeatmapComponent, Guid);
         }
         catch (JSDisconnectedException) { }
-        catch (InvalidOperationException) { }
+        catch (OperationCanceledException) { }
 
         GC.SuppressFinalize(this);
     }

@@ -360,7 +360,7 @@ public partial class HereAutosuggest : IAsyncDisposable
             await Js.InvokeVoidAsync(JsInteropIdentifiers.DisposeAutosuggest, _guid);
         }
         catch (JSDisconnectedException) { }
-        catch (InvalidOperationException) { }
+        catch (OperationCanceledException) { }
 
         _callbackRef?.Dispose();
         GC.SuppressFinalize(this);

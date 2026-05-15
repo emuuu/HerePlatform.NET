@@ -87,6 +87,13 @@ public class MapComponent : ComponentBase, IAsyncDisposable
         GC.SuppressFinalize(this);
     }
 
+    private static readonly Type[] TeardownExceptionTypes =
+    {
+        typeof(JSDisconnectedException),
+        typeof(OperationCanceledException), // includes TaskCanceledException
+        typeof(ObjectDisposedException),
+    };
+
     protected virtual async ValueTask DisposeAsyncCore()
     {
         if (InteropObject is not null)
@@ -96,15 +103,9 @@ public class MapComponent : ComponentBase, IAsyncDisposable
                 await InteropObject.DisposeAsync();
                 InteropObject = null;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex.AllLeavesAreOfType(TeardownExceptionTypes))
             {
-                var isPossibleRefreshError = ex.HasInnerExceptionsOfType<TaskCanceledException>();
-                isPossibleRefreshError |= ex.HasInnerExceptionsOfType<ObjectDisposedException>();
-
-                if (!isPossibleRefreshError)
-                {
-                    throw;
-                }
+                // Circuit teardown / cancelled JS runtime. Cleanup is the browser's job.
             }
         }
     }

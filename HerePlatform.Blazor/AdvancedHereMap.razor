@@ -832,6 +832,23 @@
         _mapKmlComponents.Remove(reader.Guid);
     }
 
+    // Aux components (ZoomRectangle, OverviewMap, DistanceMeasurement, Heatmap,
+    // CustomTileLayer, ImageOverlay, Route) register a MarkDisposed callback so
+    // that when the parent map tears down (circuit disconnect, navigation), they
+    // skip their own JS dispose call entirely — the disposeMap on the JS side
+    // already drops the whole map state.
+    private readonly Dictionary<Guid, Action> _auxDisposeMarkers = [];
+
+    internal void RegisterAuxComponent(Guid id, Action markDisposed)
+    {
+        _auxDisposeMarkers[id] = markDisposed;
+    }
+
+    internal void UnregisterAuxComponent(Guid id)
+    {
+        _auxDisposeMarkers.Remove(id);
+    }
+
     public async ValueTask DisposeAsync()
     {
         // Mark all shape components (via unified routing map)
@@ -844,6 +861,10 @@
         foreach (var c in _mapClusterComponents.Values) c.MarkDisposed();
         foreach (var c in _mapGeoJsonComponents.Values) c.MarkDisposed();
         foreach (var c in _mapKmlComponents.Values) c.MarkDisposed();
+
+        // Mark all registered aux components (UI controls, overlays, route, ...)
+        foreach (var markDisposed in _auxDisposeMarkers.Values) markDisposed();
+        _auxDisposeMarkers.Clear();
 
         // disposeMap (JS) marks the safeCallbackRef wrapper as disposed,
         // so any in-flight JS events are silently ignored.
