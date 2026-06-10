@@ -41,15 +41,14 @@
                   "name": "In",
                   "type": "string?",
                   "required": false,
-                  "description": "Geographic filter expression (e.g. \u0022countryCode:DEU\u0022). Default: \u0022countryCode:DEU\u0022.",
+                  "description": "Geographic filter expression (e.g. \u0022countryCode:DEU\u0022, \u0022circle:52.5,13.4;r=10000\u0022, \u0022bbox:13.08,52.33,13.76,52.67\u0022). Default: \u0022countryCode:DEU\u0022. A countryCode: filter is a hard filter only \u2014 it does not provide the spatial context the Autosuggest API requires. Combine it with At (the default), or use a circle:/bbox: expression instead.",
                   "default": "\u0022countryCode:DEU\u0022"
                 },
                 {
                   "name": "At",
                   "type": "LatLngLiteral?",
                   "required": false,
-                  "description": "Geographic bias location. Results near this position are ranked higher.",
-                  "default": "null",
+                  "description": "Geographic search context. Results near this position are ranked higher. Required by the Autosuggest API unless In contains a circle: or bbox: expression (the API treats at and circle/bbox as mutually exclusive; requests omit at in that case). Default: the geographic center of Germany (51.1657, 10.4515), matching the countryCode:DEU default of In.",
                   "properties": []
                 }
               ]
@@ -98,15 +97,14 @@
                   "name": "In",
                   "type": "string?",
                   "required": false,
-                  "description": "Geographic filter expression (e.g. \u0022countryCode:DEU\u0022). Default: \u0022countryCode:DEU\u0022.",
+                  "description": "Geographic filter expression (e.g. \u0022countryCode:DEU\u0022, \u0022circle:52.5,13.4;r=10000\u0022, \u0022bbox:13.08,52.33,13.76,52.67\u0022). Default: \u0022countryCode:DEU\u0022. A countryCode: filter is a hard filter only \u2014 it does not provide the spatial context the Autosuggest API requires. Combine it with At (the default), or use a circle:/bbox: expression instead.",
                   "default": "\u0022countryCode:DEU\u0022"
                 },
                 {
                   "name": "At",
                   "type": "LatLngLiteral?",
                   "required": false,
-                  "description": "Geographic bias location. Results near this position are ranked higher.",
-                  "default": "null",
+                  "description": "Geographic search context. Results near this position are ranked higher. Required by the Autosuggest API unless In contains a circle: or bbox: expression (the API treats at and circle/bbox as mutually exclusive; requests omit at in that case). Default: the geographic center of Germany (51.1657, 10.4515), matching the countryCode:DEU default of In.",
                   "properties": []
                 }
               ]

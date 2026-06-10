@@ -1415,7 +1415,7 @@
         "name": "Opacity",
         "kind": "Property",
         "type": "double",
-        "default": "0,6",
+        "default": "0.6",
         "description": "Opacity of the heatmap layer (0-1)."
       },
       {
@@ -1616,7 +1616,7 @@
         "name": "OnError",
         "kind": "Event",
         "type": "EventCallback\u003Cstring\u003E",
-        "description": "Fires when an authentication error is detected during autosuggest."
+        "description": "Fires when an error occurs during autosuggest, e.g. an authentication failure, a rejected request (HTTP 4xx from the HERE API), or invalid Options."
       },
       {
         "name": "OnItemSelected",

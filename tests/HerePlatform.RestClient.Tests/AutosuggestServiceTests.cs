@@ -55,6 +55,37 @@ public class AutosuggestServiceTests
         Assert.That(url, Does.Contain("limit=5"));
         Assert.That(url, Does.Contain("lang=de"));
         Assert.That(url, Does.Contain("in=countryCode%3ADEU"));
+        // in=countryCode without at is rejected by the HERE API (HTTP 400) —
+        // the default options must always produce a request with a spatial context.
+        Assert.That(url, Does.Contain("at=51.1657%2C10.4515"));
+    }
+
+    [Test]
+    public void SuggestAsync_CountryCodeOnlyWithoutAt_ThrowsInsteadOfSending()
+    {
+        var handler = MockHttpHandler.WithJson("""{"items":[]}""");
+        var service = CreateService(handler);
+
+        var ex = Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.SuggestAsync("Berlin", new AutosuggestOptions { In = "countryCode:DEU", At = null }));
+
+        Assert.That(ex!.Message, Does.Contain("spatial context"));
+        Assert.That(handler.LastRequest, Is.Null);
+    }
+
+    [Test]
+    public async Task SuggestAsync_InCircle_OmitsAt()
+    {
+        var handler = MockHttpHandler.WithJson("""{"items":[]}""");
+        var service = CreateService(handler);
+
+        // at and in=circle/bbox are mutually exclusive per the HERE API —
+        // the default At must not leak into a request that already has a spatial context.
+        await service.SuggestAsync("Berlin", new AutosuggestOptions { In = "circle:52.5,13.4;r=10000" });
+
+        var url = handler.LastRequest!.RequestUri!.ToString();
+        Assert.That(url, Does.Contain("in=circle%3A52.5%2C13.4%3Br%3D10000"));
+        Assert.That(url, Does.Not.Contain("at="));
     }
 
     [Test]
@@ -270,6 +301,34 @@ public class AutosuggestServiceTests
 
         Assert.That(result.Items, Is.Not.Null);
         Assert.That(result.Items, Is.Empty);
+    }
+
+    [Test]
+    public async Task AutocompleteAsync_CountryCodeOnlyWithoutAt_IsNotValidated()
+    {
+        var handler = MockHttpHandler.WithJson("""{"items":[]}""");
+        var service = CreateService(handler);
+
+        // The Autocomplete API accepts a standalone countryCode filter —
+        // the autosuggest validation must not apply here.
+        await service.AutocompleteAsync("Berli", new AutosuggestOptions { In = "countryCode:DEU", At = null });
+
+        var url = handler.LastRequest!.RequestUri!.ToString();
+        Assert.That(url, Does.Contain("in=countryCode%3ADEU"));
+        Assert.That(url, Does.Not.Contain("at="));
+    }
+
+    [Test]
+    public async Task AutocompleteAsync_DefaultOptions_SendAtAsRankingBias()
+    {
+        var handler = MockHttpHandler.WithJson("""{"items":[]}""");
+        var service = CreateService(handler);
+
+        await service.AutocompleteAsync("Berli");
+
+        var url = handler.LastRequest!.RequestUri!.ToString();
+        Assert.That(url, Does.Contain("in=countryCode%3ADEU"));
+        Assert.That(url, Does.Contain("at=51.1657%2C10.4515"));
     }
 
     [Test]

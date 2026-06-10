@@ -292,7 +292,7 @@
       "Templates",
       "Events"
     ],
-    "searchText": "Basic Usage HereAutosuggest is a standalone search input with autocomplete powered by the HERE Autosuggest API. It does not require an AdvancedHereMap parent -- it can be used anywhere on the page. The component initializes the HERE platform automatically if it has not been loaded yet. Customization (AutosuggestOptions, AutosuggestDesign) Configure search behavior with AutosuggestOptions and visual style with AutosuggestDesign. AutosuggestDesign Variants | Variant | Description | |---------|----"
+    "searchText": "Basic Usage HereAutosuggest is a standalone search input with autocomplete powered by the HERE Autosuggest API. It does not require an AdvancedHereMap parent -- it can be used anywhere on the page. The component initializes the HERE platform automatically if it has not been loaded yet. \u003E Spatial context required: The HERE Autosuggest API requires exactly one of at, in=circle:\u2026 or in=bbox:\u2026 per request \u2014 in=countryCode:\u2026 alone is rejected with HTTP 400. The default AutosuggestOptions therefore se"
   },
   {
     "slug": "components/distance-measurement",

@@ -116,6 +116,45 @@ window.herePlatform.objectManager = function () {
         return false;
     }
 
+    // Build a human-readable message from a HERE SDK error callback argument.
+    // The SDK passes strings, Error objects, or parsed HERE error response bodies
+    // ({status, title, cause, action, correlationId}) — never let it degrade to
+    // "[object Object]".
+    // NOTE: mirrored in tests/HerePlatform.Blazor.Tests.Js/autosuggestHelpers.test.mjs —
+    // keep both in sync.
+    function formatAutosuggestError(error) {
+        if (typeof error === 'string') return error;
+        if (error) {
+            if (error.message) return error.message;
+            var status = error.status || error.statusCode;
+            var detail = error.title || error.cause || error.error_description ||
+                error.error || error.statusText || error.responseText;
+            if (status || detail) {
+                return 'HERE Autosuggest request failed' +
+                    (status ? ' (HTTP ' + status + ')' : '') +
+                    (detail ? ': ' + detail : '');
+            }
+            try {
+                return 'HERE Autosuggest request failed: ' + JSON.stringify(error);
+            } catch (e) { /* circular structure — fall through */ }
+        }
+        return 'HERE Autosuggest request failed: ' + String(error);
+    }
+
+    // Build the HERE SearchService.autosuggest() params from the C# jsOptions.
+    // NOTE: mirrored in tests/HerePlatform.Blazor.Tests.Js/autosuggestHelpers.test.mjs —
+    // keep both in sync.
+    function buildAutosuggestParams(query, options) {
+        var params = {
+            q: query,
+            limit: options.limit || 5
+        };
+        if (options.lang) params.lang = options.lang;
+        if (options.in) params.in = options.in;
+        if (options.at) params.at = options.at.lat + ',' + options.at.lng;
+        return params;
+    }
+
     // Blazor IJSRuntime serializes C# enums as integers. Map them to API strings.
     var transportModes = { 0: 'car', 1: 'truck', 2: 'pedestrian', 3: 'bicycle', 4: 'scooter' };
     var routingModes = { 0: 'fast', 1: 'short' };
@@ -2824,13 +2863,7 @@ window.herePlatform.objectManager = function () {
 
             var service = herePlatform.getSearchService();
 
-            var params = {
-                q: query,
-                limit: options.limit || 5
-            };
-            if (options.lang) params.lang = options.lang;
-            if (options.in) params.in = options.in;
-            if (options.at) params.at = options.at.lat + ',' + options.at.lng;
+            var params = buildAutosuggestParams(query, options);
 
             service.autosuggest(params, function (result) {
                 // Ignore if a newer request has been issued
@@ -2889,6 +2922,7 @@ window.herePlatform.objectManager = function () {
                         'HERE API authentication failed. Check your API key.');
                 } else {
                     console.warn('[HerePlatform] Autosuggest error:', error);
+                    callbackRef.invokeMethodAsync('OnAutosuggestError', formatAutosuggestError(error));
                 }
                 callbackRef.invokeMethodAsync('OnAutosuggestResults', []);
             });

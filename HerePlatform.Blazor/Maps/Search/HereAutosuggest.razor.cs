@@ -80,7 +80,8 @@ public partial class HereAutosuggest : IAsyncDisposable
     public EventCallback OnCleared { get; set; }
 
     /// <summary>
-    /// Fires when an authentication error is detected during autosuggest.
+    /// Fires when an error occurs during autosuggest, e.g. an authentication failure,
+    /// a rejected request (HTTP 4xx from the HERE API), or invalid <c>Options</c>.
     /// </summary>
     [Parameter]
     public EventCallback<string> OnError { get; set; }
@@ -253,17 +254,35 @@ public partial class HereAutosuggest : IAsyncDisposable
 
     private async Task SearchAsync(string query)
     {
+        var options = Options ?? new AutosuggestOptions();
+
+        try
+        {
+            options.EnsureValidForAutosuggest();
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Mirror the JS error path, which clears results via OnAutosuggestResults([]) —
+            // stale suggestions from a previous search must not stay visible.
+            CloseDropdown();
+            StateHasChanged();
+            await OnAutosuggestError(ex.Message);
+            return;
+        }
+
         await EnsurePlatformAsync();
 
-        var options = Options ?? new AutosuggestOptions();
+        // 'at' and 'in=circle/bbox' are mutually exclusive per the HERE API —
+        // when In carries its own spatial context, at must be omitted.
+        var sendAt = options.At.HasValue && !options.InProvidesSpatialContext();
 
         var jsOptions = new
         {
             limit = options.Limit,
             lang = options.Lang,
             @in = options.In,
-            at = options.At.HasValue
-                ? new { lat = options.At.Value.Lat, lng = options.At.Value.Lng }
+            at = sendAt
+                ? new { lat = options.At!.Value.Lat, lng = options.At.Value.Lng }
                 : (object?)null
         };
 

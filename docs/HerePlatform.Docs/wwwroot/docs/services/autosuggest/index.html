@@ -93,16 +93,19 @@ foreach (var item in result.Items ?? [])
 <td><code>In</code></td>
 <td><code>string?</code></td>
 <td><code>&quot;countryCode:DEU&quot;</code></td>
-<td>Geographic filter (e.g. <code>countryCode:DEU</code>).</td>
+<td>Geographic filter (<code>countryCode:…</code>, <code>circle:…</code>, <code>bbox:…</code>).</td>
 </tr>
 <tr>
 <td><code>At</code></td>
 <td><code>LatLngLiteral?</code></td>
-<td><code>null</code></td>
-<td>Bias results towards this location.</td>
+<td><code>51.1657, 10.4515</code> (center of Germany)</td>
+<td>Search context; results near this position rank higher.</td>
 </tr>
 </tbody>
 </table>
+<blockquote>
+<p><strong>Spatial context required:</strong> The HERE Autosuggest API requires exactly one of <code>at</code>, <code>in=circle:…</code> or <code>in=bbox:…</code> per request — <code>in=countryCode:…</code> alone is rejected with HTTP 400. <code>SuggestAsync</code> therefore throws an <code>InvalidOperationException</code> when <code>At</code> is <code>null</code> and <code>In</code> does not contain a <code>circle:</code>/<code>bbox:</code> expression. Because <code>at</code> and <code>circle</code>/<code>bbox</code> are mutually exclusive, <code>At</code> is automatically omitted from the request when <code>In</code> provides its own spatial context. The Autocomplete API has no such requirement, so <code>AutocompleteAsync</code> accepts a standalone <code>countryCode:</code> filter — the default <code>At</code> is still sent there as a ranking bias (a supported Autocomplete parameter); set <code>At = null</code> to omit it.</p>
+</blockquote>
 <h2 id="result-types">Result Types</h2>
 <p><code>AutosuggestResult</code> and <code>AutocompleteResult</code> both contain a list of <code>AutosuggestItem</code>:</p>
 <table>
