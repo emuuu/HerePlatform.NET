@@ -26,17 +26,84 @@ window.herePlatform.objectManager = function () {
     // ignored after the reference has been disposed (.NET side).  This prevents
     // "no tracked object with id" errors when JS events fire during or after
     // Blazor component teardown.
+    //
+    // Returns a resolved Promise instead of undefined so callers can always chain
+    // .then/.catch without "Cannot read properties of undefined".  Only known
+    // teardown signatures (disposed .NET ref, disconnected circuit, cancelled
+    // operation) are suppressed; any other rejection propagates so real .NET
+    // callback exceptions remain visible.
+    // Only suppress rejections that are *unambiguously* Blazor-Server / JSInterop
+    // teardown signatures. We deliberately do NOT match on bare
+    // ObjectDisposedException / TaskCanceledException / OperationCanceledException
+    // tokens — those can also stem from legitimate application bugs that we want
+    // to see in devtools / Sentry. Case-insensitive against a small, narrow set
+    // of phrases known to come from Microsoft.AspNetCore.Components.Server.Circuits.
+    function isTeardownError(e) {
+        if (!e) return false;
+        var raw = (e && e.message) ? e.message : ('' + e);
+        var msg = raw.toString().toLowerCase();
+
+        // Microsoft.JSInterop.JSDisconnectedException — explicit teardown type
+        // raised by RemoteJSRuntime.BeginInvokeJS during circuit dispose.
+        if (msg.indexOf('jsdisconnectedexception') !== -1) return true;
+
+        // DotNetObjectReference already disposed (most common follow-on noise
+        // from in-flight events that arrive at JS after the .NET side tore down).
+        if (msg.indexOf('no tracked object with id') !== -1) return true;
+        if (msg.indexOf('there is no tracked object') !== -1) return true;
+
+        // Blazor circuit teardown phrases — narrow exact wording.
+        if (msg.indexOf('circuit has disconnected') !== -1) return true;
+        if (msg.indexOf('circuit was disconnected') !== -1) return true;
+        if (msg.indexOf('the circuit failed to initialize') !== -1) return true;
+
+        return false;
+    }
+
     function safeCallbackRef(ref) {
         const wrapper = {
             _disposed: false,
             invokeMethodAsync: function () {
-                if (wrapper._disposed) return;
-                try { return ref.invokeMethodAsync.apply(ref, arguments); }
-                catch (e) { console.debug('[HerePlatform] callback ignored:', e.message || e); }
+                if (wrapper._disposed) return Promise.resolve();
+                try {
+                    var result = ref.invokeMethodAsync.apply(ref, arguments);
+                    if (result && typeof result.then === 'function') {
+                        return result.then(undefined, function (e) {
+                            if (isTeardownError(e)) {
+                                console.debug('[HerePlatform] callback suppressed (teardown):', (e && e.message) || e);
+                                return;
+                            }
+                            // Real .NET callback exception — re-throw so unhandled
+                            // promise rejection handlers and devtools see it.
+                            throw e;
+                        });
+                    }
+                    return result;
+                }
+                catch (e) {
+                    if (isTeardownError(e)) {
+                        console.debug('[HerePlatform] callback suppressed (teardown):', e.message || e);
+                        return Promise.resolve();
+                    }
+                    // Real synchronous error — return a rejected Promise so
+                    // callers' .catch sees it instead of receiving undefined.
+                    return Promise.reject(e);
+                }
             },
             dispose: function () { wrapper._disposed = true; }
         };
         return wrapper;
+    }
+
+    // Some setup functions (cluster, geojson/kml reader, autosuggest) currently
+    // receive a raw DotNetObjectReference and call invokeMethodAsync without
+    // going through safeCallbackRef.  ensureSafeCallbackRef wraps a raw ref on
+    // demand so those code paths get the same circuit-disconnect protection.
+    // If the ref is already a wrapper (has _disposed), it is returned as-is.
+    function ensureSafeCallbackRef(ref) {
+        if (!ref) return ref;
+        if (typeof ref._disposed !== 'undefined') return ref;
+        return safeCallbackRef(ref);
     }
 
     // Detect HERE API authentication errors (401/403) from SDK error callbacks or HTTP responses.
@@ -47,6 +114,45 @@ window.herePlatform.objectManager = function () {
         if (msg.indexOf('unauthorized') !== -1 || msg.indexOf('forbidden') !== -1) return true;
         if (error.status === 401 || error.status === 403) return true;
         return false;
+    }
+
+    // Build a human-readable message from a HERE SDK error callback argument.
+    // The SDK passes strings, Error objects, or parsed HERE error response bodies
+    // ({status, title, cause, action, correlationId}) — never let it degrade to
+    // "[object Object]".
+    // NOTE: mirrored in tests/HerePlatform.Blazor.Tests.Js/autosuggestHelpers.test.mjs —
+    // keep both in sync.
+    function formatAutosuggestError(error) {
+        if (typeof error === 'string') return error;
+        if (error) {
+            if (error.message) return error.message;
+            var status = error.status || error.statusCode;
+            var detail = error.title || error.cause || error.error_description ||
+                error.error || error.statusText || error.responseText;
+            if (status || detail) {
+                return 'HERE Autosuggest request failed' +
+                    (status ? ' (HTTP ' + status + ')' : '') +
+                    (detail ? ': ' + detail : '');
+            }
+            try {
+                return 'HERE Autosuggest request failed: ' + JSON.stringify(error);
+            } catch (e) { /* circular structure — fall through */ }
+        }
+        return 'HERE Autosuggest request failed: ' + String(error);
+    }
+
+    // Build the HERE SearchService.autosuggest() params from the C# jsOptions.
+    // NOTE: mirrored in tests/HerePlatform.Blazor.Tests.Js/autosuggestHelpers.test.mjs —
+    // keep both in sync.
+    function buildAutosuggestParams(query, options) {
+        var params = {
+            q: query,
+            limit: options.limit || 5
+        };
+        if (options.lang) params.lang = options.lang;
+        if (options.in) params.in = options.in;
+        if (options.at) params.at = options.at.lat + ',' + options.at.lng;
+        return params;
     }
 
     // Blazor IJSRuntime serializes C# enums as integers. Map them to API strings.
@@ -762,19 +868,20 @@ window.herePlatform.objectManager = function () {
 
             // Special handling for addEventListener - wrap with GUID tracking
             if (methodName === 'addEventListener') {
-                const [eventName, callback] = methodArgs;
+                const [eventName, rawCallback] = methodArgs;
                 const handlerGuid = uuidv4();
 
                 let handler;
-                if (callback && callback.invokeMethodAsync) {
-                    // DotNet callback — extract rich event data
+                if (rawCallback && rawCallback.invokeMethodAsync) {
+                    // DotNet callback — wrap for circuit-disconnect protection
+                    const callback = ensureSafeCallbackRef(rawCallback);
                     handler = function (evt) {
                         const eventData = extractEventDataForImperative(evt);
                         const json = extendableStringify([eventData]);
                         callback.invokeMethodAsync('Invoke', json, guid);
                     };
                 } else {
-                    handler = callback;
+                    handler = rawCallback;
                 }
 
                 obj.addEventListener(eventName, handler);
@@ -787,11 +894,12 @@ window.herePlatform.objectManager = function () {
 
             // Special handling for addEventListenerOnce
             if (methodName === 'addEventListenerOnce') {
-                const [eventName, callback] = methodArgs;
+                const [eventName, rawCallback] = methodArgs;
                 const handlerGuid = uuidv4();
 
                 let handler;
-                if (callback && callback.invokeMethodAsync) {
+                if (rawCallback && rawCallback.invokeMethodAsync) {
+                    const callback = ensureSafeCallbackRef(rawCallback);
                     handler = function (evt) {
                         const eventData = extractEventDataForImperative(evt);
                         const json = extendableStringify([eventData]);
@@ -800,7 +908,7 @@ window.herePlatform.objectManager = function () {
                         obj.removeEventListener(eventName, handler);
                     };
                 } else {
-                    const origCallback = callback;
+                    const origCallback = rawCallback;
                     handler = function (evt) {
                         origCallback(evt);
                         obj.removeEventListener(eventName, handler);
@@ -1300,6 +1408,7 @@ window.herePlatform.objectManager = function () {
 
         // Advanced marker component support
         updateMarkerComponent: function (id, options, callbackRef) {
+            callbackRef = ensureSafeCallbackRef(callbackRef);
             if (!isHereApiLoaded()) {
                 console.warn('[HerePlatform] HERE API not loaded. Cannot create marker.');
                 return;
@@ -1483,6 +1592,7 @@ window.herePlatform.objectManager = function () {
 
         // Polygon component support
         updatePolygonComponent: function (id, options, callbackRef) {
+            callbackRef = ensureSafeCallbackRef(callbackRef);
             if (!isHereApiLoaded()) {
                 console.warn('[HerePlatform] HERE API not loaded. Cannot create polygon.');
                 return;
@@ -1583,6 +1693,7 @@ window.herePlatform.objectManager = function () {
 
         // Polyline component support
         updatePolylineComponent: function (id, options, callbackRef) {
+            callbackRef = ensureSafeCallbackRef(callbackRef);
             if (!isHereApiLoaded()) {
                 console.warn('[HerePlatform] HERE API not loaded. Cannot create polyline.');
                 return;
@@ -1684,6 +1795,7 @@ window.herePlatform.objectManager = function () {
 
         // Circle component support
         updateCircleComponent: function (id, options, callbackRef) {
+            callbackRef = ensureSafeCallbackRef(callbackRef);
             if (!isHereApiLoaded()) {
                 console.warn('[HerePlatform] HERE API not loaded. Cannot create circle.');
                 return;
@@ -1764,6 +1876,7 @@ window.herePlatform.objectManager = function () {
 
         // Rect component support
         updateRectComponent: function (id, options, callbackRef) {
+            callbackRef = ensureSafeCallbackRef(callbackRef);
             if (!isHereApiLoaded()) {
                 console.warn('[HerePlatform] HERE API not loaded. Cannot create rect.');
                 return;
@@ -1840,6 +1953,7 @@ window.herePlatform.objectManager = function () {
 
         // Group component support
         updateGroupComponent: function (id, options, callbackRef) {
+            callbackRef = ensureSafeCallbackRef(callbackRef);
             if (!isHereApiLoaded()) {
                 console.warn('[HerePlatform] HERE API not loaded. Cannot create group.');
                 return;
@@ -1928,6 +2042,7 @@ window.herePlatform.objectManager = function () {
 
         // DomMarker component support
         updateDomMarkerComponent: function (id, options, callbackRef) {
+            callbackRef = ensureSafeCallbackRef(callbackRef);
             if (!isHereApiLoaded()) {
                 console.warn('[HerePlatform] HERE API not loaded. Cannot create dom marker.');
                 return;
@@ -2015,6 +2130,7 @@ window.herePlatform.objectManager = function () {
 
         // InfoBubble component support
         updateInfoBubbleComponent: function (id, options, callbackRef) {
+            callbackRef = ensureSafeCallbackRef(callbackRef);
             if (!isHereApiLoaded() || !H.ui || !H.ui.InfoBubble) {
                 console.warn('[HerePlatform] HERE API/UI not loaded. Cannot create InfoBubble.');
                 return;
@@ -2441,6 +2557,7 @@ window.herePlatform.objectManager = function () {
 
         // Marker cluster component support
         updateMarkerClusterComponent: async function (id, options, callbackRef) {
+            callbackRef = ensureSafeCallbackRef(callbackRef);
             if (!isHereApiLoaded()) return;
             if (!H.clustering) {
                 if (hereBaseUrl) {
@@ -2456,9 +2573,14 @@ window.herePlatform.objectManager = function () {
             const map = mapObjects[mapId];
             if (!map) return;
 
-            // Remove existing cluster layer
+            // Remove existing cluster layer AND its tap handler — otherwise repeated
+            // updates accumulate closures on the map's 'tap' event and fire duplicate
+            // OnClusterTapped/OnNoiseTapped callbacks.
             const existing = mapObjects[id];
             if (existing) {
+                if (existing.tapHandler) {
+                    try { map.removeEventListener('tap', existing.tapHandler); } catch (e) { console.debug('[HerePlatform]', e.message || e); }
+                }
                 try { map.removeLayer(existing.layer); } catch (e) { console.debug('[HerePlatform]', e.message || e); }
                 removeMapObject(id);
             }
@@ -2570,7 +2692,7 @@ window.herePlatform.objectManager = function () {
             };
 
             map.addEventListener('tap', tapHandler);
-            addMapObject(id, { provider: provider, layer: layer, tapHandler: tapHandler, mapId: options.mapId });
+            addMapObject(id, { provider: provider, layer: layer, tapHandler: tapHandler, mapId: options.mapId, _blzMapId: options.mapId });
         },
 
         disposeMarkerClusterComponent: function (id) {
@@ -2598,6 +2720,7 @@ window.herePlatform.objectManager = function () {
 
         // GeoJSON reader component support
         updateGeoJsonReaderComponent: async function (id, options, callbackRef) {
+            callbackRef = ensureSafeCallbackRef(callbackRef);
             if (!isHereApiLoaded()) return;
             if (!H.data || !H.data.geojson) {
                 if (hereBaseUrl) {
@@ -2665,6 +2788,7 @@ window.herePlatform.objectManager = function () {
 
         // KML reader component support
         updateKmlReaderComponent: async function (id, options, callbackRef) {
+            callbackRef = ensureSafeCallbackRef(callbackRef);
             if (!isHereApiLoaded()) return;
             if (!H.data || !H.data.kml) {
                 if (hereBaseUrl) {
@@ -2723,6 +2847,7 @@ window.herePlatform.objectManager = function () {
         // that surfaces as an uncaught promise rejection.  Instead we use a
         // generation counter so stale callbacks are silently ignored.
         autosuggest: function (guid, query, options, callbackRef) {
+            callbackRef = ensureSafeCallbackRef(callbackRef);
             if (!herePlatform) {
                 callbackRef.invokeMethodAsync('OnAutosuggestResults', []);
                 return;
@@ -2738,13 +2863,7 @@ window.herePlatform.objectManager = function () {
 
             var service = herePlatform.getSearchService();
 
-            var params = {
-                q: query,
-                limit: options.limit || 5
-            };
-            if (options.lang) params.lang = options.lang;
-            if (options.in) params.in = options.in;
-            if (options.at) params.at = options.at.lat + ',' + options.at.lng;
+            var params = buildAutosuggestParams(query, options);
 
             service.autosuggest(params, function (result) {
                 // Ignore if a newer request has been issued
@@ -2803,6 +2922,7 @@ window.herePlatform.objectManager = function () {
                         'HERE API authentication failed. Check your API key.');
                 } else {
                     console.warn('[HerePlatform] Autosuggest error:', error);
+                    callbackRef.invokeMethodAsync('OnAutosuggestError', formatAutosuggestError(error));
                 }
                 callbackRef.invokeMethodAsync('OnAutosuggestResults', []);
             });
@@ -2814,6 +2934,7 @@ window.herePlatform.objectManager = function () {
 
         // Heatmap component support
         updateHeatmapComponent: async function (id, options, callbackRef) {
+            callbackRef = ensureSafeCallbackRef(callbackRef);
             if (!isHereApiLoaded()) return;
 
             // Ensure mapsjs-data.js is loaded (self-healing: loads it on demand if initMap didn't)
@@ -3057,6 +3178,7 @@ window.herePlatform.objectManager = function () {
 
         // UI Controls
         updateDistanceMeasurement: function (id, options, callbackRef) {
+            callbackRef = ensureSafeCallbackRef(callbackRef);
             if (!isHereApiLoaded()) return;
 
             var map = mapObjects[options.mapId];
@@ -3090,7 +3212,7 @@ window.herePlatform.objectManager = function () {
                 });
                 var controlName = 'distancemeasurement_' + id;
                 ui.addControl(controlName, control);
-                mapObjects[id] = { control: control, controlName: controlName, mapId: options.mapId };
+                mapObjects[id] = { control: control, controlName: controlName, mapId: options.mapId, _blzMapId: options.mapId };
             } catch (e) {
                 console.warn('[HerePlatform] DistanceMeasurement not available:', e.message);
             }
@@ -3109,6 +3231,7 @@ window.herePlatform.objectManager = function () {
         },
 
         updateOverviewMap: function (id, options, callbackRef) {
+            callbackRef = ensureSafeCallbackRef(callbackRef);
             if (!isHereApiLoaded()) return;
 
             var map = mapObjects[options.mapId];
@@ -3142,7 +3265,7 @@ window.herePlatform.objectManager = function () {
                 });
                 var controlName = 'overview_' + id;
                 ui.addControl(controlName, control);
-                mapObjects[id] = { control: control, controlName: controlName, mapId: options.mapId };
+                mapObjects[id] = { control: control, controlName: controlName, mapId: options.mapId, _blzMapId: options.mapId };
             } catch (e) {
                 console.warn('[HerePlatform] Overview map not available:', e.message);
             }
@@ -3161,6 +3284,7 @@ window.herePlatform.objectManager = function () {
         },
 
         updateZoomRectangle: function (id, options, callbackRef) {
+            callbackRef = ensureSafeCallbackRef(callbackRef);
             if (!isHereApiLoaded()) return;
 
             var map = mapObjects[options.mapId];
@@ -3188,7 +3312,7 @@ window.herePlatform.objectManager = function () {
                 });
                 var controlName = 'zoomrect_' + id;
                 ui.addControl(controlName, control);
-                mapObjects[id] = { control: control, controlName: controlName, mapId: options.mapId };
+                mapObjects[id] = { control: control, controlName: controlName, mapId: options.mapId, _blzMapId: options.mapId };
             } catch (e) {
                 console.warn('[HerePlatform] ZoomRectangle not available:', e.message);
             }
@@ -3208,6 +3332,7 @@ window.herePlatform.objectManager = function () {
 
         // Custom tile layer
         updateCustomTileLayer: function (id, options, callbackRef) {
+            callbackRef = ensureSafeCallbackRef(callbackRef);
             if (!isHereApiLoaded()) return;
 
             var map = mapObjects[options.mapId];
@@ -3659,6 +3784,7 @@ window.herePlatform.objectManager = function () {
         // ──────────────────────────────────────────
 
         updateImageOverlayComponent: function (id, options, callbackRef) {
+            callbackRef = ensureSafeCallbackRef(callbackRef);
             if (!isHereApiLoaded()) {
                 console.warn('[HerePlatform] HERE API not loaded. Cannot create image overlay.');
                 return;
@@ -3740,6 +3866,7 @@ window.herePlatform.objectManager = function () {
         // ──────────────────────────────────────────
 
         showContextMenu: function (mapGuid, items, x, y, callbackRef) {
+            callbackRef = ensureSafeCallbackRef(callbackRef);
             // Remove any existing context menu
             herePlatform.objectManager.hideContextMenu(mapGuid);
 

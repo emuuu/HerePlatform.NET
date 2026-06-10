@@ -379,7 +379,7 @@ public class Map : EventEntityBase, IJsObjectRef, IAsyncDisposable
                 JsInteropIdentifiers.DisposeMap, Guid.ToString());
         }
         catch (JSDisconnectedException) { /* Expected during circuit disconnect */ }
-        catch (InvalidOperationException) { /* Expected: JS runtime may be unavailable */ }
+        catch (OperationCanceledException) { /* Includes TaskCanceledException */ }
 
         JsObjectRefInstances.Remove(_jsObjectRef.Guid.ToString());
         await base.DisposeAsyncCore();

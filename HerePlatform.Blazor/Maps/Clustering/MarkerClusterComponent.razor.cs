@@ -165,7 +165,7 @@ public partial class MarkerClusterComponent : IAsyncDisposable
             await Js.InvokeVoidAsync(JsInteropIdentifiers.DisposeMarkerClusterComponent, Guid);
         }
         catch (JSDisconnectedException) { }
-        catch (InvalidOperationException) { }
+        catch (OperationCanceledException) { }
 
         MapRef?.RemoveCluster(this);
         GC.SuppressFinalize(this);

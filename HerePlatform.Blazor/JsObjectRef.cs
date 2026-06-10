@@ -94,7 +94,7 @@ public class JsObjectRef : IJsObjectRef
         }
     }
 
-    public ValueTask<object> DisposeAsync()
+    public async ValueTask<object> DisposeAsync()
     {
         if (_trackedDisposables != null)
         {
@@ -103,10 +103,15 @@ public class JsObjectRef : IJsObjectRef
             _trackedDisposables = null;
         }
 
-        return _jsRuntime.InvokeAsync<object>(
-            JsInteropIdentifiers.DisposeObject,
-            _guid.ToString()
-        );
+        try
+        {
+            return await _jsRuntime.InvokeAsync<object>(
+                JsInteropIdentifiers.DisposeObject,
+                _guid.ToString()
+            );
+        }
+        catch (JSDisconnectedException) { return default!; }
+        catch (OperationCanceledException) { return default!; }
     }
 
     public ValueTask<object> DisposeMultipleAsync(List<Guid> guids)

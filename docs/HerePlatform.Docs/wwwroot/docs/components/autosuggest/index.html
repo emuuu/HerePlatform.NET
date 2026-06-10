@@ -47,6 +47,9 @@
 }
 </code></pre>
 <p>The component initializes the HERE platform automatically if it has not been loaded yet.</p>
+<blockquote>
+<p><strong>Spatial context required:</strong> The HERE Autosuggest API requires exactly one of <code>at</code>, <code>in=circle:…</code> or <code>in=bbox:…</code> per request — <code>in=countryCode:…</code> alone is rejected with HTTP 400. The default <code>AutosuggestOptions</code> therefore set <code>At</code> to the geographic center of Germany (51.1657, 10.4515) alongside <code>In = &quot;countryCode:DEU&quot;</code>. If you override <code>In</code> with a different country filter, set <code>At</code> to a matching coordinate; an invalid combination is reported via <code>OnError</code> instead of being sent.</p>
+</blockquote>
 <h2 id="customization-autosuggestoptions-autosuggestdesign">Customization (AutosuggestOptions, AutosuggestDesign)</h2>
 <p>Configure search behavior with <code>AutosuggestOptions</code> and visual style with <code>AutosuggestDesign</code>.</p>
 <pre><code class="language-csharp">&lt;HereAutosuggest Placeholder=&quot;Search...&quot;

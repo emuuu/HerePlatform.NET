@@ -22,7 +22,10 @@ internal sealed class RestAutosuggestService : IAutosuggestService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(query);
 
-        var hereResponse = await ExecuteRequestAsync(AutosuggestBaseUrl, query, options, "autosuggest", cancellationToken)
+        var opts = options ?? new AutosuggestOptions();
+        opts.EnsureValidForAutosuggest();
+
+        var hereResponse = await ExecuteRequestAsync(AutosuggestBaseUrl, query, opts, "autosuggest", cancellationToken)
             .ConfigureAwait(false);
 
         return new AutosuggestResult { Items = MapItems(hereResponse) };
@@ -32,20 +35,22 @@ internal sealed class RestAutosuggestService : IAutosuggestService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(query);
 
-        var hereResponse = await ExecuteRequestAsync(AutocompleteBaseUrl, query, options, "autocomplete", cancellationToken)
+        var hereResponse = await ExecuteRequestAsync(AutocompleteBaseUrl, query, options ?? new AutosuggestOptions(), "autocomplete", cancellationToken)
             .ConfigureAwait(false);
 
         return new AutocompleteResult { Items = MapItems(hereResponse) };
     }
 
     private async Task<HereAutosuggestResponse?> ExecuteRequestAsync(
-        string baseUrl, string query, AutosuggestOptions? options, string serviceName, CancellationToken cancellationToken)
+        string baseUrl, string query, AutosuggestOptions opts, string serviceName, CancellationToken cancellationToken)
     {
-        var opts = options ?? new AutosuggestOptions();
+        // 'at' and 'in=circle/bbox' are mutually exclusive per the HERE API —
+        // when In carries its own spatial context, at must be omitted.
+        var sendAt = opts.At.HasValue && !opts.InProvidesSpatialContext();
 
         var qs = HereApiHelper.BuildQueryString(
             ("q", query),
-            ("at", opts.At.HasValue ? HereApiHelper.FormatCoord(opts.At.Value) : null),
+            ("at", sendAt ? HereApiHelper.FormatCoord(opts.At!.Value) : null),
             ("in", opts.In),
             ("lang", opts.Lang),
             ("limit", opts.Limit.ToString()));

@@ -9,13 +9,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Markdig" Version="1.1.1" />
-    <PackageReference Include="YamlDotNet" Version="16.3.0" />
+    <PackageReference Include="Markdig" Version="1.2.0" />
+    <PackageReference Include="YamlDotNet" Version="17.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../../HerePlatform.Blazor/HerePlatform.Blazor.csproj" />
     <ProjectReference Include="../../HerePlatform.Core/HerePlatform.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Microsoft.SourceLink.GitHub" Version="10.0.300" />
   </ItemGroup>
 
 </Project>
