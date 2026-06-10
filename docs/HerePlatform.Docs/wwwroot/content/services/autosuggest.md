@@ -62,8 +62,10 @@ Both methods accept an optional `AutosuggestOptions` parameter:
 |----------|------|---------|-------------|
 | `Limit` | `int` | `5` | Maximum number of results. |
 | `Lang` | `string?` | `"de"` | Language for results (BCP 47). |
-| `In` | `string?` | `"countryCode:DEU"` | Geographic filter (e.g. `countryCode:DEU`). |
-| `At` | `LatLngLiteral?` | `null` | Bias results towards this location. |
+| `In` | `string?` | `"countryCode:DEU"` | Geographic filter (`countryCode:…`, `circle:…`, `bbox:…`). |
+| `At` | `LatLngLiteral?` | `51.1657, 10.4515` (center of Germany) | Search context; results near this position rank higher. |
+
+> **Spatial context required:** The HERE Autosuggest API requires exactly one of `at`, `in=circle:…` or `in=bbox:…` per request — `in=countryCode:…` alone is rejected with HTTP 400. `SuggestAsync` therefore throws an `InvalidOperationException` when `At` is `null` and `In` does not contain a `circle:`/`bbox:` expression. Because `at` and `circle`/`bbox` are mutually exclusive, `At` is automatically omitted from the request when `In` provides its own spatial context. The Autocomplete API has no such requirement, so `AutocompleteAsync` accepts a standalone `countryCode:` filter — the default `At` is still sent there as a ranking bias (a supported Autocomplete parameter); set `At = null` to omit it.
 
 ## Result Types
 

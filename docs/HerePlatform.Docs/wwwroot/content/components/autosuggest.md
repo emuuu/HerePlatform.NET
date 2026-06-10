@@ -30,6 +30,8 @@ demo: map-autosuggest
 
 The component initializes the HERE platform automatically if it has not been loaded yet.
 
+> **Spatial context required:** The HERE Autosuggest API requires exactly one of `at`, `in=circle:…` or `in=bbox:…` per request — `in=countryCode:…` alone is rejected with HTTP 400. The default `AutosuggestOptions` therefore set `At` to the geographic center of Germany (51.1657, 10.4515) alongside `In = "countryCode:DEU"`. If you override `In` with a different country filter, set `At` to a matching coordinate; an invalid combination is reported via `OnError` instead of being sent.
+
 ## Customization (AutosuggestOptions, AutosuggestDesign)
 
 Configure search behavior with `AutosuggestOptions` and visual style with `AutosuggestDesign`.

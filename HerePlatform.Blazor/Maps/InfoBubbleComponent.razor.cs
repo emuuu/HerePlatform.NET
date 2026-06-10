@@ -147,7 +147,7 @@ public partial class InfoBubbleComponent : IAsyncDisposable
             await Js.InvokeVoidAsync(JsInteropIdentifiers.DisposeInfoBubbleComponent, Guid);
         }
         catch (JSDisconnectedException) { }
-        catch (InvalidOperationException) { }
+        catch (OperationCanceledException) { }
 
         MapRef?.RemoveInfoBubble(this);
         GC.SuppressFinalize(this);

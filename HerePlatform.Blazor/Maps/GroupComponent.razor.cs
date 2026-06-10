@@ -134,7 +134,7 @@ public partial class GroupComponent : IAsyncDisposable
             await Js.InvokeVoidAsync(JsInteropIdentifiers.DisposeGroupComponent, Guid);
         }
         catch (JSDisconnectedException) { }
-        catch (InvalidOperationException) { }
+        catch (OperationCanceledException) { }
 
         MapRef?.RemoveGroup(this);
         GC.SuppressFinalize(this);

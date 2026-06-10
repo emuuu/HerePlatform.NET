@@ -168,7 +168,7 @@ public abstract class MapObjectComponentBase : ComponentBase, IAsyncDisposable
             await Js.InvokeVoidAsync(JsDisposeFunction, Guid);
         }
         catch (JSDisconnectedException) { }
-        catch (InvalidOperationException) { }
+        catch (OperationCanceledException) { }
 
         await UnregisterFromMapAsync();
         GC.SuppressFinalize(this);

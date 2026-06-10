@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### [Unreleased]
 
+#### Fixed
+
+- `HereAutosuggest` with default `AutosuggestOptions` always produced an HTTP 400 against the HERE API: the default `In = "countryCode:DEU"` was sent without the spatial context (`at`, `in=circle` or `in=bbox`) the Autosuggest API requires. `At` now defaults to the geographic center of Germany (51.1657, 10.4515)
+- Invalid option combinations (`countryCode:` filter without `At`) are no longer sent and silently rejected — they are reported through the `OnError` callback with a descriptive message
+- Non-authentication errors from the HERE Autosuggest JS callback (e.g. HTTP 400) are now forwarded to `OnError` instead of only being logged to the browser console
+- `At` is omitted from requests when `In` contains a `circle:`/`bbox:` expression, since the HERE API treats `at` and `circle`/`bbox` as mutually exclusive
+
+#### Added
+
+- `AutosuggestOptions.EnsureValidForAutosuggest()` and `AutosuggestOptions.InProvidesSpatialContext()` to validate the At/In contract of the HERE Autosuggest API
+
 ### [1.0.0] - 2025-02-15
 
 #### Added
@@ -31,6 +42,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## HerePlatform.NET.RestClient
 
 ### [Unreleased]
+
+#### Fixed
+
+- `IAutosuggestService.SuggestAsync` with default `AutosuggestOptions` always produced an HTTP 400: the default `In = "countryCode:DEU"` was sent without the spatial context (`at`, `in=circle` or `in=bbox`) the HERE Autosuggest API requires. `At` now defaults to the geographic center of Germany (51.1657, 10.4515)
+- `SuggestAsync` throws a descriptive `InvalidOperationException` for a `countryCode:` filter without `At` instead of sending a request the API rejects
+- `At` is omitted from requests when `In` contains a `circle:`/`bbox:` expression, since the HERE API treats `at` and `circle`/`bbox` as mutually exclusive
+
+#### Changed
+
+- `AutocompleteAsync` is not validated (the Autocomplete API accepts a standalone `countryCode:` filter), but it now sends the default `At` as a ranking bias (`at` is a supported Autocomplete parameter). Set `At = null` to restore the previous behavior
 
 ### [1.0.0] - 2025-02-15
 

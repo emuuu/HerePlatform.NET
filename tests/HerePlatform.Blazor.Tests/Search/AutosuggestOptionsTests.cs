@@ -17,7 +17,9 @@ public class AutosuggestOptionsTests
         Assert.That(options.Limit, Is.EqualTo(5));
         Assert.That(options.Lang, Is.EqualTo("de"));
         Assert.That(options.In, Is.EqualTo("countryCode:DEU"));
-        Assert.That(options.At, Is.Null);
+        // The HERE API rejects in=countryCode without a spatial context (at/circle/bbox),
+        // so At must default to a coordinate — the geographic center of Germany.
+        Assert.That(options.At, Is.EqualTo(new LatLngLiteral(51.1657, 10.4515)));
     }
 
     [Test]
@@ -29,7 +31,72 @@ public class AutosuggestOptionsTests
         Assert.That(json, Does.Contain("\"limit\":5"));
         Assert.That(json, Does.Contain("\"lang\":\"de\""));
         Assert.That(json, Does.Contain("\"in\":\"countryCode:DEU\""));
-        Assert.That(json, Does.Not.Contain("\"at\""));
+        Assert.That(json, Does.Contain("\"at\""));
+        Assert.That(json, Does.Contain("\"lat\":51.1657"));
+        Assert.That(json, Does.Contain("\"lng\":10.4515"));
+    }
+
+    [Test]
+    public void EnsureValidForAutosuggest_DefaultOptions_DoesNotThrow()
+    {
+        var options = new AutosuggestOptions();
+
+        Assert.That(() => options.EnsureValidForAutosuggest(), Throws.Nothing);
+    }
+
+    [Test]
+    public void EnsureValidForAutosuggest_CountryCodeOnlyWithoutAt_Throws()
+    {
+        var options = new AutosuggestOptions { In = "countryCode:DEU", At = null };
+
+        var ex = Assert.Throws<InvalidOperationException>(() => options.EnsureValidForAutosuggest());
+        Assert.That(ex!.Message, Does.Contain("spatial context"));
+        Assert.That(ex.Message, Does.Contain("countryCode"));
+    }
+
+    [Test]
+    public void EnsureValidForAutosuggest_NoInNoAt_Throws()
+    {
+        var options = new AutosuggestOptions { In = null, At = null };
+
+        Assert.Throws<InvalidOperationException>(() => options.EnsureValidForAutosuggest());
+    }
+
+    [Test]
+    public void EnsureValidForAutosuggest_CircleWithoutAt_DoesNotThrow()
+    {
+        var options = new AutosuggestOptions { In = "circle:52.5,13.4;r=10000", At = null };
+
+        Assert.That(() => options.EnsureValidForAutosuggest(), Throws.Nothing);
+    }
+
+    [Test]
+    public void EnsureValidForAutosuggest_BboxWithoutAt_DoesNotThrow()
+    {
+        var options = new AutosuggestOptions { In = "bbox:13.08,52.33,13.76,52.67", At = null };
+
+        Assert.That(() => options.EnsureValidForAutosuggest(), Throws.Nothing);
+    }
+
+    [Test]
+    public void InProvidesSpatialContext_DetectsCircleAndBbox()
+    {
+        Assert.That(new AutosuggestOptions { In = "circle:52.5,13.4;r=10000" }.InProvidesSpatialContext(), Is.True);
+        Assert.That(new AutosuggestOptions { In = "bbox:13.08,52.33,13.76,52.67" }.InProvidesSpatialContext(), Is.True);
+        Assert.That(new AutosuggestOptions { In = "countryCode:DEU;circle:52.5,13.4;r=10000" }.InProvidesSpatialContext(), Is.True);
+        Assert.That(new AutosuggestOptions { In = " circle:52.5,13.4;r=10000 " }.InProvidesSpatialContext(), Is.True);
+        Assert.That(new AutosuggestOptions { In = "countryCode:DEU" }.InProvidesSpatialContext(), Is.False);
+        Assert.That(new AutosuggestOptions { In = null }.InProvidesSpatialContext(), Is.False);
+    }
+
+    [Test]
+    public void InProvidesSpatialContext_IgnoresEmbeddedSubstrings()
+    {
+        // Raw substring matches must not count — only clauses that actually
+        // start with circle:/bbox: provide a spatial context.
+        Assert.That(new AutosuggestOptions { In = "notcircle:52.5,13.4;r=10000" }.InProvidesSpatialContext(), Is.False);
+        Assert.That(new AutosuggestOptions { In = "foo=bbox:13.08,52.33,13.76,52.67" }.InProvidesSpatialContext(), Is.False);
+        Assert.That(new AutosuggestOptions { In = "countryCode:circle:" }.InProvidesSpatialContext(), Is.False);
     }
 
     [Test]

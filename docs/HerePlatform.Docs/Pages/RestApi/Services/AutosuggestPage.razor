@@ -40,6 +40,14 @@
                     <label class="form-label">Country</label>
                     <input class="form-control form-control-sm" @bind="_suggestIn" placeholder="countryCode:DEU" />
                 </div>
+                <div class="col-md-2">
+                    <label class="form-label">At (Lat)</label>
+                    <input type="number" step="any" class="form-control form-control-sm" @bind="_suggestAtLat" placeholder="51.1657" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">At (Lng)</label>
+                    <input type="number" step="any" class="form-control form-control-sm" @bind="_suggestAtLng" placeholder="10.4515" />
+                </div>
             </div>
         </FormContent>
     </TryItPanel>
@@ -89,12 +97,18 @@
     private string? _autocompleteLang = "de";
     private string? _autocompleteIn = "countryCode:DEU";
 
+    private double? _suggestAtLat = 51.1657;
+    private double? _suggestAtLng = 10.4515;
+
     private Task<AutosuggestResult> ExecuteSuggest() =>
         AutosuggestService.SuggestAsync(_suggestQuery, new AutosuggestOptions
         {
             Limit = _suggestLimit,
             Lang = string.IsNullOrWhiteSpace(_suggestLang) ? null : _suggestLang,
-            In = string.IsNullOrWhiteSpace(_suggestIn) ? null : _suggestIn
+            In = string.IsNullOrWhiteSpace(_suggestIn) ? null : _suggestIn,
+            At = _suggestAtLat.HasValue && _suggestAtLng.HasValue
+                ? new LatLngLiteral(_suggestAtLat.Value, _suggestAtLng.Value)
+                : null
         });
 
     private Task<AutocompleteResult> ExecuteAutocomplete() =>

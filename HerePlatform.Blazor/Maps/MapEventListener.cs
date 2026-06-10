@@ -1,3 +1,4 @@
+using Microsoft.JSInterop;
 using System;
 using System.Threading.Tasks;
 
@@ -18,13 +19,23 @@ public class MapEventListener : IJsObjectRef, IDisposable, IAsyncDisposable
 
     public async Task RemoveAsync()
     {
-        await _jsObjectRef.InvokeAsync("remove");
-        await _jsObjectRef.DisposeAsync();
+        if (IsRemoved) return;
+
+        try { await _jsObjectRef.InvokeAsync("remove"); }
+        catch (JSDisconnectedException) { }
+        catch (OperationCanceledException) { }
+
+        try { await _jsObjectRef.DisposeAsync(); }
+        catch (JSDisconnectedException) { }
+        catch (OperationCanceledException) { }
+
         IsRemoved = true;
     }
 
     public async ValueTask DisposeAsync()
     {
+        if (_isDisposed) return;
+
         await DisposeAsyncCore();
         Dispose(false);
         GC.SuppressFinalize(this);

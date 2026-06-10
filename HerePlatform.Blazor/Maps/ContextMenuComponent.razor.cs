@@ -113,7 +113,7 @@ public partial class ContextMenuComponent : IAsyncDisposable
                 await Js.InvokeVoidAsync(JsInteropIdentifiers.HideContextMenu, MapRef.MapId.Value);
             }
             catch (JSDisconnectedException) { }
-            catch (InvalidOperationException) { }
+            catch (OperationCanceledException) { }
         }
 
         _selfRef?.Dispose();

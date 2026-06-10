@@ -121,7 +121,7 @@ public partial class KmlReaderComponent : IAsyncDisposable
             await Js.InvokeVoidAsync(JsInteropIdentifiers.DisposeKmlReaderComponent, Guid);
         }
         catch (JSDisconnectedException) { }
-        catch (InvalidOperationException) { }
+        catch (OperationCanceledException) { }
 
         GC.SuppressFinalize(this);
     }
