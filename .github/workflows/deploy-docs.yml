@@ -38,7 +38,7 @@ jobs:
           if [ -f output/wwwroot/404.html ]; then
             sed -i 's|<base href="/" />|<base href="/HerePlatform.NET/" />|g' output/wwwroot/404.html
           fi
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: output/wwwroot
       - id: deployment
