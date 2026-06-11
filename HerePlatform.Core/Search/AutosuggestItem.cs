@@ -24,6 +24,12 @@ public class AutosuggestItem
 
     /// <summary>
     /// Structured address details.
+    /// For Autosuggest results the structured fields (street, postal code, city, …)
+    /// are only populated when the request includes <c>show=details</c>
+    /// (<see cref="AutosuggestOptions.Show"/>, on by default) — without it the
+    /// API returns only <see cref="AutosuggestAddress.Label"/>.
+    /// Autocomplete results carry structured addresses natively, independent of
+    /// <see cref="AutosuggestOptions.Show"/>.
     /// </summary>
     public AutosuggestAddress? Address { get; set; }
 

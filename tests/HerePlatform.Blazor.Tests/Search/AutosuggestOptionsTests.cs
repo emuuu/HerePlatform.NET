@@ -20,6 +20,9 @@ public class AutosuggestOptionsTests
         // The HERE API rejects in=countryCode without a spatial context (at/circle/bbox),
         // so At must default to a coordinate — the geographic center of Germany.
         Assert.That(options.At, Is.EqualTo(new LatLngLiteral(51.1657, 10.4515)));
+        // Without show=details the API returns only address.label — the structured
+        // AutosuggestAddress fields would silently stay null, so details is the default.
+        Assert.That(options.Show, Is.EqualTo("details"));
     }
 
     [Test]
@@ -31,6 +34,7 @@ public class AutosuggestOptionsTests
         Assert.That(json, Does.Contain("\"limit\":5"));
         Assert.That(json, Does.Contain("\"lang\":\"de\""));
         Assert.That(json, Does.Contain("\"in\":\"countryCode:DEU\""));
+        Assert.That(json, Does.Contain("\"show\":\"details\""));
         Assert.That(json, Does.Contain("\"at\""));
         Assert.That(json, Does.Contain("\"lat\":51.1657"));
         Assert.That(json, Does.Contain("\"lng\":10.4515"));
@@ -120,7 +124,8 @@ public class AutosuggestOptionsTests
         {
             Limit = 10,
             Lang = "en",
-            In = "countryCode:USA"
+            In = "countryCode:USA",
+            Show = "details,streetInfo"
         };
 
         var json = Helper.SerializeObject(options);
@@ -128,6 +133,7 @@ public class AutosuggestOptionsTests
         Assert.That(json, Does.Contain("\"limit\":10"));
         Assert.That(json, Does.Contain("\"lang\":\"en\""));
         Assert.That(json, Does.Contain("\"in\":\"countryCode:USA\""));
+        Assert.That(json, Does.Contain("\"show\":\"details,streetInfo\""));
     }
 
     [Test]
@@ -154,6 +160,7 @@ public class AutosuggestOptionsTests
             Limit = 7,
             Lang = "it",
             In = "countryCode:ITA",
+            Show = "details",
             At = new LatLngLiteral(41.9028, 12.4964)
         };
 
@@ -164,6 +171,7 @@ public class AutosuggestOptionsTests
         Assert.That(result!.Limit, Is.EqualTo(original.Limit));
         Assert.That(result.Lang, Is.EqualTo(original.Lang));
         Assert.That(result.In, Is.EqualTo(original.In));
+        Assert.That(result.Show, Is.EqualTo(original.Show));
         Assert.That(result.At, Is.EqualTo(original.At));
     }
 }

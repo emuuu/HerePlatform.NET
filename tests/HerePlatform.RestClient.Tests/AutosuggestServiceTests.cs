@@ -29,6 +29,34 @@ public class AutosuggestServiceTests
         Assert.That(url, Does.Contain("lang=de"));
         Assert.That(url, Does.Contain("limit=3"));
         Assert.That(url, Does.Contain("in=countryCode%3ADEU"));
+        // Default Show — without show=details the API returns only address.label.
+        Assert.That(url, Does.Contain("show=details"));
+    }
+
+    [Test]
+    public async Task SuggestAsync_ShowNull_OmitsShowParam()
+    {
+        var handler = MockHttpHandler.WithJson("""{"items":[]}""");
+        var service = CreateService(handler);
+
+        await service.SuggestAsync("Berlin", new AutosuggestOptions { Show = null });
+
+        var url = handler.LastRequest!.RequestUri!.ToString();
+        Assert.That(url, Does.Not.Contain("show="));
+    }
+
+    [Test]
+    public async Task SuggestAsync_ShowEmpty_OmitsShowParam()
+    {
+        var handler = MockHttpHandler.WithJson("""{"items":[]}""");
+        var service = CreateService(handler);
+
+        // Empty must behave like null ("show=" would be sent otherwise) —
+        // consistent with the JS path, which drops falsy show values.
+        await service.SuggestAsync("Berlin", new AutosuggestOptions { Show = " " });
+
+        var url = handler.LastRequest!.RequestUri!.ToString();
+        Assert.That(url, Does.Not.Contain("show="));
     }
 
     [Test]
@@ -126,24 +154,28 @@ public class AutosuggestServiceTests
     [Test]
     public async Task SuggestAsync_MapsAllAddressFields()
     {
+        // Response shape as returned with show=details (verified against the live API).
         var json = """
         {
             "items": [
                 {
-                    "title": "Friedrichstr. 42, 10117 Berlin",
+                    "title": "Falkensteinstraße 28, 46047 Oberhausen",
                     "resultType": "houseNumber",
                     "address": {
-                        "label": "Friedrichstr. 42, 10117 Berlin, Deutschland",
+                        "label": "Falkensteinstraße 28, 46047 Oberhausen, Deutschland",
                         "countryCode": "DEU",
                         "countryName": "Deutschland",
-                        "state": "Berlin",
-                        "city": "Berlin",
-                        "district": "Mitte",
-                        "street": "Friedrichstraße",
-                        "postalCode": "10117",
-                        "houseNumber": "42"
+                        "stateCode": "NW",
+                        "state": "Nordrhein-Westfalen",
+                        "countyCode": "OB",
+                        "county": "Oberhausen",
+                        "city": "Oberhausen",
+                        "district": "Alstaden",
+                        "street": "Falkensteinstraße",
+                        "postalCode": "46047",
+                        "houseNumber": "28"
                     },
-                    "position": {"lat": 52.5200, "lng": 13.3880}
+                    "position": {"lat": 51.4696, "lng": 6.8344}
                 }
             ]
         }
@@ -151,18 +183,57 @@ public class AutosuggestServiceTests
         var handler = MockHttpHandler.WithJson(json);
         var service = CreateService(handler);
 
-        var result = await service.SuggestAsync("Friedrichstr");
+        var result = await service.SuggestAsync("Falkensteinstr");
 
         var addr = result.Items![0].Address!;
-        Assert.That(addr.Label, Is.EqualTo("Friedrichstr. 42, 10117 Berlin, Deutschland"));
+        Assert.That(addr.Label, Is.EqualTo("Falkensteinstraße 28, 46047 Oberhausen, Deutschland"));
         Assert.That(addr.CountryCode, Is.EqualTo("DEU"));
         Assert.That(addr.CountryName, Is.EqualTo("Deutschland"));
-        Assert.That(addr.State, Is.EqualTo("Berlin"));
-        Assert.That(addr.City, Is.EqualTo("Berlin"));
-        Assert.That(addr.District, Is.EqualTo("Mitte"));
-        Assert.That(addr.Street, Is.EqualTo("Friedrichstraße"));
-        Assert.That(addr.PostalCode, Is.EqualTo("10117"));
-        Assert.That(addr.HouseNumber, Is.EqualTo("42"));
+        Assert.That(addr.StateCode, Is.EqualTo("NW"));
+        Assert.That(addr.State, Is.EqualTo("Nordrhein-Westfalen"));
+        Assert.That(addr.CountyCode, Is.EqualTo("OB"));
+        Assert.That(addr.County, Is.EqualTo("Oberhausen"));
+        Assert.That(addr.City, Is.EqualTo("Oberhausen"));
+        Assert.That(addr.District, Is.EqualTo("Alstaden"));
+        Assert.That(addr.Street, Is.EqualTo("Falkensteinstraße"));
+        Assert.That(addr.PostalCode, Is.EqualTo("46047"));
+        Assert.That(addr.HouseNumber, Is.EqualTo("28"));
+    }
+
+    [Test]
+    public async Task SuggestAsync_LabelOnlyResponse_LeavesStructuredFieldsNull()
+    {
+        // Response shape as returned WITHOUT show=details (verified against the
+        // live API): only address.label is present, no structured fields.
+        var json = """
+        {
+            "items": [
+                {
+                    "title": "Falkensteinstraße 28, 46047 Oberhausen",
+                    "resultType": "houseNumber",
+                    "address": {"label": "Falkensteinstraße 28, 46047 Oberhausen, Deutschland"},
+                    "position": {"lat": 51.4696, "lng": 6.8344}
+                }
+            ]
+        }
+        """;
+        var handler = MockHttpHandler.WithJson(json);
+        var service = CreateService(handler);
+
+        var result = await service.SuggestAsync("Falkensteinstr", new AutosuggestOptions { Show = null });
+
+        var addr = result.Items![0].Address!;
+        Assert.That(addr.Label, Is.EqualTo("Falkensteinstraße 28, 46047 Oberhausen, Deutschland"));
+        Assert.That(addr.CountryCode, Is.Null);
+        Assert.That(addr.State, Is.Null);
+        Assert.That(addr.StateCode, Is.Null);
+        Assert.That(addr.County, Is.Null);
+        Assert.That(addr.CountyCode, Is.Null);
+        Assert.That(addr.City, Is.Null);
+        Assert.That(addr.District, Is.Null);
+        Assert.That(addr.Street, Is.Null);
+        Assert.That(addr.PostalCode, Is.Null);
+        Assert.That(addr.HouseNumber, Is.Null);
     }
 
     [Test]
@@ -254,6 +325,21 @@ public class AutosuggestServiceTests
         Assert.That(url, Does.Contain("lang=de"));
         Assert.That(url, Does.Contain("limit=5"));
         Assert.That(url, Does.Contain("in=countryCode%3ADEU"));
+        // The default Show ("details") must not leak into autocomplete requests —
+        // /autocomplete rejects show=details (it only supports streetInfo/hasRelatedMPA).
+        Assert.That(url, Does.Not.Contain("show="));
+    }
+
+    [Test]
+    public async Task AutocompleteAsync_ExplicitShow_IsNeverSent()
+    {
+        var handler = MockHttpHandler.WithJson("""{"items":[]}""");
+        var service = CreateService(handler);
+
+        await service.AutocompleteAsync("Berli", new AutosuggestOptions { Show = "details" });
+
+        var url = handler.LastRequest!.RequestUri!.ToString();
+        Assert.That(url, Does.Not.Contain("show="));
     }
 
     [Test]

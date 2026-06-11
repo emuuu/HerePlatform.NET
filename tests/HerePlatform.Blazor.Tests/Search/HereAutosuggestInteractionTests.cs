@@ -228,6 +228,9 @@ public class HereAutosuggestInteractionTests : BunitTestBase
         Assert.That(jsOptions, Does.Contain("\"in\":\"countryCode:DEU\""));
         Assert.That(jsOptions, Does.Contain("\"lat\":51.1657"));
         Assert.That(jsOptions, Does.Contain("\"lng\":10.4515"));
+        // Without show=details the API returns only address.label — the default
+        // options must request the structured address fields.
+        Assert.That(jsOptions, Does.Contain("\"show\":\"details\""));
     }
 
     [Test]

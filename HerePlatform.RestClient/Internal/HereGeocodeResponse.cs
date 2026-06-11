@@ -28,6 +28,9 @@ internal sealed class HereAddress
     public string? CountryCode { get; set; }
     public string? CountryName { get; set; }
     public string? State { get; set; }
+    public string? StateCode { get; set; }
+    public string? County { get; set; }
+    public string? CountyCode { get; set; }
     public string? City { get; set; }
     public string? District { get; set; }
     public string? Street { get; set; }

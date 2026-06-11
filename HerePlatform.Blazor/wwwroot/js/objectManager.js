@@ -151,8 +151,63 @@ window.herePlatform.objectManager = function () {
         };
         if (options.lang) params.lang = options.lang;
         if (options.in) params.in = options.in;
+        if (options.show) params.show = options.show;
         if (options.at) params.at = options.at.lat + ',' + options.at.lng;
         return params;
+    }
+
+    // Map HERE autosuggest response items to the C# AutosuggestItem shape.
+    // The structured address fields are only present when the request was sent
+    // with show=details — without it the API returns only address.label.
+    // NOTE: mirrored in tests/HerePlatform.Blazor.Tests.Js/autosuggestHelpers.test.mjs —
+    // keep both in sync.
+    function mapAutosuggestItems(items) {
+        return (items || []).map(function (item) {
+            var mapped = {
+                title: item.title || null,
+                id: item.id || null,
+                resultType: item.resultType || null,
+                address: null,
+                position: null,
+                highlights: null
+            };
+
+            if (item.address) {
+                mapped.address = {
+                    label: item.address.label || null,
+                    countryCode: item.address.countryCode || null,
+                    countryName: item.address.countryName || null,
+                    state: item.address.state || null,
+                    stateCode: item.address.stateCode || null,
+                    county: item.address.county || null,
+                    countyCode: item.address.countyCode || null,
+                    city: item.address.city || null,
+                    district: item.address.district || null,
+                    street: item.address.street || null,
+                    postalCode: item.address.postalCode || null,
+                    houseNumber: item.address.houseNumber || null
+                };
+            }
+
+            if (item.position) {
+                mapped.position = { lat: item.position.lat, lng: item.position.lng };
+            }
+
+            if (item.highlights && item.highlights.title) {
+                mapped.highlights = {
+                    title: item.highlights.title.map(function (r) {
+                        return { start: r.start, end: r.end };
+                    }),
+                    address: item.highlights.address && item.highlights.address.label
+                        ? item.highlights.address.label.map(function (r) {
+                            return { start: r.start, end: r.end };
+                        })
+                        : null
+                };
+            }
+
+            return mapped;
+        });
     }
 
     // Blazor IJSRuntime serializes C# enums as integers. Map them to API strings.
@@ -2869,51 +2924,7 @@ window.herePlatform.objectManager = function () {
                 // Ignore if a newer request has been issued
                 if (mapObjects[guid] !== state || state.gen !== gen) return;
 
-                var items = (result.items || []).map(function (item) {
-                    var mapped = {
-                        title: item.title || null,
-                        id: item.id || null,
-                        resultType: item.resultType || null,
-                        address: null,
-                        position: null,
-                        highlights: null
-                    };
-
-                    if (item.address) {
-                        mapped.address = {
-                            label: item.address.label || null,
-                            countryCode: item.address.countryCode || null,
-                            countryName: item.address.countryName || null,
-                            state: item.address.state || null,
-                            city: item.address.city || null,
-                            district: item.address.district || null,
-                            street: item.address.street || null,
-                            postalCode: item.address.postalCode || null,
-                            houseNumber: item.address.houseNumber || null
-                        };
-                    }
-
-                    if (item.position) {
-                        mapped.position = { lat: item.position.lat, lng: item.position.lng };
-                    }
-
-                    if (item.highlights && item.highlights.title) {
-                        mapped.highlights = {
-                            title: item.highlights.title.map(function (r) {
-                                return { start: r.start, end: r.end };
-                            }),
-                            address: item.highlights.address && item.highlights.address.label
-                                ? item.highlights.address.label.map(function (r) {
-                                    return { start: r.start, end: r.end };
-                                })
-                                : null
-                        };
-                    }
-
-                    return mapped;
-                });
-
-                callbackRef.invokeMethodAsync('OnAutosuggestResults', items);
+                callbackRef.invokeMethodAsync('OnAutosuggestResults', mapAutosuggestItems(result.items));
             }, function (error) {
                 if (mapObjects[guid] !== state || state.gen !== gen) return;
                 if (isAuthError(error)) {

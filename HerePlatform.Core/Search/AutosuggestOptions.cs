@@ -33,6 +33,18 @@ public class AutosuggestOptions
     public string? In { get; set; } = "countryCode:DEU";
 
     /// <summary>
+    /// Additional response fields to request via the HERE <c>show</c> parameter.
+    /// Default: "details" — without it the Autosuggest API returns only
+    /// <c>address.label</c> and none of the structured address fields
+    /// (street, postal code, city, …) on <see cref="AutosuggestAddress"/>.
+    /// Set to <c>null</c> to omit the parameter (label-only responses).
+    /// Only sent for Autosuggest requests; Autocomplete requests never include it
+    /// (the /autocomplete endpoint does not support <c>show=details</c> and
+    /// returns structured addresses natively).
+    /// </summary>
+    public string? Show { get; set; } = "details";
+
+    /// <summary>
     /// Geographic search context. Results near this position are ranked higher.
     /// Required by the Autosuggest API unless <c>In</c> contains a
     /// <c>circle:</c> or <c>bbox:</c> expression (the API treats <c>at</c> and

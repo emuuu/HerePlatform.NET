@@ -25,7 +25,11 @@ internal sealed class RestAutosuggestService : IAutosuggestService
         var opts = options ?? new AutosuggestOptions();
         opts.EnsureValidForAutosuggest();
 
-        var hereResponse = await ExecuteRequestAsync(AutosuggestBaseUrl, query, opts, "autosuggest", cancellationToken)
+        // Treat empty/whitespace like null so "show=" is never sent — mirrors the
+        // JS path, where a falsy options.show is omitted from the params.
+        var show = string.IsNullOrWhiteSpace(opts.Show) ? null : opts.Show;
+
+        var hereResponse = await ExecuteRequestAsync(AutosuggestBaseUrl, query, opts, show, "autosuggest", cancellationToken)
             .ConfigureAwait(false);
 
         return new AutosuggestResult { Items = MapItems(hereResponse) };
@@ -35,14 +39,16 @@ internal sealed class RestAutosuggestService : IAutosuggestService
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(query);
 
-        var hereResponse = await ExecuteRequestAsync(AutocompleteBaseUrl, query, options ?? new AutosuggestOptions(), "autocomplete", cancellationToken)
+        // /autocomplete does not support show=details (only streetInfo/hasRelatedMPA)
+        // and returns structured addresses natively — never forward Show here.
+        var hereResponse = await ExecuteRequestAsync(AutocompleteBaseUrl, query, options ?? new AutosuggestOptions(), show: null, "autocomplete", cancellationToken)
             .ConfigureAwait(false);
 
         return new AutocompleteResult { Items = MapItems(hereResponse) };
     }
 
     private async Task<HereAutosuggestResponse?> ExecuteRequestAsync(
-        string baseUrl, string query, AutosuggestOptions opts, string serviceName, CancellationToken cancellationToken)
+        string baseUrl, string query, AutosuggestOptions opts, string? show, string serviceName, CancellationToken cancellationToken)
     {
         // 'at' and 'in=circle/bbox' are mutually exclusive per the HERE API —
         // when In carries its own spatial context, at must be omitted.
@@ -53,7 +59,8 @@ internal sealed class RestAutosuggestService : IAutosuggestService
             ("at", sendAt ? HereApiHelper.FormatCoord(opts.At!.Value) : null),
             ("in", opts.In),
             ("lang", opts.Lang),
-            ("limit", opts.Limit.ToString()));
+            ("limit", opts.Limit.ToString()),
+            ("show", show));
 
         var url = $"{baseUrl}?{qs}";
 
@@ -95,6 +102,9 @@ internal sealed class RestAutosuggestService : IAutosuggestService
             CountryCode = address.CountryCode,
             CountryName = address.CountryName,
             State = address.State,
+            StateCode = address.StateCode,
+            County = address.County,
+            CountyCode = address.CountyCode,
             City = address.City,
             District = address.District,
             Street = address.Street,

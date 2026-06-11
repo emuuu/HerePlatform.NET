@@ -13,7 +13,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<Version>1.1.0</Version>
+		<Version>1.2.0</Version>
 		<Authors>Timm Bremekamp</Authors>
 		<Copyright>Copyright (c) 2025-2026 Timm Bremekamp</Copyright>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>

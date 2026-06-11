@@ -3,6 +3,12 @@ namespace HerePlatform.Core.Search;
 /// <summary>
 /// Structured address details from a HERE Autosuggest result.
 /// </summary>
+/// <remarks>
+/// The Autosuggest API populates the structured fields (everything except
+/// <see cref="Label"/>) only when the request includes <c>show=details</c>
+/// (<see cref="AutosuggestOptions.Show"/>, on by default). Without it the
+/// response carries only <see cref="Label"/> and all other fields stay null.
+/// </remarks>
 public class AutosuggestAddress
 {
     /// <summary>
@@ -24,6 +30,21 @@ public class AutosuggestAddress
     /// State or region name.
     /// </summary>
     public string? State { get; set; }
+
+    /// <summary>
+    /// State or region code (e.g. "NW" for Nordrhein-Westfalen).
+    /// </summary>
+    public string? StateCode { get; set; }
+
+    /// <summary>
+    /// County name.
+    /// </summary>
+    public string? County { get; set; }
+
+    /// <summary>
+    /// County code (e.g. "OB").
+    /// </summary>
+    public string? CountyCode { get; set; }
 
     /// <summary>
     /// City name.

@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### [Unreleased]
 
+### [1.2.0] - 2026-06-11
+
+#### Added
+
+- `AutosuggestOptions.Show` (default `"details"`): forwards the HERE `show` parameter. Without `show=details` the Autosuggest API returns only `address.label` — all structured fields on `AutosuggestAddress` (street, postal code, city, …) stayed null. Set `Show = null` to restore the previous label-only behavior
+- `AutosuggestAddress.StateCode`, `County` and `CountyCode`, returned by the API with `show=details`
+
+#### Changed
+
+- Default Autosuggest requests now include `show=details`, so responses carry the full structured address. Consumers that assert exact request URLs or expect empty structured address fields must opt out via `Show = null`
+
 ### [1.1.0] - 2026-06-10
 
 #### Fixed
@@ -58,6 +69,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## HerePlatform.NET.RestClient
 
 ### [Unreleased]
+
+### [1.2.0] - 2026-06-11
+
+#### Added
+
+- `AutosuggestOptions.Show` (default `"details"`): forwards the HERE `show` parameter on Autosuggest requests. Without `show=details` the Autosuggest API returns only `address.label` — all structured fields on `AutosuggestAddress` (street, postal code, city, …) stayed null. Set `Show = null` to restore the previous label-only behavior. `AutocompleteAsync` never sends the parameter (the Autocomplete API does not support `show=details` and returns structured addresses natively)
+- `AutosuggestAddress.StateCode`, `County` and `CountyCode`, returned by the API with `show=details`
+
+#### Changed
+
+- Default Autosuggest requests now include `show=details`, so responses carry the full structured address. Consumers that assert exact request URLs or expect empty structured address fields must opt out via `Show = null`
 
 ### [1.1.0] - 2026-06-10
 

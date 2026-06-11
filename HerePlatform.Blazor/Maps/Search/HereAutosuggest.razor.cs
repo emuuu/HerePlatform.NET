@@ -281,6 +281,7 @@ public partial class HereAutosuggest : IAsyncDisposable
             limit = options.Limit,
             lang = options.Lang,
             @in = options.In,
+            show = options.Show,
             at = sendAt
                 ? new { lat = options.At!.Value.Lat, lng = options.At.Value.Lng }
                 : (object?)null
