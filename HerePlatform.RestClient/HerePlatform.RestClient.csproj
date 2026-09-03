@@ -4,7 +4,7 @@
 		<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
 		<IsPackable>true</IsPackable>
 		<PackageId>HerePlatform.NET.RestClient</PackageId>
-		<Description>REST client for HERE Platform APIs (Geocoding, Routing, Places, Traffic, Transit, Isoline, Matrix)</Description>
+		<Description>Unofficial REST client for HERE Platform APIs (Geocoding, Routing, Places, Traffic, Transit, Isoline, Matrix). Community project, not affiliated with or endorsed by HERE Global B.V.</Description>
 		<PackageTags>here;maps;rest;geocoding;routing;places;traffic;transit</PackageTags>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageReadmeFile>README.md</PackageReadmeFile>

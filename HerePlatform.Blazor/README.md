@@ -2,6 +2,8 @@
 
 Blazor components for the [HERE Maps JS API](https://developer.here.com/) — interactive maps, markers, shapes, routing, clustering, and more. Includes all REST services from the RestClient package. Targets .NET 8, 9, and 10.
 
+> **Unofficial project.** Not affiliated with, endorsed by, or supported by HERE Global B.V. See the trademark notice below.
+
 ## Installation
 
 ```bash
@@ -51,3 +53,7 @@ This package includes all REST services from `HerePlatform.NET.RestClient` — r
 
 - [Full documentation](https://emuuu.github.io/HerePlatform.NET/)
 - [GitHub repository](https://github.com/emuuu/HerePlatform.NET)
+
+## Trademarks and disclaimer
+
+This is an independent, community-maintained project. It is not an official HERE product and is not affiliated with, endorsed by, or sponsored by HERE Global B.V. "HERE", "HERE Technologies", "HERE Maps" and the HERE logo are trademarks or registered trademarks of HERE Global B.V.; all other names and brands are the property of their respective owners and are used solely to identify the third-party APIs this package communicates with. Provided under the MIT license, as-is, with no warranty and no support agreement from HERE. Details: [HerePlatform.NET](https://github.com/emuuu/HerePlatform.NET).

@@ -2,6 +2,8 @@
 
 Standalone .NET REST client for the [HERE Platform](https://developer.here.com/) APIs — usable from any .NET app (console, API, Worker, etc.) without Blazor. Targets .NET 8, 9, and 10.
 
+> **Unofficial project.** Not affiliated with, endorsed by, or supported by HERE Global B.V. See the trademark notice below.
+
 ## Installation
 
 ```bash
@@ -61,3 +63,7 @@ public class MyService(IRoutingService routing, IGeocodingService geocoding)
 
 - [Full documentation](https://emuuu.github.io/HerePlatform.NET/)
 - [GitHub repository](https://github.com/emuuu/HerePlatform.NET)
+
+## Trademarks and disclaimer
+
+This is an independent, community-maintained project. It is not an official HERE product and is not affiliated with, endorsed by, or sponsored by HERE Global B.V. "HERE", "HERE Technologies", "HERE Maps" and the HERE logo are trademarks or registered trademarks of HERE Global B.V.; all other names and brands are the property of their respective owners and are used solely to identify the third-party APIs this package communicates with. Provided under the MIT license, as-is, with no warranty and no support agreement from HERE. Details: [HerePlatform.NET](https://github.com/emuuu/HerePlatform.NET).

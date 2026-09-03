@@ -4,7 +4,7 @@
 		<TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
 		<IsPackable>true</IsPackable>
 		<PackageId>HerePlatform.NET.Blazor</PackageId>
-		<Description>Blazor HERE Platform Maps components</Description>
+		<Description>Unofficial Blazor HERE Platform Maps components. Community project, not affiliated with or endorsed by HERE Global B.V.</Description>
 		<PackageTags>blazor;here;maps;components;geolocation;routing</PackageTags>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageReadmeFile>README.md</PackageReadmeFile>

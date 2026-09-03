@@ -12,6 +12,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Docs](https://img.shields.io/badge/Docs-GitHub%20Pages-blue)](https://emuuu.github.io/HerePlatform.NET/)
 
+> **Unofficial project.** HerePlatform.NET is an independent community library. It is not affiliated with, endorsed by, or supported by HERE Global B.V. See [Trademarks and disclaimer](#trademarks-and-disclaimer).
+
 | Package | Description |
 |---|---|
 | **HerePlatform.NET.Blazor** | Blazor components for HERE Maps JS API (includes RestClient) |
@@ -133,6 +135,16 @@ Available in both packages via `HerePlatform.Core`:
 ## Documentation
 
 Full documentation with interactive demos and API reference: **[emuuu.github.io/HerePlatform.NET](https://emuuu.github.io/HerePlatform.NET/)**
+
+## Trademarks and disclaimer
+
+HerePlatform.NET is an independent, community-maintained open-source project. It is not an official HERE product and is not affiliated with, authorized by, endorsed by, or sponsored by HERE Global B.V.
+
+"HERE", "HERE Technologies", "HERE Maps" and the HERE logo are trademarks or registered trademarks of HERE Global B.V. All other product names, logos and brands are the property of their respective owners. They are used in this project, in its documentation and in its package names solely to identify the third-party APIs this library communicates with; such descriptive use implies no endorsement, sponsorship or business relationship.
+
+The library is provided under the MIT license, as-is and without warranty of any kind. It carries no support agreement or service level of any kind from HERE, and using it does not change your obligations under HERE's own terms of service — you still need your own HERE account and API key. Questions about the APIs themselves belong to their respective providers; questions about this library belong in its [issue tracker](https://github.com/emuuu/HerePlatform.NET/issues).
+
+If you hold rights to any of the marks named above and object to their use here, please open an issue and it will be addressed.
 
 ## License
 
