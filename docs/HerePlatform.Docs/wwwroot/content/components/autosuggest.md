@@ -112,12 +112,17 @@ Override the rendering of the input, individual items, or the entire dropdown li
 </HereAutosuggest>
 ```
 
-**InputTemplate** -- replaces the input element. Splat `context.InputAttributes` onto your custom input:
+**InputTemplate** -- replaces the input element. Splat `context.InputAttributes` onto your custom input
+AND apply `@onkeydown:preventDefault="@context.PreventDefaultKeyDown"` -- `@attributes` splatting cannot
+express that event modifier, so without it, pressing Enter on an active suggestion both selects it
+AND submits a surrounding `<form>`/`EditForm`:
 
 ```csharp
 <HereAutosuggest OnItemSelected="HandleSelection">
     <InputTemplate>
-        <input class="my-input" @attributes="context.InputAttributes" />
+        <input class="my-input"
+               @attributes="context.InputAttributes"
+               @onkeydown:preventDefault="@context.PreventDefaultKeyDown" />
     </InputTemplate>
 </HereAutosuggest>
 ```

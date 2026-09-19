@@ -187,10 +187,15 @@
     &lt;/SuggestionListTemplate&gt;
 &lt;/HereAutosuggest&gt;
 </code></pre>
-<p><strong>InputTemplate</strong> -- replaces the input element. Splat <code>context.InputAttributes</code> onto your custom input:</p>
+<p><strong>InputTemplate</strong> -- replaces the input element. Splat <code>context.InputAttributes</code> onto your custom input
+AND apply <code>@onkeydown:preventDefault=&quot;@context.PreventDefaultKeyDown&quot;</code> -- <code>@attributes</code> splatting cannot
+express that event modifier, so without it, pressing Enter on an active suggestion both selects it
+AND submits a surrounding <code>&lt;form&gt;</code>/<code>EditForm</code>:</p>
 <pre><code class="language-csharp">&lt;HereAutosuggest OnItemSelected=&quot;HandleSelection&quot;&gt;
     &lt;InputTemplate&gt;
-        &lt;input class=&quot;my-input&quot; @attributes=&quot;context.InputAttributes&quot; /&gt;
+        &lt;input class=&quot;my-input&quot;
+               @attributes=&quot;context.InputAttributes&quot;
+               @onkeydown:preventDefault=&quot;@context.PreventDefaultKeyDown&quot; /&gt;
     &lt;/InputTemplate&gt;
 &lt;/HereAutosuggest&gt;
 </code></pre>

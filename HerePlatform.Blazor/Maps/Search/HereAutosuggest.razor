@@ -21,7 +21,7 @@
                value="@Value"
                @oninput="OnInput"
                @onkeydown="OnKeyDown"
-               @onkeydown:preventDefault="@(_isOpen && _activeIndex >= 0)"
+               @onkeydown:preventDefault="@ShouldPreventDefaultKeyDown"
                autocomplete="off" />
     }
 

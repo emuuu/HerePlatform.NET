@@ -321,6 +321,12 @@
         "kind": "Property",
         "type": "Dictionary\u003Cstring, object\u003E",
         "description": "Dictionary of HTML attributes and event handlers that must be applied to the custom input element via @attributes splatting. Contains value, placeholder, disabled, autocomplete, oninput, onkeydown, and onfocusout."
+      },
+      {
+        "name": "PreventDefaultKeyDown",
+        "kind": "Property",
+        "type": "bool",
+        "description": "Whether the custom input\u0027s onkeydown handler must suppress the browser default action (true whenever the suggestion dropdown is open, since Enter always consumes a suggestion \u2014 the active one, or the first when none is active). @attributes splatting cannot express the @onkeydown:preventDefault event modifier the default template applies, so a custom must apply it explicitly: @onkeydown:preventDefault=\u0022@context.PreventDefaultKeyDown\u0022. Without it, pressing Enter while the dropdown is open both selects a suggestion AND submits a surrounding \u003Cform\u003E/EditForm."
       }
     ]
   },
@@ -1415,7 +1421,7 @@
         "name": "Opacity",
         "kind": "Property",
         "type": "double",
-        "default": "0,6",
+        "default": "0.6",
         "description": "Opacity of the heatmap layer (0-1)."
       },
       {
@@ -1555,7 +1561,7 @@
         "kind": "Property",
         "type": "RenderFragment\u003CAutosuggestInputContext\u003E",
         "default": "null",
-        "description": "Custom template for rendering the input area. The provides an InputAttributes dictionary that must be splatted onto the custom \u003Cinput\u003E element."
+        "description": "Custom template for rendering the input area. The provides an InputAttributes dictionary that must be splatted onto the custom \u003Cinput\u003E element. The custom \u003Cinput\u003E must ALSO apply @onkeydown:preventDefault=\u0022@context.PreventDefaultKeyDown\u0022 \u2014 @attributes splatting cannot express that event modifier, and without it Enter with the dropdown open submits a surrounding form. See ."
       },
       {
         "name": "MinChars",

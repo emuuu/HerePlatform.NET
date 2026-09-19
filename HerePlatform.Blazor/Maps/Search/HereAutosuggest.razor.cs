@@ -123,6 +123,10 @@ public partial class HereAutosuggest : IAsyncDisposable
     /// <summary>
     /// Custom template for rendering the input area. The <see cref="AutosuggestInputContext"/> provides
     /// an <c>InputAttributes</c> dictionary that must be splatted onto the custom <c>&lt;input&gt;</c> element.
+    /// The custom <c>&lt;input&gt;</c> must ALSO apply
+    /// <c>@onkeydown:preventDefault="@context.PreventDefaultKeyDown"</c> — <c>@attributes</c> splatting cannot
+    /// express that event modifier, and without it Enter with the dropdown open submits a surrounding form.
+    /// See <see cref="AutosuggestInputContext.PreventDefaultKeyDown"/>.
     /// </summary>
     [Parameter]
     public RenderFragment<AutosuggestInputContext>? InputTemplate { get; set; }
@@ -159,11 +163,18 @@ public partial class HereAutosuggest : IAsyncDisposable
         _ => ""
     };
 
+    // Shared with the default template's @onkeydown:preventDefault (HereAutosuggest.razor) and exposed to
+    // custom templates via AutosuggestInputContext.PreventDefaultKeyDown — both must stay in sync (see F2).
+    // Enter with an open list always consumes a suggestion (active one, or the first when none is active),
+    // so the surrounding form must never see the Enter keystroke while the list is open.
+    private bool ShouldPreventDefaultKeyDown => _isOpen && _items.Count > 0;
+
     private AutosuggestInputContext BuildInputContext() => new()
     {
         Value = Value,
         Placeholder = Placeholder,
         Disabled = Disabled,
+        PreventDefaultKeyDown = ShouldPreventDefaultKeyDown,
         InputAttributes = new Dictionary<string, object>
         {
             ["value"] = Value ?? "",
@@ -326,8 +337,13 @@ public partial class HereAutosuggest : IAsyncDisposable
                 break;
 
             case "Enter":
-                if (_isOpen && _activeIndex >= 0 && _activeIndex < _items.Count)
-                    await SelectItem(_items[_activeIndex]);
+                // With an open list, Enter always picks a suggestion: the active one if the user
+                // navigated with arrow keys, otherwise the first result.
+                if (_isOpen && _items.Count > 0)
+                {
+                    var index = _activeIndex >= 0 && _activeIndex < _items.Count ? _activeIndex : 0;
+                    await SelectItem(_items[index]);
+                }
                 break;
 
             case "Escape":

@@ -93,6 +93,57 @@ public class HereAutosuggestInteractionTests : BunitTestBase
     }
 
     [Test]
+    public void PreventDefaultKeyDown_Reflects_Active_Item_Lifecycle()
+    {
+        AutosuggestInputContext? capturedContext = null;
+        var cut = Render<HereAutosuggest>(p => p
+            .Add(x => x.InputTemplate, ctx =>
+                builder =>
+                {
+                    capturedContext = ctx;
+                    builder.OpenElement(0, "input");
+                    builder.AddMultipleAttributes(1, ctx.InputAttributes);
+                    builder.CloseElement();
+                }));
+
+        InjectResults(cut);
+
+        // Enter with an open list always consumes a suggestion (active one, or the first),
+        // so preventDefault must already be true before any arrow-key navigation.
+        Assert.That(capturedContext!.PreventDefaultKeyDown, Is.True);
+
+        var input = cut.Find("input");
+        input.KeyDown(Key.Down);
+        Assert.That(capturedContext!.PreventDefaultKeyDown, Is.True);
+
+        input.KeyDown(Key.Enter);
+        Assert.That(capturedContext!.PreventDefaultKeyDown, Is.False);
+    }
+
+    [Test]
+    public void InputTemplate_Receives_Same_PreventDefaultKeyDown_As_Default_Template()
+    {
+        AutosuggestInputContext? capturedContext = null;
+        var cut = Render<HereAutosuggest>(p => p
+            .Add(x => x.InputTemplate, ctx =>
+                builder =>
+                {
+                    capturedContext = ctx;
+                    builder.OpenElement(0, "input");
+                    builder.AddMultipleAttributes(1, ctx.InputAttributes);
+                    builder.CloseElement();
+                }));
+
+        InjectResults(cut);
+        cut.Find("input").KeyDown(Key.Down);
+
+        // Parity (F2): the InputTemplate must observe the exact same value the default
+        // template applies via @onkeydown:preventDefault (_isOpen && _items.Count > 0).
+        Assert.That(capturedContext, Is.Not.Null);
+        Assert.That(capturedContext!.PreventDefaultKeyDown, Is.True);
+    }
+
+    [Test]
     public void Escape_Closes_Dropdown()
     {
         var cut = Render<HereAutosuggest>();
@@ -166,7 +217,7 @@ public class HereAutosuggestInteractionTests : BunitTestBase
     }
 
     [Test]
-    public void Enter_Without_Active_Item_Does_Nothing()
+    public void Enter_Without_Active_Item_Selects_First_Suggestion()
     {
         AutosuggestItem? selectedItem = null;
         var cut = Render<HereAutosuggest>(p => p
@@ -174,10 +225,12 @@ public class HereAutosuggestInteractionTests : BunitTestBase
 
         InjectResults(cut);
 
-        // Press Enter without navigating — activeIndex is -1
+        // Press Enter without navigating — activeIndex is -1, so the first result is taken.
+        // This also prevents Enter from submitting a surrounding form while the list is open.
         cut.Find("input").KeyDown(Key.Enter);
 
-        Assert.That(selectedItem, Is.Null);
+        Assert.That(selectedItem, Is.Not.Null);
+        Assert.That(selectedItem!.Title, Is.EqualTo("Berlin"));
     }
 
     [Test]

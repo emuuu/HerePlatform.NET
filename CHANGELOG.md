@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### [Unreleased]
 
+### [1.3.0] - 2026-09-19
+
+#### Added
+
+- `AutosuggestInputContext.PreventDefaultKeyDown`: exposes whether the current `onkeydown` must suppress the
+  browser default action (`true` whenever the suggestion dropdown is open), so a custom `InputTemplate` can
+  apply `@onkeydown:preventDefault="@context.PreventDefaultKeyDown"` — `@attributes` splatting alone cannot
+  express that event modifier
+
+#### Changed
+
+- `HereAutosuggest`: pressing Enter while the suggestion dropdown is open now always selects a suggestion —
+  the active one if navigated to with arrow keys, otherwise the first result. Previously, Enter without an
+  active item did nothing and let the keystroke reach the surrounding `<form>`/`EditForm`
+
+#### Fixed
+
+- `HereAutosuggest` with a custom `InputTemplate`: pressing Enter while the dropdown was open selected a
+  suggestion AND submitted a surrounding `<form>`/`EditForm`, because `InputAttributes` splatting could not
+  carry the default template's `@onkeydown:preventDefault` modifier. Consumers must now also bind
+  `@onkeydown:preventDefault="@context.PreventDefaultKeyDown"` on their custom input
+
 ### [1.2.0] - 2026-06-11
 
 #### Added
