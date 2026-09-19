@@ -6,7 +6,11 @@
     <link rel="stylesheet" href="_content/HerePlatform.NET.Blazor/css/here-autosuggest.css" />
 </HeadContent>
 
-<div class="here-autosuggest @VariantCssClass @CssClass" @onfocusout="OnFocusOut" @attributes="UserAttributes">
+<div class="here-autosuggest @VariantCssClass @CssClass"
+     @ref="_rootRef"
+     @onfocusout="OnFocusOut"
+     @attributes="UserAttributes"
+     data-here-autosuggest-open="@(IsDropdownOpen ? "true" : "false")">
     @if (InputTemplate is not null)
     {
         @InputTemplate(BuildInputContext())
@@ -21,11 +25,11 @@
                value="@Value"
                @oninput="OnInput"
                @onkeydown="OnKeyDown"
-               @onkeydown:preventDefault="@ShouldPreventDefaultKeyDown"
+               data-here-autosuggest-input=""
                autocomplete="off" />
     }
 
-    @if (_isOpen && _items.Count > 0)
+    @if (IsDropdownOpen)
     {
         @if (SuggestionListTemplate is not null)
         {

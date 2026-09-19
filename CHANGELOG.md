@@ -9,7 +9,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### [Unreleased]
 
+### [1.3.1] - 2026-09-20
+
+#### Fixed
+
+- `HereAutosuggest`: 1.3.0 suppressed EVERY keystroke while the suggestion dropdown was open — in the
+  default input template, and in any custom `InputTemplate` that followed the 1.3.0 guidance. Typing,
+  Backspace/Delete, Tab and Home/End stopped working as soon as the first suggestions appeared, so the
+  input could not be edited any further. Blazor's `@onkeydown:preventDefault` is a static per-event and
+  per-element flag and cannot be limited to single keys. The browser default is now suppressed
+  key-selectively by a `keydown` listener on the input, and only for `Enter` (implicit form submit) and
+  `ArrowUp`/`ArrowDown` (caret jump), and only while the dropdown is open. Enter semantics are unchanged:
+  it still picks the active suggestion, or the first one when none is active
+
+#### Deprecated
+
+- `AutosuggestInputContext.PreventDefaultKeyDown`: always returns `false` now and must no longer be applied
+  via `@onkeydown:preventDefault` in a custom `InputTemplate` — the component handles the keyboard defaults
+  itself. A custom template only has to splat `@attributes="context.InputAttributes"`, which carries the new
+  `data-here-autosuggest-input` marker the component's keydown listener needs. The property is scheduled for
+  removal in the next major version
+
 ### [1.3.0] - 2026-09-19
+
+> **Known broken — do not use.** With the default input template — and with every custom `InputTemplate`
+> that followed the 1.3.0 guidance to apply `@onkeydown:preventDefault` — an open suggestion dropdown
+> suppressed every keystroke, leaving the input uneditable after the first suggestions appeared.
+> Fixed in the following release.
 
 #### Added
 

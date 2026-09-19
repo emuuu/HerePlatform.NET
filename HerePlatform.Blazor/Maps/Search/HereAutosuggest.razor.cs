@@ -21,6 +21,8 @@ public partial class HereAutosuggest : IAsyncDisposable
     private bool _isDisposed;
     private bool _platformInitialized;
     private ElementReference _inputRef;
+    private ElementReference _rootRef;
+    private bool _keyboardAttached;
 
     [Inject]
     private IJSRuntime Js { get; set; } = default!;
@@ -122,11 +124,11 @@ public partial class HereAutosuggest : IAsyncDisposable
 
     /// <summary>
     /// Custom template for rendering the input area. The <see cref="AutosuggestInputContext"/> provides
-    /// an <c>InputAttributes</c> dictionary that must be splatted onto the custom <c>&lt;input&gt;</c> element.
-    /// The custom <c>&lt;input&gt;</c> must ALSO apply
-    /// <c>@onkeydown:preventDefault="@context.PreventDefaultKeyDown"</c> — <c>@attributes</c> splatting cannot
-    /// express that event modifier, and without it Enter with the dropdown open submits a surrounding form.
-    /// See <see cref="AutosuggestInputContext.PreventDefaultKeyDown"/>.
+    /// an <c>InputAttributes</c> dictionary that must be splatted onto the custom <c>&lt;input&gt;</c> element
+    /// (<c>@attributes="context.InputAttributes"</c>) — nothing else is required. Keyboard defaults are
+    /// handled by the component: splatting also applies the <c>data-here-autosuggest-input</c> marker that
+    /// lets the component suppress the browser default for Enter and ArrowUp/ArrowDown — and only those —
+    /// while the dropdown is open. Do NOT apply <c>@onkeydown:preventDefault</c> in a custom template.
     /// </summary>
     [Parameter]
     public RenderFragment<AutosuggestInputContext>? InputTemplate { get; set; }
@@ -163,24 +165,24 @@ public partial class HereAutosuggest : IAsyncDisposable
         _ => ""
     };
 
-    // Shared with the default template's @onkeydown:preventDefault (HereAutosuggest.razor) and exposed to
-    // custom templates via AutosuggestInputContext.PreventDefaultKeyDown — both must stay in sync (see F2).
-    // Enter with an open list always consumes a suggestion (active one, or the first when none is active),
-    // so the surrounding form must never see the Enter keystroke while the list is open.
-    private bool ShouldPreventDefaultKeyDown => _isOpen && _items.Count > 0;
+    // Rendered as data-here-autosuggest-open on the wrapper div, where the JS keydown listener reads it.
+    // Blazor stays the single source of truth for the dropdown state — nothing is mirrored in JS.
+    private bool IsDropdownOpen => _isOpen && _items.Count > 0;
 
     private AutosuggestInputContext BuildInputContext() => new()
     {
         Value = Value,
         Placeholder = Placeholder,
         Disabled = Disabled,
-        PreventDefaultKeyDown = ShouldPreventDefaultKeyDown,
         InputAttributes = new Dictionary<string, object>
         {
             ["value"] = Value ?? "",
             ["placeholder"] = Placeholder ?? "",
             ["disabled"] = Disabled,
             ["autocomplete"] = "off",
+            // Marker that identifies the input to the JS keydown listener — splatting
+            // InputAttributes is all a custom InputTemplate has to do.
+            ["data-here-autosuggest-input"] = "",
             ["oninput"] = EventCallback.Factory.Create<ChangeEventArgs>(this, OnInput),
             ["onkeydown"] = EventCallback.Factory.Create<KeyboardEventArgs>(this, OnKeyDown)
         }
@@ -196,6 +198,26 @@ public partial class HereAutosuggest : IAsyncDisposable
     protected override void OnInitialized()
     {
         _callbackRef = DotNetObjectReference.Create(this);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Not tied to firstRender: if the interop call fails because the circuit is down, the next
+        // render retries it — otherwise the component would stay without a listener for good.
+        // attachAutosuggestKeyboard is idempotent, so a repeated call is harmless.
+        if (_keyboardAttached || _isDisposed) return;
+
+        // Blazor's @onkeydown:preventDefault is a static per-event/per-element flag, so it cannot
+        // suppress the default for single keys. A JS keydown listener delegated on the wrapper does it
+        // key-selectively: only Enter (implicit form submit) and ArrowUp/ArrowDown (caret jump), and
+        // only while the list is open.
+        try
+        {
+            await Js.InvokeVoidAsync(JsInteropIdentifiers.AttachAutosuggestKeyboard, _guid, _rootRef);
+            _keyboardAttached = true;
+        }
+        catch (JSDisconnectedException) { }
+        catch (OperationCanceledException) { }
     }
 
     private async Task OnInput(ChangeEventArgs e)
