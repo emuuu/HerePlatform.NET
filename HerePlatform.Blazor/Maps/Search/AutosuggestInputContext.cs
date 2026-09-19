@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace HerePlatform.Blazor.Maps.Search;
@@ -26,18 +27,28 @@ public class AutosuggestInputContext
     /// <summary>
     /// Dictionary of HTML attributes and event handlers that must be applied to the custom input element
     /// via <c>@attributes</c> splatting. Contains <c>value</c>, <c>placeholder</c>, <c>disabled</c>,
-    /// <c>autocomplete</c>, <c>oninput</c>, <c>onkeydown</c>, and <c>onfocusout</c>.
+    /// <c>autocomplete</c>, <c>oninput</c>, <c>onkeydown</c>, and the <c>data-here-autosuggest-input</c>
+    /// marker. Splatting is mandatory — without the marker the component cannot attach its keydown
+    /// listener, and Enter would submit a surrounding <c>&lt;form&gt;</c>/<c>EditForm</c> while the
+    /// dropdown is open.
     /// </summary>
     public Dictionary<string, object> InputAttributes { get; init; } = new();
 
     /// <summary>
-    /// Whether the custom input's <c>onkeydown</c> handler must suppress the browser default action
-    /// (<c>true</c> whenever the suggestion dropdown is open, since Enter always consumes a suggestion —
-    /// the active one, or the first when none is active). <c>@attributes</c> splatting cannot express the
-    /// <c>@onkeydown:preventDefault</c> event modifier the default template applies, so a custom
-    /// <see cref="HereAutosuggest.InputTemplate"/> must apply it explicitly:
-    /// <c>@onkeydown:preventDefault="@context.PreventDefaultKeyDown"</c>. Without it, pressing Enter while the
-    /// dropdown is open both selects a suggestion AND submits a surrounding <c>&lt;form&gt;</c>/<c>EditForm</c>.
+    /// Always <c>false</c>. Deprecated since 1.3.1: the component suppresses the browser default itself,
+    /// key-selectively for <c>Enter</c> and <c>ArrowUp</c>/<c>ArrowDown</c> while the dropdown is open.
+    /// A custom <see cref="HereAutosuggest.InputTemplate"/> must NOT apply
+    /// <c>@onkeydown:preventDefault</c>: Blazor's modifier is a static per-event/per-element flag, so it
+    /// suppresses EVERY keystroke — characters, Backspace, Tab — once the dropdown is open.
+    /// Splat <see cref="InputAttributes"/> instead; it carries the marker the component needs.
     /// </summary>
-    public bool PreventDefaultKeyDown { get; init; }
+    [Obsolete("Key-selective preventDefault is handled by the component since 1.3.1; do not apply " +
+              "@onkeydown:preventDefault in custom templates. Always false; scheduled for removal in " +
+              "the next major version.")]
+    public bool PreventDefaultKeyDown
+    {
+        get => false;
+        // Accepts and discards the value so existing object initializers keep compiling.
+        init { }
+    }
 }

@@ -121,5 +121,6 @@ internal static class JsInteropIdentifiers
 
     // Search
     internal const string Autosuggest = Prefix + "autosuggest";
+    internal const string AttachAutosuggestKeyboard = Prefix + "attachAutosuggestKeyboard";
     internal const string DisposeAutosuggest = Prefix + "disposeAutosuggest";
 }

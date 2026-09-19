@@ -112,20 +112,23 @@ Override the rendering of the input, individual items, or the entire dropdown li
 </HereAutosuggest>
 ```
 
-**InputTemplate** -- replaces the input element. Splat `context.InputAttributes` onto your custom input
-AND apply `@onkeydown:preventDefault="@context.PreventDefaultKeyDown"` -- `@attributes` splatting cannot
-express that event modifier, so without it, pressing Enter on an active suggestion both selects it
-AND submits a surrounding `<form>`/`EditForm`:
+**InputTemplate** -- replaces the input element. Splat `context.InputAttributes` onto your custom input;
+that is all that is required. The splatted attributes include the `data-here-autosuggest-input` marker the
+component needs to suppress the browser default for `Enter` and `ArrowUp`/`ArrowDown` -- and only those --
+while the dropdown is open. Do **not** add `@onkeydown:preventDefault` yourself: Blazor's modifier is a
+static per-event/per-element flag, so it would swallow every keystroke, including characters and Backspace:
 
 ```csharp
 <HereAutosuggest OnItemSelected="HandleSelection">
     <InputTemplate>
         <input class="my-input"
-               @attributes="context.InputAttributes"
-               @onkeydown:preventDefault="@context.PreventDefaultKeyDown" />
+               @attributes="context.InputAttributes" />
     </InputTemplate>
 </HereAutosuggest>
 ```
+
+`AutosuggestInputContext.PreventDefaultKeyDown` is deprecated since 1.3.1, always returns `false`, and will
+be removed in the next major version.
 
 ## Events
 

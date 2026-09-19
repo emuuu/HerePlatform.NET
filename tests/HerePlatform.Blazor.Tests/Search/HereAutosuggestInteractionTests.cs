@@ -93,35 +93,21 @@ public class HereAutosuggestInteractionTests : BunitTestBase
     }
 
     [Test]
-    public void PreventDefaultKeyDown_Reflects_Active_Item_Lifecycle()
+    public void Default_Input_Does_Not_Apply_PreventDefault_KeyDown_Modifier()
     {
-        AutosuggestInputContext? capturedContext = null;
-        var cut = Render<HereAutosuggest>(p => p
-            .Add(x => x.InputTemplate, ctx =>
-                builder =>
-                {
-                    capturedContext = ctx;
-                    builder.OpenElement(0, "input");
-                    builder.AddMultipleAttributes(1, ctx.InputAttributes);
-                    builder.CloseElement();
-                }));
+        var cut = Render<HereAutosuggest>();
 
         InjectResults(cut);
 
-        // Enter with an open list always consumes a suggestion (active one, or the first),
-        // so preventDefault must already be true before any arrow-key navigation.
-        Assert.That(capturedContext!.PreventDefaultKeyDown, Is.True);
-
+        // Blazor's :preventDefault modifier is static per event and element - it would suppress
+        // EVERY keydown (characters, Backspace, Tab, ...) while the list is open. Key-selective
+        // preventDefault is done in JS instead (attachAutosuggestKeyboard in objectManager.js).
         var input = cut.Find("input");
-        input.KeyDown(Key.Down);
-        Assert.That(capturedContext!.PreventDefaultKeyDown, Is.True);
-
-        input.KeyDown(Key.Enter);
-        Assert.That(capturedContext!.PreventDefaultKeyDown, Is.False);
+        Assert.That(input.OuterHtml, Does.Not.Contain("onkeydown:preventdefault"));
     }
 
     [Test]
-    public void InputTemplate_Receives_Same_PreventDefaultKeyDown_As_Default_Template()
+    public void PreventDefaultKeyDown_Is_Always_False()
     {
         AutosuggestInputContext? capturedContext = null;
         var cut = Render<HereAutosuggest>(p => p
@@ -134,13 +120,72 @@ public class HereAutosuggestInteractionTests : BunitTestBase
                     builder.CloseElement();
                 }));
 
-        InjectResults(cut);
-        cut.Find("input").KeyDown(Key.Down);
+#pragma warning disable CS0618 // deprecated, kept for source compatibility - must stay false
+        Assert.That(capturedContext!.PreventDefaultKeyDown, Is.False);
 
-        // Parity (F2): the InputTemplate must observe the exact same value the default
-        // template applies via @onkeydown:preventDefault (_isOpen && _items.Count > 0).
-        Assert.That(capturedContext, Is.Not.Null);
-        Assert.That(capturedContext!.PreventDefaultKeyDown, Is.True);
+        InjectResults(cut);
+        Assert.That(capturedContext!.PreventDefaultKeyDown, Is.False);
+
+        var input = cut.Find("input");
+        input.KeyDown(Key.Down);
+        Assert.That(capturedContext!.PreventDefaultKeyDown, Is.False);
+
+        input.KeyDown(Key.Enter);
+        Assert.That(capturedContext!.PreventDefaultKeyDown, Is.False);
+#pragma warning restore CS0618
+    }
+
+    [Test]
+    public void InputTemplate_InputAttributes_Carry_Keyboard_Marker()
+    {
+        AutosuggestInputContext? capturedContext = null;
+        var cut = Render<HereAutosuggest>(p => p
+            .Add(x => x.InputTemplate, ctx =>
+                builder =>
+                {
+                    capturedContext = ctx;
+                    builder.OpenElement(0, "input");
+                    builder.AddMultipleAttributes(1, ctx.InputAttributes);
+                    builder.CloseElement();
+                }));
+
+        // A splatted custom input gets the same marker as the default template, so the JS
+        // keydown listener finds it without any extra work in the consumer's template.
+        Assert.That(capturedContext!.InputAttributes.ContainsKey("data-here-autosuggest-input"), Is.True);
+        Assert.That(cut.Find("input").HasAttribute("data-here-autosuggest-input"), Is.True);
+    }
+
+    [Test]
+    public void First_Render_Attaches_The_Js_Keydown_Listener()
+    {
+        var cut = Render<HereAutosuggest>();
+
+        // Without this interop call nothing suppresses the browser default for Enter/Arrow keys.
+        var invocation = JSInterop.Invocations["herePlatform.objectManager.attachAutosuggestKeyboard"];
+        Assert.That(invocation, Has.Count.EqualTo(1));
+        Assert.That(invocation[0].Arguments, Has.Count.EqualTo(2));
+
+        // A further render must not attach a second listener.
+        cut.Render();
+        Assert.That(JSInterop.Invocations["herePlatform.objectManager.attachAutosuggestKeyboard"],
+            Has.Count.EqualTo(1));
+    }
+
+    [Test]
+    public void Wrapper_Reflects_Dropdown_Open_State()
+    {
+        var cut = Render<HereAutosuggest>();
+
+        // The JS keydown listener reads the open state from this attribute - Blazor stays the
+        // single source of truth, no dropdown state is mirrored in JS.
+        var div = cut.Find("div.here-autosuggest");
+        Assert.That(div.GetAttribute("data-here-autosuggest-open"), Is.EqualTo("false"));
+
+        InjectResults(cut);
+        Assert.That(cut.Find("div.here-autosuggest").GetAttribute("data-here-autosuggest-open"), Is.EqualTo("true"));
+
+        cut.Find("input").KeyDown(Key.Escape);
+        Assert.That(cut.Find("div.here-autosuggest").GetAttribute("data-here-autosuggest-open"), Is.EqualTo("false"));
     }
 
     [Test]

@@ -141,6 +141,59 @@ window.herePlatform.objectManager = function () {
         return 'HERE Autosuggest request failed: ' + String(error);
     }
 
+    // Keyboard defaults that must be suppressed while the suggestion dropdown is open:
+    // Enter would submit a surrounding <form>/EditForm (the component consumes it to pick a
+    // suggestion) and ArrowUp/ArrowDown would jump the text caret while they navigate the list.
+    // Every other key — characters, Backspace, Delete, Tab, Home/End — keeps its default.
+    // Blazor's @onkeydown:preventDefault cannot express this: it is a static per-event/per-element
+    // flag and would suppress every keystroke.
+    // NOTE: mirrored in tests/HerePlatform.Blazor.Tests.Js/autosuggestKeyboard.test.mjs —
+    // keep both in sync.
+    function shouldPreventAutosuggestKeyDown(key, isOpen) {
+        if (!isOpen) return false;
+        return key === 'Enter' || key === 'ArrowUp' || key === 'ArrowDown';
+    }
+
+    // The open state is read back from the attribute Blazor renders on the wrapper div, so the
+    // component stays the single source of truth — no dropdown state is kept in JS.
+    // NOTE: mirrored in tests/HerePlatform.Blazor.Tests.Js/autosuggestKeyboard.test.mjs —
+    // keep both in sync.
+    function isAutosuggestOpen(root) {
+        return !!root && typeof root.getAttribute === 'function' &&
+            root.getAttribute('data-here-autosuggest-open') === 'true';
+    }
+
+    // The listener is delegated on the wrapper div, so it survives re-renders that replace the
+    // input element (a conditional or @key'd custom InputTemplate). Only keystrokes coming from
+    // the marked input are considered — anything else inside the wrapper keeps its default.
+    // NOTE: mirrored in tests/HerePlatform.Blazor.Tests.Js/autosuggestKeyboard.test.mjs —
+    // keep both in sync.
+    function isAutosuggestInput(target) {
+        return !!target && typeof target.matches === 'function' &&
+            target.matches('[data-here-autosuggest-input]');
+    }
+
+    // NOTE: mirrored in tests/HerePlatform.Blazor.Tests.Js/autosuggestKeyboard.test.mjs —
+    // keep both in sync.
+    function createAutosuggestKeyDownHandler(root) {
+        return function (ev) {
+            if (!isAutosuggestInput(ev.target)) return;
+            if (shouldPreventAutosuggestKeyDown(ev.key, isAutosuggestOpen(root))) {
+                ev.preventDefault();
+            }
+        };
+    }
+
+    function detachAutosuggestKeyboard(guid) {
+        var state = mapObjects[guid];
+        if (!state || !state.keydownHandler) return;
+        if (state.keydownTarget && state.keydownTarget.removeEventListener) {
+            state.keydownTarget.removeEventListener('keydown', state.keydownHandler);
+        }
+        state.keydownTarget = null;
+        state.keydownHandler = null;
+    }
+
     // Build the HERE SearchService.autosuggest() params from the C# jsOptions.
     // NOTE: mirrored in tests/HerePlatform.Blazor.Tests.Js/autosuggestHelpers.test.mjs —
     // keep both in sync.
@@ -2939,7 +2992,32 @@ window.herePlatform.objectManager = function () {
             });
         },
 
+        // Key-selective preventDefault for the autosuggest input. 'root' is the component's
+        // wrapper div; keystrokes are matched against the data-here-autosuggest-input marker that
+        // the default template and InputAttributes splatting both render.
+        attachAutosuggestKeyboard: function (guid, root) {
+            if (!root || typeof root.addEventListener !== 'function') return;
+
+            var state = mapObjects[guid];
+            if (!state) {
+                state = {};
+                addMapObject(guid, state);
+            }
+            // autosuggest() replaces a state object without a generation counter — seed it here so
+            // the listener bookkeeping survives the first search.
+            if (typeof state.gen !== 'number') state.gen = 0;
+
+            // Re-attaching must never leave a stale listener behind.
+            detachAutosuggestKeyboard(guid);
+
+            var handler = createAutosuggestKeyDownHandler(root);
+            root.addEventListener('keydown', handler);
+            state.keydownTarget = root;
+            state.keydownHandler = handler;
+        },
+
         disposeAutosuggest: function (guid) {
+            detachAutosuggestKeyboard(guid);
             removeMapObject(guid);
         },
 

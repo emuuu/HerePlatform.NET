@@ -79,4 +79,23 @@ public class HereAutosuggestRenderTests : BunitTestBase
         var div = cut.Find("div.here-autosuggest");
         Assert.That(div.ClassList, Does.Contain("my-custom"));
     }
+    [Test]
+    public void Default_Input_Carries_Keyboard_Marker_Attribute()
+    {
+        var cut = Render<HereAutosuggest>();
+
+        // The JS keydown listener locates the input through this marker (see attachAutosuggestKeyboard
+        // in objectManager.js), so it must be present from the very first render.
+        var input = cut.Find("input");
+        Assert.That(input.HasAttribute("data-here-autosuggest-input"), Is.True);
+    }
+
+    [Test]
+    public void Wrapper_Exposes_Closed_Dropdown_State_Initially()
+    {
+        var cut = Render<HereAutosuggest>();
+
+        var div = cut.Find("div.here-autosuggest");
+        Assert.That(div.GetAttribute("data-here-autosuggest-open"), Is.EqualTo("false"));
+    }
 }
