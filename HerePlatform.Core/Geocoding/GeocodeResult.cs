@@ -38,4 +38,14 @@ public class GeocodeItem
     /// Result type (e.g. "houseNumber", "street", "locality").
     /// </summary>
     public string? ResultType { get; set; }
+
+    /// <summary>
+    /// Structured address fields (street, house number, postal code, city, …).
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Address"/> stays the formatted label for backward compatibility;
+    /// this carries the structured breakdown alongside it. Null if the API response
+    /// did not include an <c>address</c> object.
+    /// </remarks>
+    public GeocodeAddress? AddressDetails { get; set; }
 }

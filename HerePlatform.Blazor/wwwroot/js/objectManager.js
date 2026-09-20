@@ -263,6 +263,30 @@ window.herePlatform.objectManager = function () {
         });
     }
 
+    // Map a HERE geocode/revgeocode item's address object to the C# GeocodeAddress
+    // shape. Unlike Autosuggest, the Geocoding & Search v7 geocode/revgeocode
+    // endpoints return the full structured address by default (no show=details
+    // equivalent required).
+    // NOTE: mirrored in tests/HerePlatform.Blazor.Tests.Js/geocodeHelpers.test.mjs —
+    // keep both in sync.
+    function mapGeocodeAddress(item) {
+        if (!item.address) return null;
+        return {
+            label: item.address.label || null,
+            countryCode: item.address.countryCode || null,
+            countryName: item.address.countryName || null,
+            state: item.address.state || null,
+            stateCode: item.address.stateCode || null,
+            county: item.address.county || null,
+            countyCode: item.address.countyCode || null,
+            city: item.address.city || null,
+            district: item.address.district || null,
+            street: item.address.street || null,
+            postalCode: item.address.postalCode || null,
+            houseNumber: item.address.houseNumber || null
+        };
+    }
+
     // Blazor IJSRuntime serializes C# enums as integers. Map them to API strings.
     var transportModes = { 0: 'car', 1: 'truck', 2: 'pedestrian', 3: 'bicycle', 4: 'scooter' };
     var routingModes = { 0: 'fast', 1: 'short' };
@@ -2611,6 +2635,7 @@ window.herePlatform.objectManager = function () {
                             title: item.title || null,
                             position: item.position ? { lat: item.position.lat, lng: item.position.lng } : null,
                             address: item.address ? item.address.label : null,
+                            addressDetails: mapGeocodeAddress(item),
                             resultType: item.resultType || null
                         };
                     });
@@ -2647,6 +2672,7 @@ window.herePlatform.objectManager = function () {
                             title: item.title || null,
                             position: item.position ? { lat: item.position.lat, lng: item.position.lng } : null,
                             address: item.address ? item.address.label : null,
+                            addressDetails: mapGeocodeAddress(item),
                             resultType: item.resultType || null
                         };
                     });

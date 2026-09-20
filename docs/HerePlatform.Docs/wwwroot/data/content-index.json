@@ -478,7 +478,7 @@
       "Reverse Geocoding (ReverseGeocodeAsync)",
       "Options"
     ],
-    "searchText": "Forward Geocoding (GeocodeAsync) Convert an address or place name into geographic coordinates. Each GeocodeItem contains: | Property | Type | Description | |----------|------|-------------| | Title | string? | Display name of the result. | | Position | LatLngLiteral? | Geographic coordinates. | | Address | string? | Formatted address string. | | ResultType | string? | Type such as \u0022houseNumber\u0022, \u0022street\u0022, \u0022locality\u0022. | Reverse Geocoding (ReverseGeocodeAsync) Convert coordinates into an address. "
+    "searchText": "Forward Geocoding (GeocodeAsync) Convert an address or place name into geographic coordinates. Each GeocodeItem contains: | Property | Type | Description | |----------|------|-------------| | Title | string? | Display name of the result. | | Position | LatLngLiteral? | Geographic coordinates. | | Address | string? | Formatted address string. | | AddressDetails | GeocodeAddress? | Structured address with Street, HouseNumber, PostalCode, City, etc. Null if the API response carried no address objec"
   },
   {
     "slug": "services/traffic",

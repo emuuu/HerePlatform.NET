@@ -33,7 +33,11 @@ Each `GeocodeItem` contains:
 | `Title` | `string?` | Display name of the result. |
 | `Position` | `LatLngLiteral?` | Geographic coordinates. |
 | `Address` | `string?` | Formatted address string. |
+| `AddressDetails` | `GeocodeAddress?` | Structured address with Street, HouseNumber, PostalCode, City, etc. Null if the API response carried no `address` object. |
 | `ResultType` | `string?` | Type such as `"houseNumber"`, `"street"`, `"locality"`. |
+
+Unlike Autosuggest, the Geocoding & Search v7 `geocode`/`revgeocode` endpoints return
+the full structured address by default — `AddressDetails` needs no extra request option.
 
 ## Reverse Geocoding (ReverseGeocodeAsync)
 
@@ -43,10 +47,12 @@ Convert coordinates into an address.
 var position = new LatLngLiteral(52.5163, 13.3777);
 var result = await GeocodingService.ReverseGeocodeAsync(position);
 
-var address = result.Items?.FirstOrDefault();
-if (address is not null)
+var item = result.Items?.FirstOrDefault();
+if (item is not null)
 {
-    Console.WriteLine($"Address: {address.Address}");
+    Console.WriteLine($"Address: {item.Address}");
+    Console.WriteLine($"Street: {item.AddressDetails?.Street} {item.AddressDetails?.HouseNumber}");
+    Console.WriteLine($"City: {item.AddressDetails?.PostalCode} {item.AddressDetails?.City}");
 }
 ```
 

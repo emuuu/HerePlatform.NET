@@ -68,21 +68,30 @@ foreach (var item in result.Items ?? [])
 <td>Formatted address string.</td>
 </tr>
 <tr>
+<td><code>AddressDetails</code></td>
+<td><code>GeocodeAddress?</code></td>
+<td>Structured address with Street, HouseNumber, PostalCode, City, etc. Null if the API response carried no <code>address</code> object.</td>
+</tr>
+<tr>
 <td><code>ResultType</code></td>
 <td><code>string?</code></td>
 <td>Type such as <code>&quot;houseNumber&quot;</code>, <code>&quot;street&quot;</code>, <code>&quot;locality&quot;</code>.</td>
 </tr>
 </tbody>
 </table>
+<p>Unlike Autosuggest, the Geocoding &amp; Search v7 <code>geocode</code>/<code>revgeocode</code> endpoints return
+the full structured address by default — <code>AddressDetails</code> needs no extra request option.</p>
 <h2 id="reverse-geocoding-reversegeocodeasync">Reverse Geocoding (ReverseGeocodeAsync)</h2>
 <p>Convert coordinates into an address.</p>
 <pre><code class="language-csharp">var position = new LatLngLiteral(52.5163, 13.3777);
 var result = await GeocodingService.ReverseGeocodeAsync(position);
 
-var address = result.Items?.FirstOrDefault();
-if (address is not null)
+var item = result.Items?.FirstOrDefault();
+if (item is not null)
 {
-    Console.WriteLine($&quot;Address: {address.Address}&quot;);
+    Console.WriteLine($&quot;Address: {item.Address}&quot;);
+    Console.WriteLine($&quot;Street: {item.AddressDetails?.Street} {item.AddressDetails?.HouseNumber}&quot;);
+    Console.WriteLine($&quot;City: {item.AddressDetails?.PostalCode} {item.AddressDetails?.City}&quot;);
 }
 </code></pre>
 <h2 id="options">Options</h2>
