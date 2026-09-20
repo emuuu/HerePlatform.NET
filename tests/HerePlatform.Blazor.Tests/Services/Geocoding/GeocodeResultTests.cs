@@ -48,5 +48,20 @@ public class GeocodeResultTests
         Assert.That(item.Position, Is.Null);
         Assert.That(item.Address, Is.Null);
         Assert.That(item.ResultType, Is.Null);
+        Assert.That(item.AddressDetails, Is.Null);
+    }
+
+    [Test]
+    public void GeocodeItem_WithAddressDetails_KeepsLabelAddressUnchanged()
+    {
+        var item = new GeocodeItem
+        {
+            Address = "Berlin, Germany",
+            AddressDetails = new GeocodeAddress { City = "Berlin", CountryCode = "DEU" }
+        };
+
+        Assert.That(item.Address, Is.EqualTo("Berlin, Germany"));
+        Assert.That(item.AddressDetails!.City, Is.EqualTo("Berlin"));
+        Assert.That(item.AddressDetails.CountryCode, Is.EqualTo("DEU"));
     }
 }

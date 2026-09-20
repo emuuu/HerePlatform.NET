@@ -49,6 +49,66 @@ public class GeocodingServiceTests : ServiceTestBase
     }
 
     [Test]
+    public async Task GeocodeAsync_WithAddressDetails_DeserializesStructuredFields()
+    {
+        MockJsResult("herePlatform.objectManager.geocode", new GeocodeResult
+        {
+            Items = new List<GeocodeItem>
+            {
+                new()
+                {
+                    Title = "Falkensteinstraße 28, 46047 Oberhausen",
+                    Position = new LatLngLiteral(51.4696, 6.8344),
+                    Address = "Falkensteinstraße 28, 46047 Oberhausen, Deutschland",
+                    ResultType = "houseNumber",
+                    AddressDetails = new GeocodeAddress
+                    {
+                        Label = "Falkensteinstraße 28, 46047 Oberhausen, Deutschland",
+                        CountryCode = "DEU",
+                        CountryName = "Deutschland",
+                        State = "Nordrhein-Westfalen",
+                        StateCode = "NW",
+                        County = "Oberhausen",
+                        CountyCode = "OB",
+                        City = "Oberhausen",
+                        District = "Alstaden",
+                        Street = "Falkensteinstraße",
+                        PostalCode = "46047",
+                        HouseNumber = "28"
+                    }
+                }
+            }
+        });
+        var service = new GeocodingService(JsRuntime);
+
+        var result = await service.GeocodeAsync("Falkensteinstraße 28");
+
+        var details = result.Items![0].AddressDetails;
+        Assert.That(details, Is.Not.Null);
+        Assert.That(details!.Street, Is.EqualTo("Falkensteinstraße"));
+        Assert.That(details.HouseNumber, Is.EqualTo("28"));
+        Assert.That(details.PostalCode, Is.EqualTo("46047"));
+        Assert.That(details.City, Is.EqualTo("Oberhausen"));
+    }
+
+    [Test]
+    public async Task GeocodeAsync_WithoutAddressDetails_ReturnsNull()
+    {
+        MockJsResult("herePlatform.objectManager.geocode", new GeocodeResult
+        {
+            Items = new List<GeocodeItem>
+            {
+                new() { Title = "Berlin", ResultType = "locality" }
+            }
+        });
+        var service = new GeocodingService(JsRuntime);
+
+        var result = await service.GeocodeAsync("Berlin");
+
+        Assert.That(result.Items![0].AddressDetails, Is.Null);
+    }
+
+    [Test]
     public async Task ReverseGeocodeAsync_WithResult_ReturnsItem()
     {
         MockJsResult("herePlatform.objectManager.reverseGeocode", new GeocodeResult

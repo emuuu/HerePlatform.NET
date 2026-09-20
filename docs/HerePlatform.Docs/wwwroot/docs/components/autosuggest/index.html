@@ -187,18 +187,20 @@
     &lt;/SuggestionListTemplate&gt;
 &lt;/HereAutosuggest&gt;
 </code></pre>
-<p><strong>InputTemplate</strong> -- replaces the input element. Splat <code>context.InputAttributes</code> onto your custom input
-AND apply <code>@onkeydown:preventDefault=&quot;@context.PreventDefaultKeyDown&quot;</code> -- <code>@attributes</code> splatting cannot
-express that event modifier, so without it, pressing Enter on an active suggestion both selects it
-AND submits a surrounding <code>&lt;form&gt;</code>/<code>EditForm</code>:</p>
+<p><strong>InputTemplate</strong> -- replaces the input element. Splat <code>context.InputAttributes</code> onto your custom input;
+that is all that is required. The splatted attributes include the <code>data-here-autosuggest-input</code> marker the
+component needs to suppress the browser default for <code>Enter</code> and <code>ArrowUp</code>/<code>ArrowDown</code> -- and only those --
+while the dropdown is open. Do <strong>not</strong> add <code>@onkeydown:preventDefault</code> yourself: Blazor's modifier is a
+static per-event/per-element flag, so it would swallow every keystroke, including characters and Backspace:</p>
 <pre><code class="language-csharp">&lt;HereAutosuggest OnItemSelected=&quot;HandleSelection&quot;&gt;
     &lt;InputTemplate&gt;
         &lt;input class=&quot;my-input&quot;
-               @attributes=&quot;context.InputAttributes&quot;
-               @onkeydown:preventDefault=&quot;@context.PreventDefaultKeyDown&quot; /&gt;
+               @attributes=&quot;context.InputAttributes&quot; /&gt;
     &lt;/InputTemplate&gt;
 &lt;/HereAutosuggest&gt;
 </code></pre>
+<p><code>AutosuggestInputContext.PreventDefaultKeyDown</code> is deprecated since 1.3.1, always returns <code>false</code>, and will
+be removed in the next major version.</p>
 <h2 id="events">Events</h2>
 <table>
 <thead>

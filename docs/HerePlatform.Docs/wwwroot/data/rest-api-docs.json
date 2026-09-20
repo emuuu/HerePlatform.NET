@@ -2020,6 +2020,72 @@
       ]
     },
     {
+      "name": "GeocodeAddress",
+      "description": "Structured address details from a HERE Geocoding \u0026 Search result.",
+      "properties": [
+        {
+          "name": "Label",
+          "type": "string?",
+          "description": "Full formatted address label."
+        },
+        {
+          "name": "CountryCode",
+          "type": "string?",
+          "description": "ISO 3166-1 alpha-3 country code (e.g. \u0022DEU\u0022)."
+        },
+        {
+          "name": "CountryName",
+          "type": "string?",
+          "description": "Country name."
+        },
+        {
+          "name": "State",
+          "type": "string?",
+          "description": "State or region name."
+        },
+        {
+          "name": "StateCode",
+          "type": "string?",
+          "description": "State or region code (e.g. \u0022NW\u0022 for Nordrhein-Westfalen)."
+        },
+        {
+          "name": "County",
+          "type": "string?",
+          "description": "County name."
+        },
+        {
+          "name": "CountyCode",
+          "type": "string?",
+          "description": "County code (e.g. \u0022OB\u0022)."
+        },
+        {
+          "name": "City",
+          "type": "string?",
+          "description": "City name."
+        },
+        {
+          "name": "District",
+          "type": "string?",
+          "description": "District or neighborhood name."
+        },
+        {
+          "name": "Street",
+          "type": "string?",
+          "description": "Street name."
+        },
+        {
+          "name": "PostalCode",
+          "type": "string?",
+          "description": "Postal code."
+        },
+        {
+          "name": "HouseNumber",
+          "type": "string?",
+          "description": "House number."
+        }
+      ]
+    },
+    {
       "name": "GeocodeItem",
       "description": "A single geocoding result item.",
       "properties": [
@@ -2043,6 +2109,12 @@
           "name": "ResultType",
           "type": "string?",
           "description": "Result type (e.g. \u0022houseNumber\u0022, \u0022street\u0022, \u0022locality\u0022)."
+        },
+        {
+          "name": "AddressDetails",
+          "type": "GeocodeAddress?",
+          "description": "Structured address fields (street, house number, postal code, city, \u2026).",
+          "nestedType": "GeocodeAddress"
         }
       ]
     },

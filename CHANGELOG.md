@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### [Unreleased]
 
+### [1.4.0] - 2026-09-20
+
+#### Added
+
+- `GeocodeItem.AddressDetails` (`GeocodeAddress`) — structured address fields (street, house number,
+  postal code, city, district, state, country, …) for `IGeocodingService.GeocodeAsync` and
+  `ReverseGeocodeAsync` results, alongside the existing `Address` label. Null if the HERE response
+  carried no `address` object. Unlike Autosuggest, the Geocoding & Search v7 `geocode`/`revgeocode`
+  endpoints return the full structured address by default — no `show=details` equivalent is required
+
 ### [1.3.1] - 2026-09-20
 
 #### Fixed
@@ -117,6 +127,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## HerePlatform.NET.RestClient
 
 ### [Unreleased]
+
+### [1.4.0] - 2026-09-20
+
+#### Added
+
+- `GeocodeItem.AddressDetails` (`GeocodeAddress`) — structured address fields for
+  `IGeocodingService.GeocodeAsync`/`ReverseGeocodeAsync` results, mapped from the HERE `address`
+  object the Geocoding & Search v7 `geocode`/`revgeocode` endpoints already return by default
 
 ### [1.2.0] - 2026-06-11
 

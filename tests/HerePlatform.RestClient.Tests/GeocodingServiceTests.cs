@@ -161,4 +161,76 @@ public class GeocodingServiceTests
         Assert.That(result.Items, Has.Count.EqualTo(1));
         Assert.That(result.Items![0].Title, Is.EqualTo("Pariser Platz 1, 10117 Berlin"));
     }
+
+    [Test]
+    public async Task ReverseGeocodeAsync_WithFullAddress_MapsAllAddressDetailsFields()
+    {
+        var json = """
+        {
+            "items": [
+                {
+                    "title": "Falkensteinstraße 28, 46047 Oberhausen",
+                    "position": {"lat": 51.4696, "lng": 6.8344},
+                    "address": {
+                        "label": "Falkensteinstraße 28, 46047 Oberhausen, Deutschland",
+                        "countryCode": "DEU",
+                        "countryName": "Deutschland",
+                        "stateCode": "NW",
+                        "state": "Nordrhein-Westfalen",
+                        "countyCode": "OB",
+                        "county": "Oberhausen",
+                        "city": "Oberhausen",
+                        "district": "Alstaden",
+                        "street": "Falkensteinstraße",
+                        "postalCode": "46047",
+                        "houseNumber": "28"
+                    },
+                    "resultType": "houseNumber"
+                }
+            ]
+        }
+        """;
+        var handler = MockHttpHandler.WithJson(json);
+        var service = CreateService(handler);
+
+        var result = await service.ReverseGeocodeAsync(new LatLngLiteral(51.4696, 6.8344));
+
+        var item = result.Items![0];
+        Assert.That(item.Address, Is.EqualTo("Falkensteinstraße 28, 46047 Oberhausen, Deutschland"));
+        Assert.That(item.AddressDetails, Is.Not.Null);
+        Assert.That(item.AddressDetails!.Label, Is.EqualTo("Falkensteinstraße 28, 46047 Oberhausen, Deutschland"));
+        Assert.That(item.AddressDetails.CountryCode, Is.EqualTo("DEU"));
+        Assert.That(item.AddressDetails.CountryName, Is.EqualTo("Deutschland"));
+        Assert.That(item.AddressDetails.State, Is.EqualTo("Nordrhein-Westfalen"));
+        Assert.That(item.AddressDetails.StateCode, Is.EqualTo("NW"));
+        Assert.That(item.AddressDetails.County, Is.EqualTo("Oberhausen"));
+        Assert.That(item.AddressDetails.CountyCode, Is.EqualTo("OB"));
+        Assert.That(item.AddressDetails.City, Is.EqualTo("Oberhausen"));
+        Assert.That(item.AddressDetails.District, Is.EqualTo("Alstaden"));
+        Assert.That(item.AddressDetails.Street, Is.EqualTo("Falkensteinstraße"));
+        Assert.That(item.AddressDetails.PostalCode, Is.EqualTo("46047"));
+        Assert.That(item.AddressDetails.HouseNumber, Is.EqualTo("28"));
+    }
+
+    [Test]
+    public async Task GeocodeAsync_WithoutAddress_AddressDetailsIsNull()
+    {
+        var json = """
+        {
+            "items": [
+                {
+                    "title": "Berlin, Deutschland",
+                    "position": {"lat": 52.51604, "lng": 13.37691},
+                    "resultType": "locality"
+                }
+            ]
+        }
+        """;
+        var handler = MockHttpHandler.WithJson(json);
+        var service = CreateService(handler);
+
+        var result = await service.GeocodeAsync("Berlin");
+
+        Assert.That(result.Items![0].AddressDetails, Is.Null);
+    }
 }

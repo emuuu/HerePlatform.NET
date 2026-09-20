@@ -72,11 +72,34 @@ internal sealed class RestGeocodingService : IGeocodingService
             {
                 Title = item.Title,
                 Address = item.Address?.Label,
+                AddressDetails = MapAddress(item.Address),
                 ResultType = item.ResultType,
                 Position = item.Position is not null
                     ? new LatLngLiteral(item.Position.Lat, item.Position.Lng)
                     : null
             }).ToList()
+        };
+    }
+
+    private static GeocodeAddress? MapAddress(HereAddress? address)
+    {
+        if (address is null)
+            return null;
+
+        return new GeocodeAddress
+        {
+            Label = address.Label,
+            CountryCode = address.CountryCode,
+            CountryName = address.CountryName,
+            State = address.State,
+            StateCode = address.StateCode,
+            County = address.County,
+            CountyCode = address.CountyCode,
+            City = address.City,
+            District = address.District,
+            Street = address.Street,
+            PostalCode = address.PostalCode,
+            HouseNumber = address.HouseNumber
         };
     }
 }

@@ -48,6 +48,7 @@ using HerePlatform.Core.TourPlanning;
 [assembly: TypeForwardedTo(typeof(GeocodeOptions))]
 [assembly: TypeForwardedTo(typeof(GeocodeResult))]
 [assembly: TypeForwardedTo(typeof(GeocodeItem))]
+[assembly: TypeForwardedTo(typeof(GeocodeAddress))]
 
 // Search
 [assembly: TypeForwardedTo(typeof(AutosuggestAddress))]
