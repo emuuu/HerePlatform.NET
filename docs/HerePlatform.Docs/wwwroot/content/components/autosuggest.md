@@ -128,7 +128,9 @@ static per-event/per-element flag, so it would swallow every keystroke, includin
 ```
 
 `AutosuggestInputContext.PreventDefaultKeyDown` is deprecated since 1.3.1, always returns `false`, and will
-be removed in the next major version.
+be removed in the next major version. Version 1.3.0 is known broken: once suggestions appeared, the input
+swallowed every keystroke. If you are on 1.3.0, upgrade to 1.3.1 or later and remove any
+`@onkeydown:preventDefault` binding from your custom input template.
 
 ## Events
 

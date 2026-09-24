@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### [Unreleased]
 
+### [1.4.1] - 2026-09-24
+
+#### Changed
+
+- `AutosuggestInputContext.PreventDefaultKeyDown`: the `[Obsolete]` message now states why the property is no
+  longer needed and what to do instead — remove `@onkeydown:preventDefault` from custom templates and only splat
+  `@attributes="context.InputAttributes"`
+- Changelog and component docs now mark 1.3.0 as a known regression and point 1.3.0 users to 1.3.1 or later
+
 ### [1.4.0] - 2026-09-20
 
 #### Added
@@ -30,7 +39,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   per-element flag and cannot be limited to single keys. The browser default is now suppressed
   key-selectively by a `keydown` listener on the input, and only for `Enter` (implicit form submit) and
   `ArrowUp`/`ArrowDown` (caret jump), and only while the dropdown is open. Enter semantics are unchanged:
-  it still picks the active suggestion, or the first one when none is active
+  it still picks the active suggestion, or the first one when none is active. This fixes the known
+  regression in 1.3.0 — upgrade from 1.3.0 is strongly recommended. A narrower form of the same defect
+  existed in 1.0.0–1.2.0: after navigating the list with the arrow keys, the default template swallowed
+  every keystroke until the dropdown closed; this is fixed as well
 
 #### Deprecated
 
@@ -44,8 +56,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 > **Known broken — do not use.** With the default input template — and with every custom `InputTemplate`
 > that followed the 1.3.0 guidance to apply `@onkeydown:preventDefault` — an open suggestion dropdown
-> suppressed every keystroke, leaving the input uneditable after the first suggestions appeared.
-> Fixed in the following release.
+> suppressed every keystroke (typing, Backspace/Delete, Tab), leaving the input uneditable after the first
+> suggestions appeared. This affects every `HereAutosuggest` without a custom `InputTemplate`. Fixed in
+> 1.3.1: upgrade, and remove any `@onkeydown:preventDefault` binding from custom input templates. The
+> `PreventDefaultKeyDown` guidance below is withdrawn.
 
 #### Added
 
@@ -65,7 +79,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `HereAutosuggest` with a custom `InputTemplate`: pressing Enter while the dropdown was open selected a
   suggestion AND submitted a surrounding `<form>`/`EditForm`, because `InputAttributes` splatting could not
   carry the default template's `@onkeydown:preventDefault` modifier. Consumers must now also bind
-  `@onkeydown:preventDefault="@context.PreventDefaultKeyDown"` on their custom input
+  `@onkeydown:preventDefault="@context.PreventDefaultKeyDown"` on their custom input (withdrawn in 1.3.1 —
+  this binding blocks every keystroke)
 
 ### [1.2.0] - 2026-06-11
 
