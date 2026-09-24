@@ -107,6 +107,19 @@ public class HereAutosuggestInteractionTests : BunitTestBase
     }
 
     [Test]
+    public void Default_Input_Does_Not_Apply_PreventDefault_KeyDown_Modifier_After_Arrow_Navigation()
+    {
+        var cut = Render<HereAutosuggest>();
+        InjectResults(cut);
+
+        // Up to 1.2.0 the modifier was bound to an active item, so typing died after ArrowDown.
+        cut.Find("input").KeyDown(Key.Down);
+
+        Assert.That(cut.FindAll("li.here-autosuggest-item")[0].ClassList, Does.Contain("active"));
+        Assert.That(cut.Find("input").OuterHtml, Does.Not.Contain("onkeydown:preventdefault"));
+    }
+
+    [Test]
     public void PreventDefaultKeyDown_Is_Always_False()
     {
         AutosuggestInputContext? capturedContext = null;
@@ -396,8 +409,22 @@ public class HereAutosuggestInteractionTests : BunitTestBase
         Assert.That(condition(), Is.True, "Condition was not met within the timeout.");
     }
 
-    private List<JSRuntimeInvocation> GetAutosuggestInvocations() =>
-        JSInterop.Invocations
-            .Where(i => i.Identifier == "herePlatform.objectManager.autosuggest")
-            .ToList();
+    // bUnit records invocations in an unsynchronized dictionary, and the debounce timer thread may
+    // add one while WaitUntil enumerates it ("Collection was modified") — retry until a clean read.
+    private List<JSRuntimeInvocation> GetAutosuggestInvocations()
+    {
+        while (true)
+        {
+            try
+            {
+                return JSInterop.Invocations
+                    .Where(i => i.Identifier == "herePlatform.objectManager.autosuggest")
+                    .ToList();
+            }
+            catch (InvalidOperationException)
+            {
+                Thread.Sleep(1);
+            }
+        }
+    }
 }
