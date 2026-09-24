@@ -48,7 +48,7 @@
                   "name": "Show",
                   "type": "string?",
                   "required": false,
-                  "description": "Additional response fields to request via the HERE show parameter. Default: \u0022details\u0022 \u2014 without it the Autosuggest API returns only address.label and none of the structured address fields (street, postal code, city, \u2026) on . Set to null to omit the parameter (label-only responses). Only sent for Autosuggest requests; Autocomplete requests never include it (the /autocomplete endpoint does not support show=details and returns structured addresses natively).",
+                  "description": "Additional response fields to request via the HERE show parameter. Default: \u0022details\u0022 \u2014 without it the Autosuggest API returns only address.label and none of the structured address fields (street, postal code, city, \u2026) on AutosuggestAddress. Set to null to omit the parameter (label-only responses). Only sent for Autosuggest requests; Autocomplete requests never include it (the /autocomplete endpoint does not support show=details and returns structured addresses natively).",
                   "default": "\u0022details\u0022"
                 },
                 {
@@ -111,7 +111,7 @@
                   "name": "Show",
                   "type": "string?",
                   "required": false,
-                  "description": "Additional response fields to request via the HERE show parameter. Default: \u0022details\u0022 \u2014 without it the Autosuggest API returns only address.label and none of the structured address fields (street, postal code, city, \u2026) on . Set to null to omit the parameter (label-only responses). Only sent for Autosuggest requests; Autocomplete requests never include it (the /autocomplete endpoint does not support show=details and returns structured addresses natively).",
+                  "description": "Additional response fields to request via the HERE show parameter. Default: \u0022details\u0022 \u2014 without it the Autosuggest API returns only address.label and none of the structured address fields (street, postal code, city, \u2026) on AutosuggestAddress. Set to null to omit the parameter (label-only responses). Only sent for Autosuggest requests; Autocomplete requests never include it (the /autocomplete endpoint does not support show=details and returns structured addresses natively).",
                   "default": "\u0022details\u0022"
                 },
                 {
@@ -1909,7 +1909,7 @@
         {
           "name": "Address",
           "type": "AutosuggestAddress?",
-          "description": "Structured address details. For Autosuggest results the structured fields (street, postal code, city, \u2026) are only populated when the request includes show=details (, on by default) \u2014 without it the API returns only . Autocomplete results carry structured addresses natively, independent of .",
+          "description": "Structured address details. For Autosuggest results the structured fields (street, postal code, city, \u2026) are only populated when the request includes show=details (AutosuggestOptions.Show, on by default) \u2014 without it the API returns only AutosuggestAddress.Label. Autocomplete results carry structured addresses natively, independent of AutosuggestOptions.Show.",
           "nestedType": "AutosuggestAddress"
         },
         {
@@ -3050,7 +3050,7 @@
         {
           "name": "Observations",
           "type": "List\u003CWeatherObservation\u003E?",
-          "description": "Current weather observations (when was requested).",
+          "description": "Current weather observations (when WeatherProduct.Observation was requested).",
           "nestedType": "WeatherObservation"
         },
         {

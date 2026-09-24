@@ -499,7 +499,7 @@ public class RestApiDocGenerator
                 var name = member.Attribute("name")?.Value;
                 if (name is null) continue;
 
-                var summary = member.Element("summary")?.Value.Trim();
+                var summary = XmlDocText.Render(member.Element("summary"));
                 if (!string.IsNullOrEmpty(summary))
                 {
                     summary = string.Join(" ", summary.Split(default(char[]), StringSplitOptions.RemoveEmptyEntries));
@@ -509,7 +509,7 @@ public class RestApiDocGenerator
                 foreach (var paramEl in member.Elements("param"))
                 {
                     var paramName = paramEl.Attribute("name")?.Value;
-                    var paramDesc = paramEl.Value.Trim();
+                    var paramDesc = XmlDocText.Render(paramEl);
                     if (paramName is not null && !string.IsNullOrEmpty(paramDesc))
                     {
                         paramDesc = string.Join(" ", paramDesc.Split(default(char[]), StringSplitOptions.RemoveEmptyEntries));

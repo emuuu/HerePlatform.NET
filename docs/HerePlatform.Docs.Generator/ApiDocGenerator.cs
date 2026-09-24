@@ -295,7 +295,7 @@ public class ApiDocGenerator
             foreach (var member in doc.Descendants("member"))
             {
                 var name = member.Attribute("name")?.Value;
-                var summary = member.Element("summary")?.Value.Trim();
+                var summary = XmlDocText.Render(member.Element("summary"));
                 if (name is not null && !string.IsNullOrEmpty(summary))
                 {
                     // Normalize whitespace
