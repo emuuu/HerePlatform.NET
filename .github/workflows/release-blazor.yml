@@ -14,6 +14,7 @@ jobs:
       package: blazor
       csproj-path: HerePlatform.Blazor/HerePlatform.Blazor.csproj
       test-directory: tests/HerePlatform.Blazor.Tests
+      js-test-directory: tests/HerePlatform.Blazor.Tests.Js
       title-prefix: HerePlatform.NET.Blazor
     secrets:
       nuget-api-key: ${{ secrets.NUGET_API_KEY }}

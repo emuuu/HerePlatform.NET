@@ -27,7 +27,10 @@ dotnet build
 
 ```bash
 dotnet test tests/HerePlatform.Blazor.Tests/
+node --test tests/HerePlatform.Blazor.Tests.Js/*.test.mjs
 ```
+
+The JS tests use the built-in `node:test` runner and need Node.js 20 or later.
 
 ## Pull Request Guidelines
 
