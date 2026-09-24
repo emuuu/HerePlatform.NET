@@ -42,9 +42,10 @@ public class AutosuggestInputContext
     /// suppresses EVERY keystroke — characters, Backspace, Tab — once the dropdown is open.
     /// Splat <see cref="InputAttributes"/> instead; it carries the marker the component needs.
     /// </summary>
-    [Obsolete("Key-selective preventDefault is handled by the component since 1.3.1; do not apply " +
-              "@onkeydown:preventDefault in custom templates. Always false; scheduled for removal in " +
-              "the next major version.")]
+    [Obsolete("No longer needed since 1.3.1: the component suppresses the browser default for Enter and " +
+              "ArrowUp/ArrowDown itself. Remove @onkeydown:preventDefault from custom templates (it blocks " +
+              "every keystroke) and only splat @attributes=\"context.InputAttributes\". Always false; " +
+              "scheduled for removal in the next major version.", error: false)]
     public bool PreventDefaultKeyDown
     {
         get => false;
