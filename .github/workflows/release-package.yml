@@ -18,6 +18,11 @@ on:
         description: 'Display name for GitHub Release title'
         required: true
         type: string
+      js-test-directory:
+        description: 'Path to the node:test directory (*.test.mjs); empty to skip'
+        required: false
+        type: string
+        default: ''
     secrets:
       nuget-api-key:
         required: true
@@ -42,6 +47,9 @@ jobs:
       - run: dotnet build -c Release --no-restore
       - run: dotnet test -c Release --no-build
         working-directory: ${{ inputs.test-directory }}
+      - name: Run JS tests
+        if: inputs.js-test-directory != ''
+        run: node --test ${{ inputs.js-test-directory }}/*.test.mjs
       - name: Extract version from tag
         run: |
           if [[ ! "$GITHUB_REF_NAME" =~ ^${{ inputs.package }}/v ]]; then
