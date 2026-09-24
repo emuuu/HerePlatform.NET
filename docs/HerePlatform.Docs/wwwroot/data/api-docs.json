@@ -98,13 +98,13 @@
         "name": "CenterChanged",
         "kind": "Event",
         "type": "EventCallback\u003CLatLngLiteral\u003E",
-        "description": "Callback for two-way binding of . Fired when the user finishes panning (on mapviewchangeend)."
+        "description": "Callback for two-way binding of AdvancedHereMap.Center. Fired when the user finishes panning (on mapviewchangeend)."
       },
       {
         "name": "HeadingChanged",
         "kind": "Event",
         "type": "EventCallback\u003Cdouble\u003E",
-        "description": "Callback for two-way binding of . Fired when the user finishes rotating (on mapviewchangeend)."
+        "description": "Callback for two-way binding of AdvancedHereMap.Heading. Fired when the user finishes rotating (on mapviewchangeend)."
       },
       {
         "name": "OnAfterInit",
@@ -284,13 +284,13 @@
         "name": "TiltChanged",
         "kind": "Event",
         "type": "EventCallback\u003Cdouble\u003E",
-        "description": "Callback for two-way binding of . Fired when the user finishes tilting (on mapviewchangeend)."
+        "description": "Callback for two-way binding of AdvancedHereMap.Tilt. Fired when the user finishes tilting (on mapviewchangeend)."
       },
       {
         "name": "ZoomChanged",
         "kind": "Event",
         "type": "EventCallback\u003Cdouble\u003E",
-        "description": "Callback for two-way binding of . Fired when the user finishes zooming (on mapviewchangeend)."
+        "description": "Callback for two-way binding of AdvancedHereMap.Zoom. Fired when the user finishes zooming (on mapviewchangeend)."
       }
     ]
   },
@@ -326,7 +326,7 @@
         "name": "PreventDefaultKeyDown",
         "kind": "Property",
         "type": "bool",
-        "description": "Always false. Deprecated since 1.3.1: the component suppresses the browser default itself, key-selectively for Enter and ArrowUp/ArrowDown while the dropdown is open. A custom must NOT apply @onkeydown:preventDefault: Blazor\u0027s modifier is a static per-event/per-element flag, so it suppresses EVERY keystroke \u2014 characters, Backspace, Tab \u2014 once the dropdown is open. Splat instead; it carries the marker the component needs."
+        "description": "Always false. Deprecated since 1.3.1: the component suppresses the browser default itself, key-selectively for Enter and ArrowUp/ArrowDown while the dropdown is open. A custom HereAutosuggest.InputTemplate must NOT apply @onkeydown:preventDefault: Blazor\u0027s modifier is a static per-event/per-element flag, so it suppresses EVERY keystroke \u2014 characters, Backspace, Tab \u2014 once the dropdown is open. Splat AutosuggestInputContext.InputAttributes instead; it carries the marker the component needs."
       }
     ]
   },
@@ -1547,7 +1547,7 @@
         "kind": "Property",
         "type": "AutosuggestDesign",
         "default": "Default",
-        "description": "Predefined design variant for the component. Default: ."
+        "description": "Predefined design variant for the component. Default: AutosuggestDesign.Default."
       },
       {
         "name": "Disabled",
@@ -1561,7 +1561,7 @@
         "kind": "Property",
         "type": "RenderFragment\u003CAutosuggestInputContext\u003E",
         "default": "null",
-        "description": "Custom template for rendering the input area. The provides an InputAttributes dictionary that must be splatted onto the custom \u003Cinput\u003E element (@attributes=\u0022context.InputAttributes\u0022) \u2014 nothing else is required. Keyboard defaults are handled by the component: splatting also applies the data-here-autosuggest-input marker that lets the component suppress the browser default for Enter and ArrowUp/ArrowDown \u2014 and only those \u2014 while the dropdown is open. Do NOT apply @onkeydown:preventDefault in a custom template."
+        "description": "Custom template for rendering the input area. The AutosuggestInputContext provides an InputAttributes dictionary that must be splatted onto the custom \u003Cinput\u003E element (@attributes=\u0022context.InputAttributes\u0022) \u2014 nothing else is required. Keyboard defaults are handled by the component: splatting also applies the data-here-autosuggest-input marker that lets the component suppress the browser default for Enter and ArrowUp/ArrowDown \u2014 and only those \u2014 while the dropdown is open. Do NOT apply @onkeydown:preventDefault in a custom template."
       },
       {
         "name": "MinChars",
@@ -1589,14 +1589,14 @@
         "kind": "Property",
         "type": "RenderFragment\u003CAutosuggestItem\u003E",
         "default": "null",
-        "description": "Custom template for rendering each suggestion item. When set, replaces the default item content inside the \u003Cli\u003E shell (click handler and active class are preserved). Ignored when is set."
+        "description": "Custom template for rendering each suggestion item. When set, replaces the default item content inside the \u003Cli\u003E shell (click handler and active class are preserved). Ignored when HereAutosuggest.SuggestionListTemplate is set."
       },
       {
         "name": "SuggestionListTemplate",
         "kind": "Property",
         "type": "RenderFragment\u003CAutosuggestListContext\u003E",
         "default": "null",
-        "description": "Custom template for rendering the entire suggestion dropdown. When set, replaces the default \u003Cul\u003E list completely. Use to wire up item selection."
+        "description": "Custom template for rendering the entire suggestion dropdown. When set, replaces the default \u003Cul\u003E list completely. Use AutosuggestListContext.SelectItem to wire up item selection."
       },
       {
         "name": "UserAttributes",
@@ -1933,7 +1933,7 @@
         "name": "IsOpenChanged",
         "kind": "Event",
         "type": "EventCallback\u003Cbool\u003E",
-        "description": "Callback for two-way binding of . Fired when the InfoBubble is closed by clicking the X button."
+        "description": "Callback for two-way binding of InfoBubbleComponent.IsOpen. Fired when the InfoBubble is closed by clicking the X button."
       }
     ]
   },
@@ -2958,13 +2958,13 @@
         "name": "LatChanged",
         "kind": "Event",
         "type": "EventCallback\u003Cdouble\u003E",
-        "description": "Callback for two-way binding of . Fired when the marker is dragged to a new position."
+        "description": "Callback for two-way binding of MarkerComponent.Lat. Fired when the marker is dragged to a new position."
       },
       {
         "name": "LngChanged",
         "kind": "Event",
         "type": "EventCallback\u003Cdouble\u003E",
-        "description": "Callback for two-way binding of . Fired when the marker is dragged to a new position."
+        "description": "Callback for two-way binding of MarkerComponent.Lng. Fired when the marker is dragged to a new position."
       },
       {
         "name": "OnClick",
