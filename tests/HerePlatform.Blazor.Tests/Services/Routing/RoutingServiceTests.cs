@@ -128,14 +128,14 @@ public class RoutingServiceTests : ServiceTestBase
     }
 
     [Test]
-    public void CalculateRouteAsync_AuthError_ThrowsHereApiAuthenticationException()
+    public async Task CalculateRouteAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<RoutingResult>(
             "herePlatform.objectManager.calculateRoute",
             new JSException("Error: HERE_AUTH_ERROR:routing:HTTP 401"));
         var service = new RoutingService(JsRuntime);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
             await service.CalculateRouteAsync(new RoutingRequest
             {
                 Origin = new LatLngLiteral(52.5200, 13.4050),

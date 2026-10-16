@@ -137,14 +137,14 @@ public class PlacesServiceTests : ServiceTestBase
     }
 
     [Test]
-    public void DiscoverAsync_AuthError_ThrowsHereApiAuthenticationException()
+    public async Task DiscoverAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<PlacesResult>(
             "herePlatform.objectManager.discoverPlaces",
             new JSException("Error: HERE_AUTH_ERROR:discover-places:HTTP 401"));
         var service = new PlacesService(JsRuntime);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
             await service.DiscoverAsync(new PlacesRequest
             {
                 Query = "restaurants",

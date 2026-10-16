@@ -47,14 +47,14 @@ public class WaypointSequenceServiceTests : ServiceTestBase
     }
 
     [Test]
-    public void OptimizeSequenceAsync_AuthError_ThrowsHereApiAuthenticationException()
+    public async Task OptimizeSequenceAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<WaypointSequenceResult>(
             "herePlatform.objectManager.optimizeWaypointSequence",
             new JSException("Error: HERE_AUTH_ERROR:waypoint-sequence:HTTP 401"));
         var service = new WaypointSequenceService(JsRuntime);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
             await service.OptimizeSequenceAsync(new WaypointSequenceRequest
             {
                 Start = new LatLngLiteral(52.5251, 13.3694),

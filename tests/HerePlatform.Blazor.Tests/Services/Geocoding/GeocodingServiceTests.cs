@@ -147,28 +147,28 @@ public class GeocodingServiceTests : ServiceTestBase
     }
 
     [Test]
-    public void GeocodeAsync_AuthError_ThrowsHereApiAuthenticationException()
+    public async Task GeocodeAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<GeocodeResult>(
             "herePlatform.objectManager.geocode",
             new JSException("Error: HERE_AUTH_ERROR:geocoding:HTTP 401"));
         var service = new GeocodingService(JsRuntime);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
             await service.GeocodeAsync("Berlin"));
 
         Assert.That(ex!.Service, Is.EqualTo("geocoding"));
     }
 
     [Test]
-    public void ReverseGeocodeAsync_AuthError_ThrowsHereApiAuthenticationException()
+    public async Task ReverseGeocodeAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<GeocodeResult>(
             "herePlatform.objectManager.reverseGeocode",
             new JSException("Error: HERE_AUTH_ERROR:reverse-geocoding:HTTP 403"));
         var service = new GeocodingService(JsRuntime);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
             await service.ReverseGeocodeAsync(new LatLngLiteral(52.5310, 13.3847)));
 
         Assert.That(ex!.Service, Is.EqualTo("reverse-geocoding"));

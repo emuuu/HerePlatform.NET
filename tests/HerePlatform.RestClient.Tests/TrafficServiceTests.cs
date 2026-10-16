@@ -93,12 +93,12 @@ public class TrafficServiceTests
     }
 
     [Test]
-    public void GetTrafficIncidentsAsync_401_ThrowsAuthException()
+    public async Task GetTrafficIncidentsAsync_401_ThrowsAuthException()
     {
         var handler = MockHttpHandler.WithStatus(HttpStatusCode.Unauthorized);
         var service = CreateService(handler);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(
             () => service.GetTrafficIncidentsAsync(53, 52, 14, 13));
         Assert.That(ex!.Service, Is.EqualTo("traffic"));
     }
@@ -116,12 +116,12 @@ public class TrafficServiceTests
     }
 
     [Test]
-    public void GetTrafficIncidentsAsync_400_ThrowsHereApiException()
+    public async Task GetTrafficIncidentsAsync_400_ThrowsHereApiException()
     {
         var handler = MockHttpHandler.WithJson("""{"error":"Bad request"}""", HttpStatusCode.BadRequest);
         var service = CreateService(handler);
 
-        var ex = Assert.ThrowsAsync<HereApiException>(
+        var ex = await Assert.ThrowsAsync<HereApiException>(
             () => service.GetTrafficIncidentsAsync(53, 52, 14, 13));
         Assert.That(ex!.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         Assert.That(ex.Service, Is.EqualTo("traffic"));
@@ -178,23 +178,23 @@ public class TrafficServiceTests
     }
 
     [Test]
-    public void GetTrafficFlowAsync_401_ThrowsAuthException()
+    public async Task GetTrafficFlowAsync_401_ThrowsAuthException()
     {
         var handler = MockHttpHandler.WithStatus(HttpStatusCode.Unauthorized);
         var service = CreateService(handler);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(
             () => service.GetTrafficFlowAsync(53, 52, 14, 13));
         Assert.That(ex!.Service, Is.EqualTo("traffic"));
     }
 
     [Test]
-    public void GetTrafficFlowAsync_400_ThrowsHereApiException()
+    public async Task GetTrafficFlowAsync_400_ThrowsHereApiException()
     {
         var handler = MockHttpHandler.WithJson("""{"error":"Invalid bbox"}""", HttpStatusCode.BadRequest);
         var service = CreateService(handler);
 
-        var ex = Assert.ThrowsAsync<HereApiException>(
+        var ex = await Assert.ThrowsAsync<HereApiException>(
             () => service.GetTrafficFlowAsync(53, 52, 14, 13));
         Assert.That(ex!.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         Assert.That(ex.Service, Is.EqualTo("traffic"));

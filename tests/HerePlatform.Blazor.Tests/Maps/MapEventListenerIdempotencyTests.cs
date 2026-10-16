@@ -53,7 +53,7 @@ public class MapEventListenerIdempotencyTests : BunitTestBase
         var listener = new MapEventListener(jsObjectRef);
 
         await listener.DisposeAsync();
-        Assert.DoesNotThrowAsync(async () => await listener.DisposeAsync());
+        await Assert.DoesNotThrowAsync(async () => await listener.DisposeAsync());
     }
 
     private static IEnumerable<object?> FlattenArgs(IReadOnlyList<object?> args)

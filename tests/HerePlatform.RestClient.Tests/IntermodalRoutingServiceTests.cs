@@ -215,12 +215,12 @@ public class IntermodalRoutingServiceTests
     }
 
     [Test]
-    public void CalculateRouteAsync_401_ThrowsAuthException()
+    public async Task CalculateRouteAsync_401_ThrowsAuthException()
     {
         var handler = MockHttpHandler.WithStatus(HttpStatusCode.Unauthorized);
         var service = CreateService(handler);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(
             () => service.CalculateRouteAsync(new IntermodalRoutingRequest
             {
                 Origin = new LatLngLiteral(52.5, 13.4),

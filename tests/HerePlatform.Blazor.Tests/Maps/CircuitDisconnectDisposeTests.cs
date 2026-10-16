@@ -21,7 +21,7 @@ public class CircuitDisconnectDisposeTests : BunitTestBase
 
         SimulateCircuitDisconnect(new JSDisconnectedException("circuit gone"));
 
-        Assert.DoesNotThrowAsync(async () => await cut.Instance.DisposeAsync());
+        await Assert.DoesNotThrowAsync(async () => await cut.Instance.DisposeAsync());
     }
 
     [Test]
@@ -31,7 +31,7 @@ public class CircuitDisconnectDisposeTests : BunitTestBase
 
         SimulateCircuitDisconnect(new OperationCanceledException());
 
-        Assert.DoesNotThrowAsync(async () => await cut.Instance.DisposeAsync());
+        await Assert.DoesNotThrowAsync(async () => await cut.Instance.DisposeAsync());
     }
 
     [Test]
@@ -55,7 +55,7 @@ public class CircuitDisconnectDisposeTests : BunitTestBase
 
         SimulateCircuitDisconnect(new JSDisconnectedException("circuit gone"));
 
-        Assert.DoesNotThrowAsync(async () => await cut.Instance.DisposeAsync());
+        await Assert.DoesNotThrowAsync(async () => await cut.Instance.DisposeAsync());
     }
 
     [Test]
@@ -76,7 +76,7 @@ public class CircuitDisconnectDisposeTests : BunitTestBase
 
         SimulateCircuitDisconnect(new JSDisconnectedException("circuit gone"));
 
-        Assert.DoesNotThrowAsync(async () => await cut.Instance.DisposeAsync());
+        await Assert.DoesNotThrowAsync(async () => await cut.Instance.DisposeAsync());
     }
 
     private void SimulateCircuitDisconnect(System.Exception ex)

@@ -193,7 +193,7 @@ public class RoutingServiceTests
     }
 
     [Test]
-    public void CalculateRouteAsync_401_ThrowsAuthException()
+    public async Task CalculateRouteAsync_401_ThrowsAuthException()
     {
         var handler = MockHttpHandler.WithStatus(HttpStatusCode.Unauthorized);
         var service = CreateService(handler);
@@ -204,7 +204,7 @@ public class RoutingServiceTests
             Destination = new LatLngLiteral(48.1, 11.5)
         };
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(
             () => service.CalculateRouteAsync(request));
         Assert.That(ex!.Service, Is.EqualTo("routing"));
     }

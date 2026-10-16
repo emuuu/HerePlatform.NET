@@ -249,12 +249,12 @@ public class WeatherServiceTests
     }
 
     [Test]
-    public void GetWeatherAsync_401_ThrowsAuthException()
+    public async Task GetWeatherAsync_401_ThrowsAuthException()
     {
         var handler = MockHttpHandler.WithStatus(HttpStatusCode.Unauthorized);
         var service = CreateService(handler);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(
             () => service.GetWeatherAsync(new WeatherRequest
             {
                 Location = new LatLngLiteral(52.5, 13.4)

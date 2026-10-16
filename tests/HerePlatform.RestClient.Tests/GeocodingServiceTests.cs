@@ -84,23 +84,23 @@ public class GeocodingServiceTests
     }
 
     [Test]
-    public void GeocodeAsync_401_ThrowsAuthException()
+    public async Task GeocodeAsync_401_ThrowsAuthException()
     {
         var handler = MockHttpHandler.WithStatus(HttpStatusCode.Unauthorized);
         var service = CreateService(handler);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(
             () => service.GeocodeAsync("Berlin"));
         Assert.That(ex!.Service, Is.EqualTo("geocoding"));
     }
 
     [Test]
-    public void GeocodeAsync_400_ThrowsHereApiException()
+    public async Task GeocodeAsync_400_ThrowsHereApiException()
     {
         var handler = MockHttpHandler.WithJson("""{"status":400,"title":"Bad Request"}""", HttpStatusCode.BadRequest);
         var service = CreateService(handler);
 
-        var ex = Assert.ThrowsAsync<HereApiException>(
+        var ex = await Assert.ThrowsAsync<HereApiException>(
             () => service.GeocodeAsync("Berlin"));
         Assert.That(ex!.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         Assert.That(ex.Service, Is.EqualTo("geocoding"));
@@ -108,21 +108,21 @@ public class GeocodingServiceTests
     }
 
     [Test]
-    public void GeocodeAsync_NullQuery_ThrowsArgumentNullException()
+    public async Task GeocodeAsync_NullQuery_ThrowsArgumentNullException()
     {
         var handler = MockHttpHandler.WithJson("""{"items":[]}""");
         var service = CreateService(handler);
 
-        Assert.ThrowsAsync<ArgumentNullException>(() => service.GeocodeAsync(null!));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => service.GeocodeAsync(null!));
     }
 
     [Test]
-    public void GeocodeAsync_EmptyQuery_ThrowsArgumentException()
+    public async Task GeocodeAsync_EmptyQuery_ThrowsArgumentException()
     {
         var handler = MockHttpHandler.WithJson("""{"items":[]}""");
         var service = CreateService(handler);
 
-        Assert.ThrowsAsync<ArgumentException>(() => service.GeocodeAsync(""));
+        await Assert.ThrowsAsync<ArgumentException>(() => service.GeocodeAsync(""));
     }
 
     [Test]

@@ -25,7 +25,7 @@ public class AutosuggestListContextTests
         var context = new AutosuggestListContext();
         var item = new AutosuggestItem { Title = "Test" };
 
-        Assert.DoesNotThrowAsync(() => context.SelectItem(item));
+        await Assert.DoesNotThrowAsync(() => context.SelectItem(item));
     }
 
     [Test]

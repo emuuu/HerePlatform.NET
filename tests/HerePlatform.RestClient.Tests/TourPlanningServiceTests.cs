@@ -202,12 +202,12 @@ public class TourPlanningServiceTests
     }
 
     [Test]
-    public void SolveAsync_401_ThrowsAuthException()
+    public async Task SolveAsync_401_ThrowsAuthException()
     {
         var handler = MockHttpHandler.WithStatus(HttpStatusCode.Unauthorized);
         var service = CreateService(handler);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(
             () => service.SolveAsync(CreateSimpleProblem()));
         Assert.That(ex!.Service, Is.EqualTo("tourPlanning"));
     }

@@ -103,14 +103,14 @@ public class IsolineServiceTests : ServiceTestBase
     }
 
     [Test]
-    public void CalculateIsolineAsync_AuthError_ThrowsHereApiAuthenticationException()
+    public async Task CalculateIsolineAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<IsolineResult>(
             "herePlatform.objectManager.calculateIsoline",
             new JSException("Error: HERE_AUTH_ERROR:isoline:HTTP 401"));
         var service = new IsolineService(JsRuntime);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
             await service.CalculateIsolineAsync(new IsolineRequest
             {
                 Center = new LatLngLiteral(52.52, 13.405),

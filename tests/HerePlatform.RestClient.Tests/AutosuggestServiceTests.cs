@@ -89,12 +89,12 @@ public class AutosuggestServiceTests
     }
 
     [Test]
-    public void SuggestAsync_CountryCodeOnlyWithoutAt_ThrowsInsteadOfSending()
+    public async Task SuggestAsync_CountryCodeOnlyWithoutAt_ThrowsInsteadOfSending()
     {
         var handler = MockHttpHandler.WithJson("""{"items":[]}""");
         var service = CreateService(handler);
 
-        var ex = Assert.ThrowsAsync<InvalidOperationException>(() =>
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
             service.SuggestAsync("Berlin", new AutosuggestOptions { In = "countryCode:DEU", At = null }));
 
         Assert.That(ex!.Message, Does.Contain("spatial context"));
@@ -299,12 +299,12 @@ public class AutosuggestServiceTests
     }
 
     [Test]
-    public void SuggestAsync_401_ThrowsAuthException()
+    public async Task SuggestAsync_401_ThrowsAuthException()
     {
         var handler = MockHttpHandler.WithStatus(HttpStatusCode.Unauthorized);
         var service = CreateService(handler);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(
             () => service.SuggestAsync("Berlin"));
         Assert.That(ex!.Service, Is.EqualTo("autosuggest"));
     }
@@ -418,12 +418,12 @@ public class AutosuggestServiceTests
     }
 
     [Test]
-    public void AutocompleteAsync_401_ThrowsAuthException()
+    public async Task AutocompleteAsync_401_ThrowsAuthException()
     {
         var handler = MockHttpHandler.WithStatus(HttpStatusCode.Unauthorized);
         var service = CreateService(handler);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(
             () => service.AutocompleteAsync("Berlin"));
         Assert.That(ex!.Service, Is.EqualTo("autocomplete"));
     }

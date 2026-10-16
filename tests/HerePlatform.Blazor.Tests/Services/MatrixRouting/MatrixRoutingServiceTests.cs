@@ -70,14 +70,14 @@ public class MatrixRoutingServiceTests : ServiceTestBase
     }
 
     [Test]
-    public void CalculateMatrixAsync_AuthError_ThrowsHereApiAuthenticationException()
+    public async Task CalculateMatrixAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<MatrixRoutingResult>(
             "herePlatform.objectManager.calculateMatrix",
             new JSException("Error: HERE_AUTH_ERROR:matrix-routing:HTTP 401"));
         var service = new MatrixRoutingService(JsRuntime);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
             await service.CalculateMatrixAsync(new MatrixRoutingRequest
             {
                 Origins = new List<LatLngLiteral> { new(52.5200, 13.4050) },

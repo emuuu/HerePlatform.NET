@@ -87,12 +87,12 @@ public class MapImageServiceTests
     }
 
     [Test]
-    public void GetImageAsync_401_ThrowsAuthException()
+    public async Task GetImageAsync_401_ThrowsAuthException()
     {
         var handler = MockHttpHandler.WithStatus(HttpStatusCode.Unauthorized);
         var service = CreateService(handler);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(
             () => service.GetImageAsync(new MapImageRequest
             {
                 Center = new LatLngLiteral(52.5, 13.4)

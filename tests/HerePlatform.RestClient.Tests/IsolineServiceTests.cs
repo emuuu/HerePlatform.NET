@@ -91,7 +91,7 @@ public class IsolineServiceTests
     }
 
     [Test]
-    public void CalculateIsolineAsync_401_ThrowsAuthException()
+    public async Task CalculateIsolineAsync_401_ThrowsAuthException()
     {
         var handler = MockHttpHandler.WithStatus(HttpStatusCode.Unauthorized);
         var service = CreateService(handler);
@@ -102,7 +102,7 @@ public class IsolineServiceTests
             Ranges = [300]
         };
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(
             () => service.CalculateIsolineAsync(request));
         Assert.That(ex!.Service, Is.EqualTo("isoline"));
     }

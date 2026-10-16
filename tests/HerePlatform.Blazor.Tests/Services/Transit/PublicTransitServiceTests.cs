@@ -94,28 +94,28 @@ public class PublicTransitServiceTests : ServiceTestBase
     }
 
     [Test]
-    public void GetDeparturesAsync_AuthError_ThrowsHereApiAuthenticationException()
+    public async Task GetDeparturesAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<TransitDeparturesResult>(
             "herePlatform.objectManager.getTransitDepartures",
             new JSException("Error: HERE_AUTH_ERROR:transit-departures:HTTP 401"));
         var service = new PublicTransitService(JsRuntime);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
             await service.GetDeparturesAsync(new LatLngLiteral(52.5251, 13.3694)));
 
         Assert.That(ex!.Service, Is.EqualTo("transit-departures"));
     }
 
     [Test]
-    public void SearchStationsAsync_AuthError_ThrowsHereApiAuthenticationException()
+    public async Task SearchStationsAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<TransitStationsResult>(
             "herePlatform.objectManager.searchTransitStations",
             new JSException("Error: HERE_AUTH_ERROR:transit-stations:HTTP 401"));
         var service = new PublicTransitService(JsRuntime);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
             await service.SearchStationsAsync(new LatLngLiteral(52.5260, 13.3700)));
 
         Assert.That(ex!.Service, Is.EqualTo("transit-stations"));

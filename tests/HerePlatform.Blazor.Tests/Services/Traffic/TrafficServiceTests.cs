@@ -98,28 +98,28 @@ public class TrafficServiceTests : ServiceTestBase
     }
 
     [Test]
-    public void GetTrafficIncidentsAsync_AuthError_ThrowsHereApiAuthenticationException()
+    public async Task GetTrafficIncidentsAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<TrafficIncidentsResult>(
             "herePlatform.objectManager.getTrafficIncidents",
             new JSException("Error: HERE_AUTH_ERROR:traffic-incidents:HTTP 401"));
         var service = new TrafficService(JsRuntime);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
             await service.GetTrafficIncidentsAsync(52.55, 52.48, 13.45, 13.35));
 
         Assert.That(ex!.Service, Is.EqualTo("traffic-incidents"));
     }
 
     [Test]
-    public void GetTrafficFlowAsync_AuthError_ThrowsHereApiAuthenticationException()
+    public async Task GetTrafficFlowAsync_AuthError_ThrowsHereApiAuthenticationException()
     {
         MockJsException<TrafficFlowResult>(
             "herePlatform.objectManager.getTrafficFlow",
             new JSException("Error: HERE_AUTH_ERROR:traffic-flow:HTTP 401"));
         var service = new TrafficService(JsRuntime);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(async () =>
             await service.GetTrafficFlowAsync(52.55, 52.48, 13.45, 13.35));
 
         Assert.That(ex!.Service, Is.EqualTo("traffic-flow"));

@@ -81,12 +81,12 @@ public class PublicTransitServiceTests
     }
 
     [Test]
-    public void GetDeparturesAsync_401_ThrowsAuthException()
+    public async Task GetDeparturesAsync_401_ThrowsAuthException()
     {
         var handler = MockHttpHandler.WithStatus(HttpStatusCode.Unauthorized);
         var service = CreateService(handler);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(
             () => service.GetDeparturesAsync(new LatLngLiteral(52.52, 13.37)));
         Assert.That(ex!.Service, Is.EqualTo("transit"));
     }
@@ -155,35 +155,35 @@ public class PublicTransitServiceTests
     }
 
     [Test]
-    public void SearchStationsAsync_401_ThrowsAuthException()
+    public async Task SearchStationsAsync_401_ThrowsAuthException()
     {
         var handler = MockHttpHandler.WithStatus(HttpStatusCode.Unauthorized);
         var service = CreateService(handler);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(
             () => service.SearchStationsAsync(new LatLngLiteral(52.52, 13.37)));
         Assert.That(ex!.Service, Is.EqualTo("transit"));
     }
 
     [Test]
-    public void GetDeparturesAsync_400_ThrowsHereApiException()
+    public async Task GetDeparturesAsync_400_ThrowsHereApiException()
     {
         var handler = MockHttpHandler.WithJson("""{"error":"Bad request"}""", HttpStatusCode.BadRequest);
         var service = CreateService(handler);
 
-        var ex = Assert.ThrowsAsync<HereApiException>(
+        var ex = await Assert.ThrowsAsync<HereApiException>(
             () => service.GetDeparturesAsync(new LatLngLiteral(52.52, 13.37)));
         Assert.That(ex!.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         Assert.That(ex.Service, Is.EqualTo("transit"));
     }
 
     [Test]
-    public void SearchStationsAsync_400_ThrowsHereApiException()
+    public async Task SearchStationsAsync_400_ThrowsHereApiException()
     {
         var handler = MockHttpHandler.WithJson("""{"error":"Invalid radius"}""", HttpStatusCode.BadRequest);
         var service = CreateService(handler);
 
-        var ex = Assert.ThrowsAsync<HereApiException>(
+        var ex = await Assert.ThrowsAsync<HereApiException>(
             () => service.SearchStationsAsync(new LatLngLiteral(52.52, 13.37)));
         Assert.That(ex!.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
         Assert.That(ex.Service, Is.EqualTo("transit"));

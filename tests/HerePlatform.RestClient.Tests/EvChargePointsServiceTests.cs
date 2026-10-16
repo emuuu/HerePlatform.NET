@@ -114,12 +114,12 @@ public class EvChargePointsServiceTests
     }
 
     [Test]
-    public void SearchStationsAsync_401_ThrowsAuthException()
+    public async Task SearchStationsAsync_401_ThrowsAuthException()
     {
         var handler = MockHttpHandler.WithStatus(HttpStatusCode.Unauthorized);
         var service = CreateService(handler);
 
-        var ex = Assert.ThrowsAsync<HereApiAuthenticationException>(
+        var ex = await Assert.ThrowsAsync<HereApiAuthenticationException>(
             () => service.SearchStationsAsync(new EvChargePointsRequest
             {
                 Position = new LatLngLiteral(52.5, 13.4)
